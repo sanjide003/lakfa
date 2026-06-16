@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lakfa Foods - Admin Dashboard</title>
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- jsPDF for PDF generation from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
@@ -33,8 +29,6 @@
             transform: translateY(0);
             opacity: 1;
         }
-        
-        /* Dropdown Menu Styles */
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -48,24 +42,13 @@
             border: 1px solid #e5e7eb;
         }
         .dropdown-menu.show { display: block; }
-        
-        /* Checkbox Customization */
-        .custom-checkbox {
-            accent-color: #ef4444;
-            width: 1.1rem;
-            height: 1.1rem;
-            cursor: pointer;
-        }
-
-        /* Sidebar & Tab Logic */
+        .custom-checkbox { accent-color: #ef4444; width: 1.1rem; height: 1.1rem; cursor: pointer; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
         .sidebar-item { transition: all 0.2s; }
         .sidebar-item.active { background-color: #fef2f2; color: #dc2626; border-right: 4px solid #dc2626; font-weight: 600;}
         .sidebar-item:hover:not(.active) { background-color: #f3f4f6; }
 
-        /* Mobile Sidebar */
         @media (max-width: 768px) {
             #sidebar { transform: translateX(-100%); transition: transform 0.3s ease-in-out; position: fixed; z-index: 40;}
             #sidebar.open { transform: translateX(0); }
@@ -76,10 +59,8 @@
 </head>
 <body class="text-gray-800 h-screen flex overflow-hidden">
 
-    <!-- Mobile Overlay -->
     <div id="overlay" class="transition-opacity"></div>
 
-    <!-- Sidebar -->
     <aside id="sidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
         <div class="h-16 flex items-center px-6 border-b border-gray-200 bg-red-600 text-white">
             <span class="font-bold text-xl tracking-tight">Lakfa Foods</span>
@@ -101,10 +82,7 @@
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
     <div class="flex-1 flex flex-col h-full overflow-hidden">
-        
-        <!-- Top Navbar -->
         <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 shrink-0 z-10">
             <div class="flex items-center">
                 <button id="mobileMenuBtn" class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none mr-4">
@@ -119,21 +97,16 @@
             </div>
         </header>
 
-        <!-- Scrollable Content -->
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50 relative">
             
-            <!-- Global Loading State -->
             <div id="globalLoading" class="absolute inset-0 bg-gray-50 flex flex-col items-center justify-center z-20">
                 <div class="spinner mb-4"></div>
                 <p class="text-gray-500">Connecting to Lakfa Database...</p>
             </div>
 
-            <!-- ========================================== -->
-            <!-- TAB 1: DASHBOARD -->
-            <!-- ========================================== -->
+            <!-- DASHBOARD TAB -->
             <div id="tab-dashboard" class="tab-content active">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <!-- Stats Cards -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <div class="flex justify-between items-start">
                             <div>
@@ -162,24 +135,14 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Welcome to Lakfa Admin</h3>
-                    <p class="text-gray-500 text-sm">Dashboard metrics update automatically as you add orders and inventory.</p>
-                </div>
             </div>
 
-            <!-- ========================================== -->
-            <!-- TAB 2: ORDER MANAGEMENT -->
-            <!-- ========================================== -->
+            <!-- ORDERS TAB -->
             <div id="tab-orders" class="tab-content">
-                <!-- Action Bar -->
                 <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="relative w-full sm:w-96 flex">
-                        <div class="relative w-full flex-1">
-                            <input type="text" id="searchInput" placeholder="Search by name, phone or address..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm shadow-sm transition">
-                            <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
-                        </div>
+                        <input type="text" id="searchInput" placeholder="Search by name, phone or address..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm shadow-sm transition">
+                        <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
                     </div>
                     
                     <div class="flex flex-wrap gap-2 items-center w-full sm:w-auto">
@@ -199,15 +162,12 @@
                     </div>
                 </div>
 
-                <!-- Orders Table -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="overflow-x-auto min-h-[400px]">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left w-12">
-                                        <input type="checkbox" id="selectAllCheckbox" class="custom-checkbox">
-                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left w-12"><input type="checkbox" id="selectAllCheckbox" class="custom-checkbox"></th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Info</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipping Details</th>
@@ -215,27 +175,21 @@
                                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200 text-sm">
-                                <!-- Data will be injected here -->
-                            </tbody>
+                            <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
                         </table>
                         
-                        <!-- Empty State -->
                         <div id="emptyState" class="hidden flex-col items-center justify-center p-16 text-gray-500">
                             <i class="fa-solid fa-box-open text-4xl mb-3 text-gray-300"></i>
                             <p class="text-lg font-medium text-gray-600">No orders found</p>
                         </div>
                     </div>
-                    
                     <div class="p-3 border-t border-gray-200 bg-gray-50 text-xs text-gray-500 flex justify-between items-center">
                         <span id="recordCount">Total records: 0</span>
                     </div>
                 </div>
             </div>
 
-            <!-- ========================================== -->
-            <!-- TAB 3: INVENTORY & PRICING -->
-            <!-- ========================================== -->
+            <!-- INVENTORY TAB -->
             <div id="tab-inventory" class="tab-content">
                 <div class="mb-6 flex justify-between items-center">
                     <p class="text-gray-500 text-sm">Manage your products, prices, and available stock.</p>
@@ -244,9 +198,7 @@
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="inventoryGrid">
-                    <!-- Products will be injected here -->
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="inventoryGrid"></div>
                 
                 <div id="inventoryEmptyState" class="hidden flex-col items-center justify-center p-16 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">
                     <i class="fa-solid fa-boxes-packing text-4xl mb-3 text-gray-300"></i>
@@ -255,9 +207,7 @@
                 </div>
             </div>
 
-            <!-- ========================================== -->
-            <!-- TAB 4: SETTINGS -->
-            <!-- ========================================== -->
+            <!-- SETTINGS TAB -->
             <div id="tab-settings" class="tab-content max-w-3xl">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -300,46 +250,39 @@
         </main>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODALS -->
-    <!-- ========================================== -->
-
-    <!-- ORDER FORM MODAL -->
+    <!-- ORDER MODAL -->
     <div id="formModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden transition-opacity">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
                 <h2 id="modalTitle" class="text-xl font-bold text-gray-800">New WhatsApp Order</h2>
-                <button onclick="closeModal('formModal')" class="text-gray-400 hover:text-gray-600">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
+                <button onclick="closeModal('formModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
             <div class="p-6 overflow-y-auto flex-1 bg-white">
                 <form id="orderForm" class="space-y-5">
                     <input type="hidden" id="orderId">
-                    
                     <div class="bg-red-50 p-4 rounded-lg border border-red-100 mb-4">
                         <h4 class="text-sm font-bold text-red-800 mb-2"><i class="fa-brands fa-whatsapp mr-1"></i> Customer Details</h4>
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div class="sm:col-span-1">
                                 <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">1. Name</label>
-                                <input type="text" id="customerName" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none bg-white">
+                                <input type="text" id="customerName" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
                             </div>
                             <div class="sm:col-span-1">
                                 <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">2. Contact No.</label>
-                                <input type="text" id="contactNumber" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none bg-white">
+                                <input type="text" id="contactNumber" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">3. Full Address</label>
-                                <textarea id="fullAddress" rows="2" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none bg-white"></textarea>
+                                <textarea id="fullAddress" rows="2" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></textarea>
                             </div>
                             <div class="sm:col-span-1">
                                 <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Pincode</label>
-                                <input type="text" id="pincode" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none bg-white">
+                                <input type="text" id="pincode" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
                             </div>
                             <div class="sm:col-span-1">
                                 <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">4. Google Map Link</label>
-                                <input type="url" id="locationLink" class="w-full rounded border-gray-300 border px-3 py-2 text-sm focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none bg-white">
+                                <input type="url" id="locationLink" class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
                             </div>
                         </div>
                     </div>
@@ -351,28 +294,21 @@
                                 + Add Product
                             </button>
                         </div>
-                        
-                        <!-- Dynamic Order Items List -->
-                        <div id="orderItemsContainer" class="space-y-2">
-                            <!-- Rows injected via JS -->
-                        </div>
-                        
-                        <!-- Manual Text Fallback (For unlisted items) -->
+                        <div id="orderItemsContainer" class="space-y-2"></div>
                         <div class="mt-4 pt-4 border-t border-gray-100">
                             <label class="block text-xs font-medium text-gray-500 mb-1">Additional Notes / Custom Items (Optional)</label>
-                            <textarea id="itemsOrderedText" rows="1" class="w-full rounded border-gray-300 border px-3 py-1.5 text-sm focus:border-gray-400 outline-none bg-gray-50"></textarea>
+                            <textarea id="itemsOrderedText" rows="1" class="w-full rounded border-gray-300 border px-3 py-1.5 text-sm outline-none bg-gray-50"></textarea>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-1">Order Status</label>
-                        <select id="orderStatus" class="w-full rounded border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none bg-white font-medium">
+                        <select id="orderStatus" class="w-full rounded border-gray-300 border px-3 py-2 outline-none bg-white font-medium">
                             <option value="Pending" class="text-yellow-600">Pending</option>
                             <option value="Processing" class="text-blue-600">Processing</option>
                             <option value="Shipped" class="text-purple-600">Shipped</option>
                             <option value="Delivered" class="text-green-600">Delivered</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-circle-info mr-1"></i> Stock is deducted automatically when order is saved.</p>
                     </div>
                 </form>
             </div>
@@ -386,28 +322,28 @@
         </div>
     </div>
 
-    <!-- PRODUCT INVENTORY MODAL -->
+    <!-- PRODUCT MODAL -->
     <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                 <h2 id="productModalTitle" class="font-bold text-gray-800">Add Product</h2>
-                <button onclick="closeModal('productModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="closeModal('productModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5">
                 <form id="productForm" class="space-y-4">
                     <input type="hidden" id="prodId">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                        <input type="text" id="prodName" placeholder="e.g. Tuna Pickle 350g" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm focus:border-gray-500 outline-none">
+                        <input type="text" id="prodName" placeholder="e.g. Tuna Pickle 350g" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-                            <input type="number" step="0.01" id="prodPrice" min="0" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm focus:border-gray-500 outline-none">
+                            <input type="number" step="0.01" id="prodPrice" min="0" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Current Stock</label>
-                            <input type="number" id="prodStock" min="0" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm focus:border-gray-500 outline-none">
+                            <input type="number" id="prodStock" min="0" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none">
                         </div>
                     </div>
                     <div>
@@ -426,18 +362,16 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- TOAST -->
     <div id="toast" class="toast fixed top-5 right-5 bg-gray-800 text-white px-5 py-3 rounded-lg shadow-lg flex items-center z-[100]">
         <i id="toastIcon" class="fa-solid fa-circle-info mr-3 text-lg"></i>
         <span id="toastMsg" class="font-medium text-sm">Message</span>
     </div>
 
-    <!-- Application Logic (Firebase & App) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Firebase Configuration (YOUR CONFIG)
         const firebaseConfig = {
             apiKey: "AIzaSyCQjO9TcXCve9gI0ysdzCO1thV8SBTFjcc",
             authDomain: "lakfa-3bfb1.firebaseapp.com",
@@ -448,69 +382,30 @@
             measurementId: "G-EB9GVF5L3Z"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // State variables
-        let ordersData = []; 
-        let productsData = [];
-        let selectedOrderIds = [];
-        let searchQuery = '';
-        let activeDropdownId = null;
+        let ordersData = []; let productsData = []; let selectedOrderIds = []; let searchQuery = ''; let activeDropdownId = null;
+        let companySettings = { name: "Lakfa Foods", addr1: "Sp. Godown, Rottipeedika", addr2: "Pullisherikund, PO, Pallikal", statePin: "Kerala 673634", phone: "079073 45458" };
 
-        // Default Company Settings
-        let companySettings = {
-            name: "Lakfa Foods",
-            addr1: "Sp. Godown, Rottipeedika",
-            addr2: "Pullisherikund, PO, Pallikal",
-            statePin: "Kerala 673634",
-            phone: "079073 45458"
-        };
-
-        // DOM Elements
         const globalLoading = document.getElementById('globalLoading');
         const ordersTableBody = document.getElementById('ordersTableBody');
         const emptyState = document.getElementById('emptyState');
-        const searchInput = document.getElementById('searchInput');
         const inventoryGrid = document.getElementById('inventoryGrid');
         
-        // Expose functions to window for onclick handlers in HTML
-        window.switchTab = switchTab;
-        window.closeModal = closeModal;
-        window.openModal = openModal;
-        window.addOrderItemRow = addOrderItemRow;
-        window.removeOrderItemRow = removeOrderItemRow;
-
-        // ==========================================
-        // UI & Tab Management
-        // ==========================================
-        function switchTab(tabId) {
-            // Update Menu styling
+        window.switchTab = (tabId) => {
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`nav-${tabId}`).classList.add('active');
-            
-            // Show Content
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            
-            // Set Titles
             const titles = { 'dashboard': 'Dashboard Overview', 'orders': 'Order Management', 'inventory': 'Inventory & Pricing', 'settings': 'Application Settings' };
             document.getElementById('pageTitle').textContent = titles[tabId];
-
-            // Close mobile menu if open
             document.getElementById('sidebar').classList.remove('open');
             document.getElementById('overlay').classList.remove('open');
-        }
+        };
 
-        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.add('open');
-            document.getElementById('overlay').classList.add('open');
-        });
-        document.getElementById('overlay').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.remove('open');
-            document.getElementById('overlay').classList.remove('open');
-        });
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); });
+        document.getElementById('overlay').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); });
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -518,48 +413,35 @@
             toast.style.backgroundColor = type === 'error' ? '#ef4444' : '#10b981';
             document.getElementById('toastIcon').className = type === 'error' ? 'fa-solid fa-triangle-exclamation mr-3 text-lg' : 'fa-solid fa-check-circle mr-3 text-lg';
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+        window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
 
-        // ==========================================
-        // Initialization & Realtime Sync
-        // ==========================================
         function initApp() {
-            // Load Settings from LocalStorage temporarily
             const savedSettings = localStorage.getItem('lakfaSettings');
-            if(savedSettings) {
-                companySettings = JSON.parse(savedSettings);
-                populateSettingsForm();
-            }
+            if(savedSettings) { companySettings = JSON.parse(savedSettings); populateSettingsForm(); }
 
-            // Sync Products
             onSnapshot(collection(db, 'products'), (snapshot) => {
                 productsData = [];
                 snapshot.forEach(doc => productsData.push({ id: doc.id, ...doc.data() }));
-                renderInventory();
-                updateDashboardStats();
+                renderInventory(); updateDashboardStats();
                 if(ordersData.length >= 0) globalLoading.style.display = 'none';
-            });
+            }, (error) => { showToast("Product Sync Error: " + error.message, "error"); });
 
-            // Sync Orders
             const q = query(collection(db, 'orders'), orderBy("createdAt", "desc"));
             onSnapshot(q, (snapshot) => {
                 ordersData = [];
                 snapshot.forEach(doc => ordersData.push({ id: doc.id, ...doc.data() }));
-                renderOrdersTable();
-                updateDashboardStats();
+                renderOrdersTable(); updateDashboardStats();
                 globalLoading.style.display = 'none';
             }, (error) => {
-                // Fallback without sort if index is missing
                 console.warn("Index missing, sorting locally");
                 onSnapshot(collection(db, 'orders'), snap => {
                     ordersData = [];
                     snap.forEach(doc => ordersData.push({ id: doc.id, ...doc.data() }));
-                    renderOrdersTable();
-                    globalLoading.style.display = 'none';
+                    renderOrdersTable(); globalLoading.style.display = 'none';
                 });
             });
         }
@@ -570,9 +452,7 @@
             document.getElementById('stat-low-stock').textContent = productsData.filter(p => Number(p.stock) <= 5).length;
         }
 
-        // ==========================================
-        // Product / Inventory Logic
-        // ==========================================
+        // --- PRODUCT LOGIC ---
         document.getElementById('addProductBtn').addEventListener('click', () => {
             document.getElementById('productForm').reset();
             document.getElementById('prodId').value = '';
@@ -584,11 +464,13 @@
             e.preventDefault();
             const id = document.getElementById('prodId').value;
             
-            // Using parseFloat and parseInt to ensure clean numerical data
+            const pPrice = parseFloat(document.getElementById('prodPrice').value);
+            const pStock = parseInt(document.getElementById('prodStock').value);
+
             const data = {
                 name: document.getElementById('prodName').value.trim(),
-                price: parseFloat(document.getElementById('prodPrice').value),
-                stock: parseInt(document.getElementById('prodStock').value),
+                price: isNaN(pPrice) ? 0 : pPrice,
+                stock: isNaN(pStock) ? 0 : pStock,
                 unit: document.getElementById('prodUnit').value,
                 updatedAt: serverTimestamp()
             };
@@ -606,9 +488,10 @@
                     showToast("New product added to inventory");
                 }
                 closeModal('productModal');
+                document.getElementById('productForm').reset();
             } catch (err) {
-                console.error("Error saving product: ", err);
-                showToast("Error saving product. Check rules/connection.", "error");
+                console.error("Save error: ", err);
+                showToast("Error: " + err.message, "error");
             } finally {
                 btn.innerHTML = 'Save Product';
                 btn.disabled = false;
@@ -629,10 +512,8 @@
 
         window.deleteProduct = async (id) => {
             if(confirm("Delete this product from inventory?")) {
-                try {
-                    await deleteDoc(doc(db, 'products', id));
-                    showToast("Product deleted");
-                } catch(e) { showToast("Error deleting product", "error"); }
+                try { await deleteDoc(doc(db, 'products', id)); showToast("Product deleted"); } 
+                catch(e) { showToast("Delete error: " + e.message, "error"); }
             }
         };
 
@@ -642,13 +523,12 @@
                 document.getElementById('inventoryEmptyState').style.display = 'flex';
                 return;
             }
-            
             inventoryGrid.style.display = 'grid';
             document.getElementById('inventoryEmptyState').style.display = 'none';
             inventoryGrid.innerHTML = '';
 
             productsData.forEach(p => {
-                const isLow = p.stock <= 5;
+                const isLow = Number(p.stock) <= 5;
                 const div = document.createElement('div');
                 div.className = `bg-white rounded-lg border p-4 shadow-sm relative ${isLow ? 'border-red-300' : 'border-gray-200'}`;
                 div.innerHTML = `
@@ -676,42 +556,24 @@
             });
         }
 
-        // ==========================================
-        // Dynamic Order Items Logic (For Forms)
-        // ==========================================
-        function addOrderItemRow(prodId = '', qty = 1) {
+        window.addOrderItemRow = (prodId = '', qty = 1) => {
             const container = document.getElementById('orderItemsContainer');
-            if(productsData.length === 0) {
-                showToast("Please add products to inventory first", "error");
-                switchTab('inventory');
-                return;
-            }
+            if(productsData.length === 0) { showToast("Add products to inventory first", "error"); switchTab('inventory'); return; }
 
             const row = document.createElement('div');
             row.className = 'flex items-center space-x-2 mb-2 order-item-row';
-            
             let optionsHTML = '<option value="">Select Product...</option>';
-            productsData.forEach(p => {
-                optionsHTML += `<option value="${p.id}" data-price="${p.price}" data-name="${p.name}" ${p.id === prodId ? 'selected' : ''}>${p.name} (₹${p.price})</option>`;
-            });
+            productsData.forEach(p => { optionsHTML += `<option value="${p.id}" data-price="${p.price}" data-name="${p.name}" ${p.id === prodId ? 'selected' : ''}>${p.name} (₹${p.price})</option>`; });
 
             row.innerHTML = `
-                <select class="flex-1 rounded border-gray-300 border px-2 py-1.5 text-sm outline-none bg-gray-50 item-select" required>
-                    ${optionsHTML}
-                </select>
+                <select class="flex-1 rounded border-gray-300 border px-2 py-1.5 text-sm outline-none bg-gray-50 item-select" required>${optionsHTML}</select>
                 <input type="number" min="1" value="${qty}" class="w-20 rounded border-gray-300 border px-2 py-1.5 text-sm outline-none bg-gray-50 item-qty" placeholder="Qty" required>
-                <button type="button" onclick="removeOrderItemRow(this)" class="text-red-500 hover:text-red-700 p-1.5"><i class="fa-solid fa-minus-circle"></i></button>
+                <button type="button" onclick="this.closest('.order-item-row').remove()" class="text-red-500 hover:text-red-700 p-1.5"><i class="fa-solid fa-minus-circle"></i></button>
             `;
             container.appendChild(row);
-        }
+        };
 
-        function removeOrderItemRow(btn) {
-            btn.closest('.order-item-row').remove();
-        }
-
-        // ==========================================
-        // Order Management Logic
-        // ==========================================
+        // --- ORDER LOGIC ---
         function formatDate(timestamp) {
             if(!timestamp) return 'Just now';
             const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -722,12 +584,12 @@
             document.getElementById('orderForm').reset();
             document.getElementById('orderId').value = '';
             document.getElementById('orderItemsContainer').innerHTML = '';
-            addOrderItemRow(); 
+            window.addOrderItemRow(); 
             document.getElementById('modalTitle').textContent = 'New WhatsApp Order';
             openModal('formModal');
         });
 
-        document.getElementById('saveOrderBtn').addEventListener('click', async (e) => {
+        document.getElementById('saveOrderBtn').addEventListener('click', async () => {
             const form = document.getElementById('orderForm');
             if (!form.checkValidity()) { form.reportValidity(); return; }
 
@@ -735,9 +597,7 @@
             const status = document.getElementById('orderStatus').value;
             const isNew = !orderId;
             
-            const parsedItems = [];
-            let displayItemsText = '';
-            
+            const parsedItems = []; let displayItemsText = '';
             document.querySelectorAll('.order-item-row').forEach(row => {
                 const select = row.querySelector('.item-select');
                 const qty = parseInt(row.querySelector('.item-qty').value);
@@ -757,54 +617,37 @@
                 address: document.getElementById('fullAddress').value.trim(),
                 pincode: document.getElementById('pincode').value.trim(),
                 location: document.getElementById('locationLink').value.trim(),
-                status: status,
-                structuredItems: parsedItems,
-                itemsDisplay: displayItemsText,
-                manualNotes: manualNotes,
+                status: status, structuredItems: parsedItems, itemsDisplay: displayItemsText, manualNotes: manualNotes,
                 updatedAt: serverTimestamp()
             };
 
             const btn = document.getElementById('saveOrderBtn');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Processing...';
-            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Processing...'; btn.disabled = true;
 
             try {
                 const batch = writeBatch(db);
-                
                 if (isNew) {
                     const newOrderRef = doc(collection(db, 'orders'));
                     orderData.createdAt = serverTimestamp();
                     batch.set(newOrderRef, orderData);
-
                     parsedItems.forEach(item => {
                         const pRef = doc(db, 'products', item.id);
                         const product = productsData.find(p => p.id === item.id);
-                        if(product) {
-                            const newStock = Math.max(0, product.stock - item.qty);
-                            batch.update(pRef, { stock: newStock });
-                        }
+                        if(product) { batch.update(pRef, { stock: Math.max(0, product.stock - item.qty) }); }
                     });
                 } else {
-                    const orderRef = doc(db, 'orders', orderId);
-                    batch.update(orderRef, orderData);
+                    batch.update(doc(db, 'orders', orderId), orderData);
                 }
-
                 await batch.commit();
                 showToast(isNew ? "Order Saved & Stock Deducted!" : "Order Updated");
                 closeModal('formModal');
-            } catch (err) {
-                console.error(err);
-                showToast("Error saving order", "error");
-            } finally {
-                btn.innerHTML = 'Save Order & Update Stock';
-                btn.disabled = false;
-            }
+            } catch (err) { showToast("Order error: " + err.message, "error"); } 
+            finally { btn.innerHTML = 'Save Order & Update Stock'; btn.disabled = false; }
         });
 
         window.editOrder = (id) => {
             const order = ordersData.find(o => o.id === id);
             if(!order) return;
-            
             document.getElementById('orderId').value = order.id;
             document.getElementById('customerName').value = order.name || '';
             document.getElementById('contactNumber').value = order.phone || '';
@@ -814,17 +657,13 @@
             document.getElementById('orderStatus').value = order.status || 'Pending';
             document.getElementById('itemsOrderedText').value = order.manualNotes || '';
             
-            const container = document.getElementById('orderItemsContainer');
-            container.innerHTML = '';
-            if(order.structuredItems && order.structuredItems.length > 0) {
-                order.structuredItems.forEach(item => addOrderItemRow(item.id, item.qty));
-            } else {
-                document.getElementById('itemsOrderedText').value = order.itemsDisplay || order.items || '';
-            }
+            const container = document.getElementById('orderItemsContainer'); container.innerHTML = '';
+            if(order.structuredItems && order.structuredItems.length > 0) order.structuredItems.forEach(item => addOrderItemRow(item.id, item.qty));
+            else document.getElementById('itemsOrderedText').value = order.itemsDisplay || order.items || '';
 
             document.getElementById('modalTitle').textContent = 'Edit Order';
             openModal('formModal');
-            if(activeDropdownId) toggleDropdown(activeDropdownId);
+            if(activeDropdownId) toggleDropdown(activeDropdownId, new Event('click'));
         };
 
         window.deleteOrder = async (id) => {
@@ -832,44 +671,27 @@
                 try {
                     await deleteDoc(doc(db, 'orders', id));
                     selectedOrderIds = selectedOrderIds.filter(selId => selId !== id);
-                    updateBulkPanel();
-                    showToast("Order deleted", "error");
-                } catch(e) { showToast("Error deleting", "error"); }
+                    updateBulkPanel(); showToast("Order deleted", "error");
+                } catch(e) { showToast("Delete error: " + e.message, "error"); }
             }
         };
 
         function renderOrdersTable() {
             const searchLower = searchQuery.toLowerCase();
-            const filtered = ordersData.filter(o => 
-                (o.name && o.name.toLowerCase().includes(searchLower)) ||
-                (o.phone && o.phone.includes(searchLower))
-            );
+            const filtered = ordersData.filter(o => (o.name && o.name.toLowerCase().includes(searchLower)) || (o.phone && o.phone.includes(searchLower)));
 
             ordersTableBody.innerHTML = '';
             document.getElementById('recordCount').textContent = `Total records: ${filtered.length}`;
+            document.getElementById('selectAllCheckbox').checked = (filtered.length > 0 && selectedOrderIds.length === filtered.length);
 
-            const selectAll = document.getElementById('selectAllCheckbox');
-            selectAll.checked = (filtered.length > 0 && selectedOrderIds.length === filtered.length);
-
-            if (filtered.length === 0) {
-                emptyState.style.display = 'flex';
-                ordersTableBody.parentElement.style.display = 'none';
-            } else {
-                emptyState.style.display = 'none';
-                ordersTableBody.parentElement.style.display = 'table';
-                
+            if (filtered.length === 0) { emptyState.style.display = 'flex'; ordersTableBody.parentElement.style.display = 'none'; } 
+            else {
+                emptyState.style.display = 'none'; ordersTableBody.parentElement.style.display = 'table';
                 filtered.forEach(order => {
                     const isChecked = selectedOrderIds.includes(order.id);
                     const tr = document.createElement('tr');
                     tr.className = `hover:bg-gray-50 transition-colors ${isChecked ? 'bg-red-50' : ''}`;
-                    
-                    const statusColors = {
-                        'Pending': 'bg-yellow-100 text-yellow-800',
-                        'Processing': 'bg-blue-100 text-blue-800',
-                        'Shipped': 'bg-purple-100 text-purple-800',
-                        'Delivered': 'bg-green-100 text-green-800'
-                    };
-                    const sc = statusColors[order.status] || 'bg-gray-100 text-gray-800';
+                    const sc = { 'Pending': 'bg-yellow-100 text-yellow-800', 'Processing': 'bg-blue-100 text-blue-800', 'Shipped': 'bg-purple-100 text-purple-800', 'Delivered': 'bg-green-100 text-green-800' }[order.status] || 'bg-gray-100 text-gray-800';
                     
                     tr.innerHTML = `
                         <td class="px-6 py-4"><input type="checkbox" class="custom-checkbox row-cb" data-id="${order.id}" ${isChecked ? 'checked' : ''}></td>
@@ -882,12 +704,9 @@
                             <div class="text-sm text-gray-700 line-clamp-2 max-w-xs">${order.address}</div>
                             <div class="text-xs font-bold text-gray-800 mt-1">PIN: ${order.pincode}</div>
                         </td>
-                        <td class="px-6 py-4 align-top text-center whitespace-nowrap">
-                            <span class="px-2.5 py-1 text-xs font-bold rounded-md border ${sc.replace('bg-', 'border-').replace('100', '200')} ${sc}">${order.status}</span>
-                        </td>
+                        <td class="px-6 py-4 align-top text-center whitespace-nowrap"><span class="px-2.5 py-1 text-xs font-bold rounded-md border ${sc.replace('bg-', 'border-').replace('100', '200')} ${sc}">${order.status}</span></td>
                         <td class="px-6 py-4 align-top text-right relative whitespace-nowrap">
                             <div class="flex items-center justify-end space-x-1">
-                                <button class="text-gray-400 hover:text-green-600 p-1.5 rounded" title="Copy for WhatsApp" onclick="copyToWA('${order.id}')"><i class="fa-brands fa-whatsapp text-lg"></i></button>
                                 <button class="text-gray-400 hover:text-gray-800 p-1.5 rounded print-single" data-id="${order.id}"><i class="fa-solid fa-print text-lg"></i></button>
                                 <div class="relative">
                                     <button class="menu-btn text-gray-400 hover:text-gray-800 p-1.5" onclick="toggleDropdown('${order.id}', event)"><i class="fa-solid fa-ellipsis-vertical text-lg px-2"></i></button>
@@ -899,178 +718,97 @@
                             </div>
                         </td>
                     `;
-                    
                     tr.querySelector('.row-cb').addEventListener('change', (e) => {
-                        if(e.target.checked) selectedOrderIds.push(order.id);
-                        else selectedOrderIds = selectedOrderIds.filter(id => id !== order.id);
+                        if(e.target.checked) selectedOrderIds.push(order.id); else selectedOrderIds = selectedOrderIds.filter(id => id !== order.id);
                         updateBulkPanel(); renderOrdersTable();
                     });
                     tr.querySelector('.print-single').addEventListener('click', () => generatePDF([order]));
-                    
                     ordersTableBody.appendChild(tr);
                 });
             }
         }
 
-        // ==========================================
-        // Helper Functions & Actions
-        // ==========================================
         document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; renderOrdersTable(); });
-        
         document.getElementById('selectAllCheckbox').addEventListener('change', e => {
             const searchLower = searchQuery.toLowerCase();
             const filtered = ordersData.filter(o => (o.name && o.name.toLowerCase().includes(searchLower)) || (o.phone && o.phone.includes(searchLower)));
-            if(e.target.checked) selectedOrderIds = filtered.map(o => o.id);
-            else selectedOrderIds = [];
+            selectedOrderIds = e.target.checked ? filtered.map(o => o.id) : [];
             updateBulkPanel(); renderOrdersTable();
         });
 
         function updateBulkPanel() {
             const panel = document.getElementById('bulkActionPanel');
-            if (selectedOrderIds.length > 0) {
-                panel.classList.remove('hidden');
-                document.getElementById('selectedCountText').textContent = `${selectedOrderIds.length} selected`;
-            } else { panel.classList.add('hidden'); }
+            if (selectedOrderIds.length > 0) { panel.classList.remove('hidden'); document.getElementById('selectedCountText').textContent = `${selectedOrderIds.length} selected`; } 
+            else { panel.classList.add('hidden'); }
         }
 
         window.toggleDropdown = (id, event) => {
             event.stopPropagation();
-            if(activeDropdownId && activeDropdownId !== id) {
-                const ex = document.getElementById(`dd-${activeDropdownId}`);
-                if(ex) ex.classList.remove('show');
-            }
+            if(activeDropdownId && activeDropdownId !== id) { const ex = document.getElementById(`dd-${activeDropdownId}`); if(ex) ex.classList.remove('show'); }
             const dd = document.getElementById(`dd-${id}`);
             if(dd) { dd.classList.toggle('show'); activeDropdownId = dd.classList.contains('show') ? id : null; }
         };
 
-        document.addEventListener('click', () => {
-            if(activeDropdownId) {
-                const dd = document.getElementById(`dd-${activeDropdownId}`);
-                if(dd) dd.classList.remove('show');
-                activeDropdownId = null;
-            }
-        });
+        document.addEventListener('click', () => { if(activeDropdownId) { const dd = document.getElementById(`dd-${activeDropdownId}`); if(dd) dd.classList.remove('show'); activeDropdownId = null; } });
 
-        window.copyToWA = (id) => {
-            const o = ordersData.find(x => x.id === id);
-            if(!o) return;
-            const text = `*New Order - Lakfa Foods*\n\n*Name:* ${o.name}\n*Phone:* ${o.phone}\n*Address:* ${o.address}\n*PIN:* ${o.pincode}\n*Items:* ${o.itemsDisplay || o.items}\n\nThank you!`;
-            navigator.clipboard.writeText(text).then(() => showToast("Copied for WhatsApp!"));
-        };
-
-        // ==========================================
-        // Export CSV
-        // ==========================================
-        document.getElementById('exportCsvBtn').addEventListener('click', () => {
-            if(ordersData.length === 0) { showToast("No orders to export", "error"); return; }
-            
-            const headers = ["Date", "Name", "Phone", "Address", "Pincode", "Location", "Items", "Status"];
-            const rows = ordersData.map(order => [
-                formatDate(order.createdAt).replace('<br><span class="text-[10px] text-gray-400">', ' ').replace('</span>', ''),
-                `"${order.name}"`, `"${order.phone}"`, `"${order.address}"`, `"${order.pincode}"`, `"${order.location}"`, `"${order.itemsDisplay}"`, order.status
-            ]);
-            
-            let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(r => r.join(",")).join("\n");
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "lakfa_orders.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-
-        // ==========================================
-        // Settings Logic
-        // ==========================================
-        function populateSettingsForm() {
-            document.getElementById('settingCompanyName').value = companySettings.name;
-            document.getElementById('settingAddress1').value = companySettings.addr1;
-            document.getElementById('settingAddress2').value = companySettings.addr2;
-            document.getElementById('settingStatePin').value = companySettings.statePin;
-            document.getElementById('settingPhone').value = companySettings.phone;
-        }
-
-        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-            companySettings = {
-                name: document.getElementById('settingCompanyName').value,
-                addr1: document.getElementById('settingAddress1').value,
-                addr2: document.getElementById('settingAddress2').value,
-                statePin: document.getElementById('settingStatePin').value,
-                phone: document.getElementById('settingPhone').value
-            };
-            localStorage.setItem('lakfaSettings', JSON.stringify(companySettings));
-            showToast("Company details updated");
-        });
-
-        // ==========================================
-        // Print PDF Logic (A4 - 4 quadrants)
-        // ==========================================
+        // --- PRINTING ---
         function generatePDF(ordersList) {
             if (!window.jspdf) { showToast("PDF Library loading...", "error"); return; }
-            
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const w = 210, h = 297; // A4 mm
-            
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            const w = 210, h = 297; 
             const drawGuides = () => {
-                doc.setDrawColor(200); doc.setLineDashPattern([2, 2], 0);
+                doc.setDrawColor(200); doc.setLineDashPattern([1, 1.5], 0);
                 doc.line(w/2, 0, w/2, h); doc.line(0, h/2, w, h/2);
                 doc.setLineDashPattern([], 0);
             };
 
             drawGuides();
-
             ordersList.forEach((order, i) => {
                 if (i > 0 && i % 4 === 0) { doc.addPage(); drawGuides(); }
+                const col = i % 2, row = Math.floor((i % 4) / 2);
+                const startX = (col * (w/2)) + 5, startY = (row * (h/2)) + 5; 
+                const boxW = (w/2) - 10, boxH = (h/2) - 10;
                 
-                const col = i % 2; // 0 left, 1 right
-                const row = Math.floor((i % 4) / 2); // 0 top, 1 bottom
-                
-                const startX = (col * (w/2)) + 10; 
-                const startY = (row * (h/2)) + 15; 
-                const boxW = (w/2) - 20;
-                
-                doc.setLineWidth(0.5); doc.setDrawColor(150);
-                doc.rect(startX - 2, startY - 8, boxW + 4, (h/2) - 15);
+                doc.setLineWidth(0.3); doc.setDrawColor(150);
+                doc.rect(startX, startY, boxW, boxH);
 
-                doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text("From:", startX, startY);
-                doc.setFontSize(14); doc.text(companySettings.name, startX, startY + 6);
+                doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text("From:", startX + 5, startY + 8);
+                doc.setFontSize(12); doc.text(companySettings.name, startX + 5, startY + 14);
                 doc.setFontSize(9); doc.setFont("helvetica", "normal");
-                doc.text(`${companySettings.addr1}\n${companySettings.addr2}\n${companySettings.statePin}\nPh: ${companySettings.phone}`, startX, startY + 11);
+                doc.text(`${companySettings.addr1}\n${companySettings.addr2}\n${companySettings.statePin}`, startX + 5, startY + 19);
 
-                doc.setDrawColor(200); doc.line(startX, startY + 28, startX + boxW, startY + 28); 
+                doc.setDrawColor(200); doc.line(startX + 5, startY + 32, startX + boxW - 5, startY + 32); 
 
-                let currentY = startY + 36;
-                doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.text("To:", startX, currentY);
+                let currentY = startY + 40;
+                doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("To:", startX + 5, currentY);
                 currentY += 8;
-                doc.setFontSize(18); doc.text(order.name, startX, currentY); 
+                doc.setFontSize(18); doc.text(order.name, startX + 5, currentY); 
                 
                 currentY += 8;
-                doc.setFont("helvetica", "normal"); doc.setFontSize(12);
+                doc.setFont("helvetica", "normal"); doc.setFontSize(13);
                 let addrStr = order.address || "";
                 if(addrStr.endsWith(',')) addrStr = addrStr.slice(0, -1);
+                const splitAddr = doc.splitTextToSize(`${addrStr} - PIN: ${order.pincode || ""}`, boxW - 10);
+                doc.text(splitAddr, startX + 5, currentY);
                 
-                const fullAddr = `${addrStr} - PIN: ${order.pincode || ""}`;
-                const splitAddr = doc.splitTextToSize(fullAddr, boxW);
-                doc.text(splitAddr, startX, currentY);
-                
-                currentY += (splitAddr.length * 6) + 6;
-                
-                doc.setFont("helvetica", "bold"); doc.setFontSize(14);
-                doc.text(`Phone: ${order.phone || ""}`, startX, currentY);
+                currentY += (splitAddr.length * 6) + 8;
+                doc.setFont("helvetica", "bold"); doc.setFontSize(15);
+                doc.text(`Ph: ${order.phone || ""}`, startX + 5, currentY);
             });
 
             doc.save("Lakfa_Shipping_Labels.pdf");
             if(ordersList.length > 1) { selectedOrderIds = []; updateBulkPanel(); renderOrdersTable(); }
         }
 
-        document.getElementById('bulkPrintBtn').addEventListener('click', () => {
-            const list = ordersData.filter(o => selectedOrderIds.includes(o.id));
-            if(list.length > 0) generatePDF(list);
+        document.getElementById('bulkPrintBtn').addEventListener('click', () => { const list = ordersData.filter(o => selectedOrderIds.includes(o.id)); if(list.length > 0) generatePDF(list); });
+
+        // --- SETTINGS ---
+        function populateSettingsForm() { document.getElementById('settingCompanyName').value = companySettings.name; document.getElementById('settingAddress1').value = companySettings.addr1; document.getElementById('settingAddress2').value = companySettings.addr2; document.getElementById('settingStatePin').value = companySettings.statePin; document.getElementById('settingPhone').value = companySettings.phone; }
+        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+            companySettings = { name: document.getElementById('settingCompanyName').value, addr1: document.getElementById('settingAddress1').value, addr2: document.getElementById('settingAddress2').value, statePin: document.getElementById('settingStatePin').value, phone: document.getElementById('settingPhone').value };
+            localStorage.setItem('lakfaSettings', JSON.stringify(companySettings)); showToast("Settings saved!");
         });
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
