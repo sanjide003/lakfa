@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lakfa Foods - Order Management</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #ef4444; /* Red color for Lakfa */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .toast {
+            transition: all 0.3s ease-in-out;
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Dropdown Menu Styles */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 120px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.375rem;
+            z-index: 50;
+            border: 1px solid #e5e7eb;
+        }
+        .dropdown-menu.show { display: block; }
+        
+        /* Checkbox Customization */
+        .custom-checkbox {
+            accent-color: #ef4444;
+            width: 1.1rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-red-600 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-2xl tracking-tight">Lakfa Foods</span>
+                    <span class="ml-2 text-sm font-normal opacity-80 hidden sm:inline">Order Manager</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button id="exportCsvBtn" class="bg-red-700 hover:bg-red-800 px-3 py-2 rounded-md text-sm flex items-center shadow-sm transition">
+                        <i class="fa-solid fa-file-excel mr-2"></i> Export Data
+                    </button>
+                    <button id="addNewBtn" class="bg-white text-red-600 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-bold flex items-center shadow-sm transition">
+                        <i class="fa-solid fa-plus mr-1"></i> New Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Action Bar: Search & Bulk Print -->
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="relative w-full sm:w-96">
+                <input type="text" id="searchInput" placeholder="Search by name, phone or address..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm shadow-sm transition">
+                <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+            
+            <div id="bulkActionPanel" class="hidden flex items-center space-x-3 bg-red-50 px-4 py-2 rounded-lg border border-red-100 transition-all">
+                <span id="selectedCountText" class="text-red-700 font-medium text-sm">0 selected</span>
+                <button id="bulkPrintBtn" class="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 shadow-sm transition">
+                    <i class="fa-solid fa-print mr-2"></i> Print Selected
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto min-h-[400px]">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left w-12">
+                                <input type="checkbox" id="selectAllCheckbox" class="custom-checkbox">
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Info</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shipping Details</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200 text-sm">
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
+                
+                <!-- Loading State -->
+                <div id="loadingState" class="flex flex-col items-center justify-center p-16 text-gray-500">
+                    <div class="spinner mb-4"></div>
+                    <p>Loading orders from database...</p>
+                </div>
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden flex flex-col items-center justify-center p-16 text-gray-500">
+                    <i class="fa-solid fa-box-open text-4xl mb-3 text-gray-300"></i>
+                    <p class="text-lg font-medium text-gray-600">No orders found</p>
+                </div>
+            </div>
+            
+            <div class="p-3 border-t border-gray-200 bg-gray-50 text-xs text-gray-500 flex justify-between items-center">
+                <span id="recordCount">Total records: 0</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Form (Hidden by default) -->
+    <div id="formModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden transition-opacity">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h2 id="modalTitle" class="text-xl font-bold text-gray-800">Add New Order</h2>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body (Form) -->
+            <div class="p-6 overflow-y-auto flex-1">
+                <form id="orderForm" class="space-y-4">
+                    <input type="hidden" id="orderId">
+                    
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">1. Name (പേര്)</label>
+                            <input type="text" id="customerName" required class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="Customer Name">
+                        </div>
+                        
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">2. Contact Number (ഫോൺ)</label>
+                            <input type="tel" id="contactNumber" required class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="Phone Number">
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">3. Full Address (വിലാസം)</label>
+                            <textarea id="fullAddress" rows="3" required class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="House No, Street, City, State"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pincode (പിൻകോഡ്)</label>
+                            <input type="text" id="pincode" required class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="PIN">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select id="orderStatus" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none bg-white">
+                                <option value="Pending">Pending (പെൻഡിങ്)</option>
+                                <option value="Processing">Processing (പ്രോസസ്സിംഗ്)</option>
+                                <option value="Shipped">Shipped (അയച്ചു)</option>
+                                <option value="Delivered">Delivered (ലഭിച്ചു)</option>
+                            </select>
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">4. Location Link (നിർബന്ധമില്ല)</label>
+                            <input type="url" id="locationLink" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="https://maps.google.com/...">
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Items (ഓർഡർ ചെയ്ത സാധനങ്ങൾ)</label>
+                            <textarea id="itemsOrdered" rows="2" required class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="e.g. 2kg Tuna Pickle"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+                <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                    Cancel
+                </button>
+                <button type="button" id="saveBtn" class="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition flex items-center">
+                    <span id="saveBtnText">Save Order</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-xl text-red-600"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Delete Order?</h3>
+            <p class="text-sm text-gray-500 mb-6">Are you sure you want to delete this order? This action cannot be undone.</p>
+            <div class="flex justify-center gap-3">
+                <button id="cancelDelBtn" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 font-medium w-full">Cancel</button>
+                <button id="confirmDelBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium w-full shadow">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast fixed top-5 right-5 bg-green-600 text-white px-5 py-3 rounded-lg shadow-lg flex items-center z-[70]">
+        <i id="toastIcon" class="fa-solid fa-check-circle mr-3 text-lg"></i>
+        <span id="toastMsg" class="font-medium text-sm">Message</span>
+    </div>
+
+    <!-- Application Logic -->
+    <script type="module">
+        // Import Firebase SDKs from CDN
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ==========================================
+        // YOUR FIREBASE CONFIGURATION HERE
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQjO9TcXCve9gI0ysdzCO1thV8SBTFjcc",
+            authDomain: "lakfa-3bfb1.firebaseapp.com",
+            projectId: "lakfa-3bfb1",
+            storageBucket: "lakfa-3bfb1.firebasestorage.app",
+            messagingSenderId: "830319839000",
+            appId: "1:830319839000:web:7129aa7e577d2c67f4806d",
+            measurementId: "G-EB9GVF5L3Z"
+        };
+
+        // State Variables
+        let app, db, auth;
+        let ordersData = []; 
+        let selectedOrderIds = [];
+        let searchQuery = '';
+        let activeDropdownId = null;
+        let orderToDeleteId = null;
+
+        // DOM Elements
+        const ordersTableBody = document.getElementById('ordersTableBody');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const recordCount = document.getElementById('recordCount');
+        
+        // Modal Elements
+        const formModal = document.getElementById('formModal');
+        const orderForm = document.getElementById('orderForm');
+        const modalTitle = document.getElementById('modalTitle');
+        const saveBtnText = document.getElementById('saveBtnText');
+        const saveBtn = document.getElementById('saveBtn');
+        const deleteModal = document.getElementById('deleteModal');
+        
+        // Buttons
+        const addNewBtn = document.getElementById('addNewBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const bulkActionPanel = document.getElementById('bulkActionPanel');
+        const selectedCountText = document.getElementById('selectedCountText');
+        const bulkPrintBtn = document.getElementById('bulkPrintBtn');
+
+        // Form Inputs
+        const inputs = {
+            id: document.getElementById('orderId'),
+            name: document.getElementById('customerName'),
+            phone: document.getElementById('contactNumber'),
+            address: document.getElementById('fullAddress'),
+            pincode: document.getElementById('pincode'),
+            location: document.getElementById('locationLink'),
+            items: document.getElementById('itemsOrdered'),
+            status: document.getElementById('orderStatus')
+        };
+
+        // ==========================================
+        // 1. Initialization
+        // ==========================================
+        async function initApp() {
+            try {
+                // Initialize Firebase
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Sign in anonymously to allow reading/writing without user login
+                // IMPORTANT: Ensure your Firestore Security Rules allow this!
+                // Rule should be something like: allow read, write: if true;
+                await signInAnonymously(auth);
+                console.log("Firebase connected successfully");
+                
+                setupRealtimeListener();
+            } catch (error) {
+                console.error("Firebase init failed:", error);
+                showToast("Database connection failed. Please check your config and rules.", "error");
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'flex';
+                emptyState.querySelector('p').textContent = 'Database Connection Error';
+            }
+        }
+
+        // ==========================================
+        // 2. Database Sync (Realtime)
+        // ==========================================
+        function setupRealtimeListener() {
+            // Reference to the 'orders' collection in your Firestore
+            const ordersRef = collection(db, 'orders');
+            // Query to sort by creation date (newest first)
+            const q = query(ordersRef, orderBy("createdAt", "desc"));
+            
+            onSnapshot(q, (snapshot) => {
+                ordersData = [];
+                snapshot.forEach((doc) => {
+                    ordersData.push({ id: doc.id, ...doc.data() });
+                });
+                
+                loadingState.style.display = 'none';
+                
+                // Cleanup selected items that might have been deleted
+                const currentIds = ordersData.map(o => o.id);
+                selectedOrderIds = selectedOrderIds.filter(id => currentIds.includes(id));
+                updateBulkActionPanel();
+                
+                renderTable();
+            }, (error) => {
+                console.error("Error fetching data:", error);
+                // Fallback rendering if order index is missing
+                if(error.message.includes('index')) {
+                    showToast("Firestore index building. Loading data without sorting temporarily.", "error");
+                    // Try without sorting
+                    onSnapshot(collection(db, 'orders'), (snap) => {
+                         ordersData = [];
+                         snap.forEach(doc => ordersData.push({ id: doc.id, ...doc.data() }));
+                         loadingState.style.display = 'none';
+                         renderTable();
+                    });
+                } else {
+                     showToast("Error loading data from Firebase.", "error");
+                     loadingState.style.display = 'none';
+                }
+            });
+        }
+
+        // ==========================================
+        // 3. UI rendering logic
+        // ==========================================
+        function getStatusBadge(status) {
+            let colors = '';
+            if(status === 'Pending') colors = 'bg-yellow-100 text-yellow-800';
+            else if(status === 'Processing') colors = 'bg-blue-100 text-blue-800';
+            else if(status === 'Shipped') colors = 'bg-purple-100 text-purple-800';
+            else if(status === 'Delivered') colors = 'bg-green-100 text-green-800';
+            else colors = 'bg-gray-100 text-gray-800';
+            
+            return `<span class="px-2.5 py-1 text-xs font-semibold rounded-full ${colors}">${status}</span>`;
+        }
+
+        function renderTable() {
+            const searchLower = searchQuery.toLowerCase();
+            const filteredData = ordersData.filter(order => {
+                return (order.name && order.name.toLowerCase().includes(searchLower)) ||
+                       (order.phone && order.phone.includes(searchLower)) ||
+                       (order.address && order.address.toLowerCase().includes(searchLower));
+            });
+
+            ordersTableBody.innerHTML = '';
+            recordCount.textContent = `Total records: ${filteredData.length}`;
+
+            // Handle Select All Checkbox state
+            if (filteredData.length > 0 && selectedOrderIds.length === filteredData.length) {
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.checked = false;
+            }
+
+            if (filteredData.length === 0) {
+                emptyState.style.display = 'flex';
+                emptyState.querySelector('p').textContent = searchQuery ? 'No matching orders found' : 'No orders found';
+                ordersTableBody.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                ordersTableBody.style.display = 'table-row-group';
+                
+                filteredData.forEach(order => {
+                    const isChecked = selectedOrderIds.includes(order.id);
+                    const tr = document.createElement('tr');
+                    tr.className = `hover:bg-gray-50 transition-colors ${isChecked ? 'bg-red-50' : ''}`;
+                    
+                    const locLinkHtml = order.location ? 
+                        `<a href="${order.location}" target="_blank" class="text-blue-500 hover:underline text-xs mt-1 inline-flex items-center" onclick="event.stopPropagation()"><i class="fa-solid fa-location-arrow mr-1"></i>Map Link</a>` : '';
+
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input type="checkbox" class="custom-checkbox row-checkbox" data-id="${order.id}" ${isChecked ? 'checked' : ''}>
+                        </td>
+                        <td class="px-6 py-4 align-top">
+                            <div class="font-medium text-gray-900">${order.name}</div>
+                            <div class="text-gray-500 text-sm mt-1 mb-1 line-clamp-2 max-w-xs">${order.address}</div>
+                            <div class="text-gray-400 text-xs">PIN: <span class="font-medium">${order.pincode}</span></div>
+                        </td>
+                        <td class="px-6 py-4 align-top">
+                            <div class="text-sm font-medium text-gray-900 mb-1"><i class="fa-solid fa-phone text-xs text-gray-400 mr-1"></i>${order.phone}</div>
+                            <div class="text-sm text-gray-700 line-clamp-2 max-w-xs bg-gray-100 p-1.5 rounded border border-gray-200 mt-2" title="${order.items}">
+                                ${order.items}
+                            </div>
+                            ${locLinkHtml}
+                        </td>
+                        <td class="px-6 py-4 align-top text-center whitespace-nowrap">
+                            ${getStatusBadge(order.status)}
+                        </td>
+                        <td class="px-6 py-4 align-top text-right relative whitespace-nowrap">
+                            <div class="flex items-center justify-end space-x-2">
+                                <button class="print-single-btn text-gray-400 hover:text-gray-700 p-1.5 rounded-md hover:bg-gray-100 transition" title="Print Shipping Label" data-id="${order.id}">
+                                    <i class="fa-solid fa-print text-lg"></i>
+                                </button>
+                                
+                                <div class="relative">
+                                    <button class="menu-btn text-gray-400 hover:text-gray-700 p-1.5 rounded-md hover:bg-gray-100 transition focus:outline-none" data-id="${order.id}">
+                                        <i class="fa-solid fa-ellipsis-vertical text-lg px-1"></i>
+                                    </button>
+                                    
+                                    <div id="dropdown-${order.id}" class="dropdown-menu">
+                                        <button class="edit-btn flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 text-left transition" data-id="${order.id}">
+                                            <i class="fa-solid fa-pen w-4 mr-2"></i> Edit
+                                        </button>
+                                        <button class="delete-btn flex items-center w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 text-left transition" data-id="${order.id}">
+                                            <i class="fa-solid fa-trash w-4 mr-2"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    
+                    // Attach listeners for this row
+                    tr.querySelector('.row-checkbox').addEventListener('change', (e) => toggleOrderSelection(order.id, e.target.checked));
+                    tr.querySelector('.print-single-btn').addEventListener('click', () => printSingleLabel(order));
+                    tr.querySelector('.menu-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleDropdown(order.id);
+                    });
+                    tr.querySelector('.edit-btn').addEventListener('click', () => openFormForEdit(order));
+                    tr.querySelector('.delete-btn').addEventListener('click', () => promptDelete(order.id));
+                    
+                    ordersTableBody.appendChild(tr);
+                });
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toastMsg');
+            const icon = document.getElementById('toastIcon');
+            
+            msg.textContent = message;
+            if(type === 'success') {
+                toast.className = 'toast fixed top-5 right-5 bg-green-600 text-white px-5 py-3 rounded-lg shadow-lg flex items-center z-[70]';
+                icon.className = 'fa-solid fa-check-circle mr-3 text-lg';
+            } else {
+                toast.className = 'toast fixed top-5 right-5 bg-red-500 text-white px-5 py-3 rounded-lg shadow-lg flex items-center z-[70]';
+                icon.className = 'fa-solid fa-triangle-exclamation mr-3 text-lg';
+            }
+
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ==========================================
+        // 4. Selection & Bulk Logic
+        // ==========================================
+        function toggleOrderSelection(id, isChecked) {
+            if (isChecked) {
+                if (!selectedOrderIds.includes(id)) selectedOrderIds.push(id);
+            } else {
+                selectedOrderIds = selectedOrderIds.filter(selectedId => selectedId !== id);
+            }
+            updateBulkActionPanel();
+            renderTable(); // Re-render to show background color changes
+        }
+
+        function toggleSelectAll(isChecked) {
+            const searchLower = searchQuery.toLowerCase();
+            const filteredData = ordersData.filter(order => {
+                return (order.name && order.name.toLowerCase().includes(searchLower)) ||
+                       (order.phone && order.phone.includes(searchLower)) ||
+                       (order.address && order.address.toLowerCase().includes(searchLower));
+            });
+
+            if (isChecked) {
+                selectedOrderIds = filteredData.map(order => order.id);
+            } else {
+                selectedOrderIds = [];
+            }
+            updateBulkActionPanel();
+            renderTable();
+        }
+
+        function updateBulkActionPanel() {
+            if (selectedOrderIds.length > 0) {
+                bulkActionPanel.classList.remove('hidden');
+                selectedCountText.textContent = `${selectedOrderIds.length} orders selected`;
+            } else {
+                bulkActionPanel.classList.add('hidden');
+            }
+        }
+
+        // ==========================================
+        // 5. Dropdown Menu Logic
+        // ==========================================
+        function toggleDropdown(id) {
+            // Close existing
+            if (activeDropdownId && activeDropdownId !== id) {
+                const existing = document.getElementById(`dropdown-${activeDropdownId}`);
+                if(existing) existing.classList.remove('show');
+            }
+            
+            const dropdown = document.getElementById(`dropdown-${id}`);
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+                activeDropdownId = dropdown.classList.contains('show') ? id : null;
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            if (activeDropdownId) {
+                const dropdown = document.getElementById(`dropdown-${activeDropdownId}`);
+                if(dropdown) dropdown.classList.remove('show');
+                activeDropdownId = null;
+            }
+        });
+
+        // ==========================================
+        // 6. Form Handlers (Add/Edit)
+        // ==========================================
+        function openForm() {
+            formModal.classList.remove('hidden');
+        }
+
+        function closeForm() {
+            formModal.classList.add('hidden');
+            orderForm.reset();
+            inputs.id.value = '';
+            modalTitle.textContent = 'Add New Order';
+            saveBtnText.textContent = 'Save Order';
+        }
+
+        function openFormForEdit(order) {
+            inputs.id.value = order.id;
+            inputs.name.value = order.name || '';
+            inputs.phone.value = order.phone || '';
+            inputs.address.value = order.address || '';
+            inputs.pincode.value = order.pincode || '';
+            inputs.location.value = order.location || '';
+            inputs.items.value = order.items || '';
+            inputs.status.value = order.status || 'Pending';
+            
+            modalTitle.textContent = 'Edit Order';
+            saveBtnText.textContent = 'Update Order';
+            openForm();
+            if(activeDropdownId) toggleDropdown(activeDropdownId); // close menu
+        }
+
+        async function saveOrderData() {
+            // HTML5 Form validation check
+            if (!orderForm.checkValidity()) {
+                orderForm.reportValidity();
+                return;
+            }
+
+            const docId = inputs.id.value;
+            const orderData = {
+                name: inputs.name.value.trim(),
+                phone: inputs.phone.value.trim(),
+                address: inputs.address.value.trim(),
+                pincode: inputs.pincode.value.trim(),
+                location: inputs.location.value.trim(),
+                items: inputs.items.value.trim(),
+                status: inputs.status.value
+            };
+
+            const originalText = saveBtnText.textContent;
+            saveBtnText.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                const colRef = collection(db, 'orders');
+                
+                if (docId) {
+                    // Update existing
+                    const docRef = doc(db, 'orders', docId);
+                    await updateDoc(docRef, { ...orderData, updatedAt: serverTimestamp() });
+                    showToast("Order updated successfully!");
+                } else {
+                    // Add new order
+                    await addDoc(colRef, { ...orderData, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+                    showToast("New order added!");
+                }
+                closeForm();
+            } catch (error) {
+                console.error("Save error:", error);
+                // Check if it is a permission issue
+                if(error.code === 'permission-denied') {
+                    showToast("Permission Denied: Please update Firestore Security Rules to allow writes.", "error");
+                } else {
+                    showToast("Error saving order. Check console.", "error");
+                }
+            } finally {
+                saveBtnText.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // 7. Delete Handlers
+        // ==========================================
+        function promptDelete(id) {
+            orderToDeleteId = id;
+            deleteModal.classList.remove('hidden');
+            if(activeDropdownId) toggleDropdown(activeDropdownId); // close menu
+        }
+
+        async function executeDelete() {
+            if (!orderToDeleteId) return;
+            
+            try {
+                const docRef = doc(db, 'orders', orderToDeleteId);
+                await deleteDoc(docRef);
+                
+                // Remove from selection if selected
+                selectedOrderIds = selectedOrderIds.filter(id => id !== orderToDeleteId);
+                updateBulkActionPanel();
+                
+                showToast("Order deleted successfully", "success");
+            } catch (error) {
+                console.error("Delete failed:", error);
+                if(error.code === 'permission-denied') {
+                    showToast("Permission Denied: Cannot delete.", "error");
+                } else {
+                    showToast("Failed to delete order", "error");
+                }
+            } finally {
+                deleteModal.classList.add('hidden');
+                orderToDeleteId = null;
+            }
+        }
+
+        // ==========================================
+        // 8. PDF Generation Logic (jsPDF)
+        // ==========================================
+        function generatePDF(ordersList) {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                showToast("PDF Library loading... please wait.", "error");
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const pageHeight = 297; // A4 height in mm
+                const pageWidth = 210;  // A4 width in mm
+
+                showToast("Preparing PDF...", "success");
+
+                ordersList.forEach((order, index) => {
+                    // New page after every 2 orders
+                    if (index > 0 && index % 2 === 0) {
+                        doc.addPage();
+                    }
+
+                    const isTopHalf = index % 2 === 0;
+                    const startY = isTopHalf ? 15 : (pageHeight / 2) + 15;
+                    
+                    // Draw cutting line for bottom half
+                    if (!isTopHalf) {
+                        doc.setLineDashPattern([2, 2], 0);
+                        doc.line(10, pageHeight / 2, pageWidth - 10, pageHeight / 2);
+                        doc.setLineDashPattern([], 0); 
+                        doc.setFontSize(8);
+                        doc.setTextColor(150);
+                        doc.text("✄ Cut Here", 15, (pageHeight / 2) + 4);
+                        doc.setTextColor(0); 
+                    }
+
+                    // Main Box Border
+                    doc.setLineWidth(0.5);
+                    doc.setDrawColor(200);
+                    doc.rect(15, startY + 5, pageWidth - 30, (pageHeight / 2) - 30);
+
+                    // Heading
+                    doc.setFontSize(16);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("SHIPPING LABEL", pageWidth / 2, startY, { align: "center" });
+
+                    // Center Divider Line
+                    doc.line(pageWidth / 2, startY + 5, pageWidth / 2, startY + 55);
+
+                    // --- LEFT SIDE: FROM ADDRESS ---
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("From:", 20, startY + 15);
+                    
+                    doc.setFontSize(14);
+                    doc.text("Lakfa Foods", 20, startY + 23);
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+                    const fromAddress = "Sp. Godown, Rottipeedika\nPullisherikund, PO,\nPallikal, Kerala 673634\n\nPh: 079073 45458";
+                    doc.text(fromAddress, 20, startY + 30);
+
+                    // --- RIGHT SIDE: TO ADDRESS ---
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("To:", (pageWidth / 2) + 5, startY + 15);
+                    
+                    doc.setFontSize(16);
+                    doc.text(order.name || "Customer", (pageWidth / 2) + 5, startY + 23);
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(12);
+                    const addressText = `${order.address || ""}\n\nPIN: ${order.pincode || ""}\nPh: ${order.phone || ""}`;
+                    const splitAddress = doc.splitTextToSize(addressText, (pageWidth / 2) - 15);
+                    doc.text(splitAddress, (pageWidth / 2) + 5, startY + 30);
+
+                    // --- BOTTOM SECTION: ITEMS ---
+                    doc.setDrawColor(200);
+                    doc.line(15, startY + 55, pageWidth - 15, startY + 55); 
+                    
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Order Items:", 20, startY + 65);
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(11);
+                    const itemsList = doc.splitTextToSize(order.items || "N/A", pageWidth - 40);
+                    doc.text(itemsList, 20, startY + 72);
+                });
+
+                doc.save("Lakfa_Shipping_Labels.pdf");
+                
+                // Clear selection after bulk print
+                if(ordersList.length > 1) {
+                    selectedOrderIds = [];
+                    updateBulkActionPanel();
+                    renderTable();
+                }
+
+            } catch (err) {
+                console.error("PDF generation error: ", err);
+                showToast("Error creating PDF", "error");
+            }
+        }
+
+        function printSingleLabel(order) {
+            generatePDF([order]);
+        }
+
+        function handleBulkPrint() {
+            const ordersToPrint = ordersData.filter(o => selectedOrderIds.includes(o.id));
+            if(ordersToPrint.length > 0) {
+                generatePDF(ordersToPrint);
+            }
+        }
+
+        // ==========================================
+        // 9. Excel/CSV Export
+        // ==========================================
+        function exportToCSV() {
+            if(ordersData.length === 0) {
+                showToast("No data to export", "error");
+                return;
+            }
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            // Headers
+            csvContent += "Date,Name,Phone,Address,Pincode,Items,Location Link,Status\n";
+            
+            // Rows
+            ordersData.forEach(o => {
+                let dateStr = '';
+                if(o.createdAt) {
+                    // Check if it's a Firestore Timestamp
+                    if(typeof o.createdAt.toDate === 'function') {
+                        dateStr = o.createdAt.toDate().toLocaleDateString();
+                    } else {
+                        dateStr = new Date(o.createdAt).toLocaleDateString();
+                    }
+                }
+
+                // Escape quotes and wrap in quotes to handle commas inside text
+                const name = `"${(o.name || '').replace(/"/g, '""')}"`;
+                const phone = `"${(o.phone || '').replace(/"/g, '""')}"`;
+                const address = `"${(o.address || '').replace(/"/g, '""')}"`;
+                const pincode = `"${(o.pincode || '').replace(/"/g, '""')}"`;
+                const items = `"${(o.items || '').replace(/"/g, '""')}"`;
+                const link = `"${(o.location || '').replace(/"/g, '""')}"`;
+                const status = `"${(o.status || '').replace(/"/g, '""')}"`;
+                
+                csvContent += `${dateStr},${name},${phone},${address},${pincode},${items},${link},${status}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Lakfa_Orders_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Exported to CSV!");
+        }
+
+        // ==========================================
+        // Event Listeners Registration
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+
+            // Search
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                renderTable();
+            });
+
+            // Modal Toggles
+            addNewBtn.addEventListener('click', () => {
+                orderForm.reset();
+                inputs.id.value = '';
+                modalTitle.textContent = 'Add New Order';
+                saveBtnText.textContent = 'Save Order';
+                openForm();
+            });
+            closeModalBtn.addEventListener('click', closeForm);
+            cancelBtn.addEventListener('click', closeForm);
+
+            // Close modal when clicking outside
+            formModal.addEventListener('click', (e) => {
+                if (e.target === formModal) closeForm();
+            });
+
+            // Save Order (prevent default form submission)
+            saveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                saveOrderData();
+            });
+
+            // Delete Modal
+            document.getElementById('cancelDelBtn').addEventListener('click', () => {
+                deleteModal.classList.add('hidden');
+                orderToDeleteId = null;
+            });
+            document.getElementById('confirmDelBtn').addEventListener('click', executeDelete);
+
+            // Checkboxes
+            selectAllCheckbox.addEventListener('change', (e) => toggleSelectAll(e.target.checked));
+            
+            // Bulk Print & Export
+            bulkPrintBtn.addEventListener('click', handleBulkPrint);
+            exportCsvBtn.addEventListener('click', exportToCSV);
+        });
+
+    </script>
+</body>
+</html>
