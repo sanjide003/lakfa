@@ -11,22 +11,11 @@
     
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #ef4444; 
-            animation: spin 1s linear infinite;
-        }
+        .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #ef4444; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .toast { transition: all 0.3s ease-in-out; transform: translateY(100%); opacity: 0; }
         .toast.show { transform: translateY(0); opacity: 1; }
-        .dropdown-menu {
-            display: none; position: absolute; right: 0; top: 100%; background-color: white;
-            min-width: 140px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 0.375rem;
-            z-index: 50; border: 1px solid #e5e7eb;
-        }
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 100%; background-color: white; min-width: 140px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 0.375rem; z-index: 50; border: 1px solid #e5e7eb; }
         .dropdown-menu.show { display: block; }
         .custom-checkbox { accent-color: #ef4444; width: 1.1rem; height: 1.1rem; cursor: pointer; }
         .tab-content { display: none; }
@@ -34,51 +23,51 @@
         .sidebar-item { transition: all 0.2s; }
         .sidebar-item.active { background-color: #fef2f2; color: #dc2626; border-right: 4px solid #dc2626; font-weight: 600;}
         .sidebar-item:hover:not(.active) { background-color: #f3f4f6; }
-        
-        /* Order Sub-tabs */
         .order-subtab { border-bottom: 2px solid transparent; color: #6b7280; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
         .order-subtab:hover { color: #374151; }
         .order-subtab.active { border-bottom-color: #dc2626; color: #dc2626; font-weight: 600; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        @media (max-width: 768px) {
-            #sidebar { transform: translateX(-100%); transition: transform 0.3s ease-in-out; position: fixed; z-index: 40;}
-            #sidebar.open { transform: translateX(0); }
-            #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 30;}
-            #overlay.open { display: block; }
-        }
+        @media (max-width: 768px) { #sidebar { transform: translateX(-100%); transition: transform 0.3s ease-in-out; position: fixed; z-index: 40;} #sidebar.open { transform: translateX(0); } #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 30;} #overlay.open { display: block; } }
     </style>
 </head>
 <body class="text-gray-800 h-screen overflow-hidden bg-gray-50">
 
     <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-50">
-        <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 w-full max-w-sm">
+        <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 w-full max-w-sm relative">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-solid fa-lock text-red-600 text-2xl"></i>
+                <!-- കമ്പനിയുടെ ലോഗോ -->
+                <img src="./assets/logo.png" alt="Company Logo" class="w-24 h-24 mx-auto mb-3 object-contain rounded-full shadow-sm" onerror="this.src='https://ui-avatars.com/api/?name=Lakfa+Foods&background=ef4444&color=fff&size=100'; this.onerror=null;">
+                
+                <h2 id="displayLoginName" class="text-2xl font-bold text-gray-800 tracking-tight">Lakfa Foods</h2>
+                <p id="displayLoginAddress" class="text-gray-500 text-sm mt-1 mb-3">Sp. Godown, Rottipeedika</p>
+                
+                <div class="inline-block bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-red-100">
+                    Admin Dashboard Login
                 </div>
-                <h2 class="text-2xl font-bold text-gray-800 tracking-tight">Lakfa Foods</h2>
-                <p class="text-gray-500 text-sm mt-1">Admin Dashboard Login</p>
             </div>
+            
             <form id="loginForm" class="space-y-5">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
                     <div class="relative">
-                        <i class="fa-solid fa-envelope absolute left-3 top-3 text-gray-400"></i>
-                        <input type="email" id="loginEmail" required placeholder="admin@lakfa.com" class="w-full rounded-lg border-gray-300 border pl-10 pr-3 py-2 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                        <i class="fa-solid fa-envelope absolute left-3 top-3.5 text-gray-400"></i>
+                        <input type="email" id="loginEmail" required placeholder="admin@lakfa.com" class="w-full rounded-lg border-gray-300 border pl-10 pr-3 py-2.5 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition font-medium">
                     </div>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
                     <div class="relative">
-                        <i class="fa-solid fa-key absolute left-3 top-3 text-gray-400"></i>
-                        <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full rounded-lg border-gray-300 border pl-10 pr-3 py-2 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition">
+                        <i class="fa-solid fa-lock absolute left-3 top-3.5 text-gray-400"></i>
+                        <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full rounded-lg border-gray-300 border pl-10 pr-10 py-2.5 outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition font-medium">
+                        <button type="button" id="togglePasswordBtn" class="absolute right-3 top-3 text-gray-400 hover:text-gray-700 focus:outline-none p-1">
+                            <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+                        </button>
                     </div>
                 </div>
-                <button type="submit" id="loginBtn" class="w-full bg-red-600 text-white font-bold py-2.5 px-4 rounded-lg hover:bg-red-700 transition shadow-md shadow-red-200 mt-2">
-                    Sign In
+                <button type="submit" id="loginBtn" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 transition shadow-md mt-2">
+                    Secure Login
                 </button>
             </form>
         </div>
@@ -90,13 +79,14 @@
 
         <!-- SIDEBAR -->
         <aside id="sidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col h-full shrink-0 shadow-sm relative z-40">
-            <div class="h-16 flex items-center px-6 border-b border-gray-200 bg-red-600 text-white">
-                <span class="font-bold text-xl tracking-tight">Lakfa Foods</span>
+            <div class="h-16 flex items-center px-6 border-b border-red-700 bg-red-600 text-white">
+                <img src="./assets/logo.png" alt="Logo" class="w-8 h-8 mr-2 bg-white rounded p-0.5 object-contain" onerror="this.style.display='none'">
+                <span id="displaySidebarName" class="font-bold text-xl tracking-tight">Lakfa Foods</span>
             </div>
             
             <nav class="flex-1 py-4 flex flex-col gap-1 overflow-y-auto">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="sidebar-item active flex items-center px-6 py-3 text-sm text-gray-700 w-full text-left">
-                    <i class="fa-solid fa-chart-pie w-5 mr-3 text-gray-400 group-hover:text-red-500"></i> Dashboard
+                    <i class="fa-solid fa-chart-pie w-5 mr-3 text-gray-400"></i> Dashboard
                 </button>
                 <button onclick="switchTab('orders')" id="nav-orders" class="sidebar-item flex items-center px-6 py-3 text-sm text-gray-700 w-full text-left">
                     <i class="fa-solid fa-cart-shopping w-5 mr-3 text-gray-400"></i> Order Management
@@ -127,7 +117,7 @@
                 </div>
                 <div class="flex items-center space-x-3">
                     <div id="syncStatus" class="flex items-center text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
-                        <span class="w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span> DB Connected
+                        <span class="w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span> Cloud Synced
                     </div>
                 </div>
             </header>
@@ -136,7 +126,7 @@
                 
                 <div id="globalLoading" class="absolute inset-0 bg-gray-50 flex flex-col items-center justify-center z-20">
                     <div class="spinner mb-4"></div>
-                    <p class="text-gray-500 font-medium">Loading Data...</p>
+                    <p class="text-gray-500 font-medium">Loading Database...</p>
                 </div>
 
                 <!-- DASHBOARD TAB -->
@@ -144,28 +134,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Total Orders</p>
-                                    <h3 id="stat-total-orders" class="text-3xl font-bold text-gray-800 mt-1">0</h3>
-                                </div>
+                                <div><p class="text-sm font-medium text-gray-500">Total Orders</p><h3 id="stat-total-orders" class="text-3xl font-bold text-gray-800 mt-1">0</h3></div>
                                 <div class="p-3 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-cart-shopping"></i></div>
                             </div>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Pending Deliveries</p>
-                                    <h3 id="stat-pending" class="text-3xl font-bold text-gray-800 mt-1">0</h3>
-                                </div>
+                                <div><p class="text-sm font-medium text-gray-500">Pending Deliveries</p><h3 id="stat-pending" class="text-3xl font-bold text-gray-800 mt-1">0</h3></div>
                                 <div class="p-3 bg-yellow-50 text-yellow-600 rounded-lg"><i class="fa-solid fa-clock"></i></div>
                             </div>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-500">Low Stock Items</p>
-                                    <h3 id="stat-low-stock" class="text-3xl font-bold text-red-600 mt-1">0</h3>
-                                </div>
+                                <div><p class="text-sm font-medium text-gray-500">Low Stock Items</p><h3 id="stat-low-stock" class="text-3xl font-bold text-red-600 mt-1">0</h3></div>
                                 <div class="p-3 bg-red-50 text-red-600 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
                             </div>
                         </div>
@@ -174,8 +155,6 @@
 
                 <!-- ORDERS TAB -->
                 <div id="tab-orders" class="tab-content">
-                    
-                    <!-- Order Status Sub-tabs -->
                     <div class="flex border-b border-gray-200 mb-5 overflow-x-auto hide-scrollbar space-x-6 px-1">
                         <button class="order-subtab active pb-2 text-sm" onclick="filterOrderStatus('Pending', this)">Pending</button>
                         <button class="order-subtab pb-2 text-sm" onclick="filterOrderStatus('Processing', this)">Processing</button>
@@ -197,7 +176,6 @@
                                     <i class="fa-solid fa-print mr-1.5"></i> Print Selected
                                 </button>
                             </div>
-                            
                             <button id="exportCsvBtn" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg text-sm flex items-center shadow-sm transition">
                                 <i class="fa-solid fa-file-excel mr-2 text-green-600"></i> Export Excel
                             </button>
@@ -221,14 +199,10 @@
                                 </thead>
                                 <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
                             </table>
-                            
                             <div id="emptyState" class="hidden flex-col items-center justify-center p-16 text-gray-500">
                                 <i class="fa-solid fa-box-open text-4xl mb-3 text-gray-300"></i>
-                                <p class="text-lg font-medium text-gray-600">No orders found in this tab</p>
+                                <p class="text-lg font-medium text-gray-600">No orders found</p>
                             </div>
-                        </div>
-                        <div class="p-3 border-t border-gray-200 bg-gray-50 text-xs text-gray-500 flex justify-between items-center">
-                            <span id="recordCount">Total records: 0</span>
                         </div>
                     </div>
                 </div>
@@ -236,21 +210,12 @@
                 <!-- INVENTORY TAB -->
                 <div id="tab-inventory" class="tab-content">
                     <div class="mb-6 flex justify-between items-end relative z-10">
-                        <div class="flex-1">
-                            <p class="text-gray-500 text-sm">Manage your products, prices, and available stock.</p>
-                        </div>
+                        <div class="flex-1"><p class="text-gray-500 text-sm">Manage your products, prices, and available stock.</p></div>
                         <button id="addProductBtn" class="bg-gray-800 text-white hover:bg-gray-900 px-4 py-2 rounded-lg text-sm font-medium flex items-center shadow-sm transition relative z-20 cursor-pointer shrink-0">
                             <i class="fa-solid fa-plus mr-1.5"></i> Add Product
                         </button>
                     </div>
-
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 relative z-0" id="inventoryGrid"></div>
-                    
-                    <div id="inventoryEmptyState" class="hidden flex-col items-center justify-center p-16 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">
-                        <i class="fa-solid fa-boxes-packing text-4xl mb-3 text-gray-300"></i>
-                        <p class="text-lg font-medium text-gray-600">No products added yet</p>
-                        <p class="text-sm mt-1">Click "Add Product" to build your inventory list.</p>
-                    </div>
                 </div>
 
                 <!-- SETTINGS TAB -->
@@ -258,30 +223,16 @@
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
                             <h3 class="font-bold text-gray-800">Company Details (For Shipping Labels)</h3>
+                            <p class="text-xs text-gray-500 mt-1">Changes made here are synced to all your devices automatically.</p>
                         </div>
                         <div class="p-6">
                             <form id="settingsForm" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-                                    <input type="text" id="settingCompanyName" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Address Line 1</label>
-                                    <input type="text" id="settingAddress1" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Address Line 2 (PO & Place)</label>
-                                    <input type="text" id="settingAddress2" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none">
-                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label><input type="text" id="settingCompanyName" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 outline-none"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Address Line 1</label><input type="text" id="settingAddress1" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 outline-none"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Address Line 2 (PO & Place)</label><input type="text" id="settingAddress2" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 outline-none"></div>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">State & Pincode</label>
-                                        <input type="text" id="settingStatePin" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-                                        <input type="text" id="settingPhone" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none">
-                                    </div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">State & Pincode</label><input type="text" id="settingStatePin" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 outline-none"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label><input type="text" id="settingPhone" class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 outline-none"></div>
                                 </div>
                                 <div class="pt-4 flex justify-end border-t border-gray-100 mt-6">
                                     <button type="button" id="saveSettingsBtn" class="bg-gray-800 text-white px-5 py-2 rounded-md hover:bg-gray-900 transition font-medium text-sm cursor-pointer">
@@ -295,74 +246,44 @@
 
             </main>
         </div>
-    </div> <!-- END MAIN APP CONTAINER -->
+    </div> 
 
-    <!-- ORDER FORM MODAL -->
-    <div id="formModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden transition-opacity">
+    <!-- FORMS & MODALS (Order, Product, Status) -->
+    <!-- (Order Form) -->
+    <div id="formModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
                 <h2 id="modalTitle" class="text-xl font-bold text-gray-800">New WhatsApp Order</h2>
                 <button onclick="closeModal('formModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            
             <div class="p-6 overflow-y-auto flex-1 bg-white">
-                <form id="orderForm" class="space-y-5">
+                <form id="orderForm" class="space-y-4">
                     <input type="hidden" id="orderId">
-                    
-                    <!-- Date Selection -->
                     <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4">
                         <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Order Date</label>
                         <input type="date" id="orderDate" required class="w-full sm:w-1/2 rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white font-medium">
                     </div>
-
-                    <div class="bg-red-50 p-4 rounded-lg border border-red-100 mb-4">
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div class="sm:col-span-1">
-                                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">1. Name</label>
-                                <input type="text" id="customerName" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
-                            </div>
-                            <div class="sm:col-span-1">
-                                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">2. Contact No.</label>
-                                <input type="text" id="contactNumber" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">3. Full Address</label>
-                                <textarea id="fullAddress" rows="2" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></textarea>
-                            </div>
-                            <div class="sm:col-span-1">
-                                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Pincode</label>
-                                <input type="text" id="pincode" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
-                            </div>
-                            <div class="sm:col-span-1">
-                                <label class="block text-xs font-semibold text-gray-700 uppercase mb-1">4. Location Link</label>
-                                <input type="url" id="locationLink" class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
-                            </div>
-                        </div>
+                    <div class="bg-red-50 p-4 rounded-lg border border-red-100 mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="sm:col-span-1"><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">1. Name</label><input type="text" id="customerName" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></div>
+                        <div class="sm:col-span-1"><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">2. Contact No.</label><input type="text" id="contactNumber" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></div>
+                        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">3. Full Address</label><textarea id="fullAddress" rows="2" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></textarea></div>
+                        <div class="sm:col-span-1"><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">Pincode</label><input type="text" id="pincode" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></div>
+                        <div class="sm:col-span-1"><label class="block text-xs font-semibold text-gray-700 uppercase mb-1">4. Location Link</label><input type="url" id="locationLink" class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></div>
                     </div>
-
                     <div class="border border-gray-200 p-4 rounded-lg">
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="text-sm font-bold text-gray-800">Order Items (Auto Deducts Stock)</h4>
-                            <button type="button" onclick="addOrderItemRow()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded font-medium transition cursor-pointer">
-                                + Add Product
-                            </button>
+                            <button type="button" onclick="addOrderItemRow()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 px-2 py-1 rounded font-medium">+ Add Product</button>
                         </div>
                         <div id="orderItemsContainer" class="space-y-2"></div>
-                        <div class="mt-4 pt-4 border-t border-gray-100">
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Manual Notes (Optional)</label>
-                            <textarea id="itemsOrderedText" rows="1" class="w-full rounded border-gray-300 border px-3 py-1.5 text-sm outline-none bg-gray-50"></textarea>
-                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100"><label class="block text-xs font-medium text-gray-500 mb-1">Manual Notes (Optional)</label><textarea id="itemsOrderedText" rows="1" class="w-full rounded border-gray-300 border px-3 py-1.5 text-sm outline-none bg-gray-50"></textarea></div>
                     </div>
-
                     <input type="hidden" id="orderStatus" value="Pending">
                 </form>
             </div>
-
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3 shrink-0">
-                <button type="button" onclick="closeModal('formModal')" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">Cancel</button>
-                <button type="button" id="saveOrderBtn" class="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 flex items-center cursor-pointer">
-                    Save Order
-                </button>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3 shrink-0">
+                <button type="button" onclick="closeModal('formModal')" class="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white hover:bg-gray-50">Cancel</button>
+                <button type="button" id="saveOrderBtn" class="px-4 py-2 text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700">Save Order</button>
             </div>
         </div>
     </div>
@@ -390,7 +311,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Date of Change</label>
                         <input type="date" id="statusChangeDate" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-gray-50 font-medium">
                     </div>
-                    <button type="submit" id="saveStatusBtn" class="w-full mt-4 bg-red-600 text-white px-4 py-2 rounded font-medium text-sm hover:bg-red-700 cursor-pointer">Update Status</button>
+                    <button type="submit" class="w-full mt-4 bg-red-600 text-white px-4 py-2 rounded font-medium text-sm hover:bg-red-700">Update Status</button>
                 </form>
             </div>
         </div>
@@ -398,7 +319,7 @@
 
     <!-- PRODUCT ADD/EDIT MODAL -->
     <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden z-50 relative">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden z-50">
             <div class="px-5 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
                 <h2 id="productModalTitle" class="font-bold text-gray-800">Add Product</h2>
                 <button type="button" onclick="closeModal('productModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
@@ -406,39 +327,20 @@
             <div class="p-5">
                 <form id="productForm" class="space-y-4">
                     <input type="hidden" id="prodId">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                        <input type="text" id="prodName" placeholder="e.g. Tuna Pickle 350g" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none">
-                    </div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label><input type="text" id="prodName" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none"></div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-                            <input type="number" step="0.01" id="prodPrice" min="0" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Unit Type</label>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label><input type="number" step="0.01" id="prodPrice" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Unit Type</label>
                             <select id="prodUnit" class="w-full rounded border-gray-300 border px-3 py-2 text-sm bg-white outline-none">
-                                <option value="Jar">Jar</option>
-                                <option value="Bottle">Bottle</option>
-                                <option value="Packet">Packet</option>
-                                <option value="Box">Box</option>
-                                <option value="Piece">Piece</option>
+                                <option value="Piece">Piece</option><option value="Jar">Jar</option><option value="Bottle">Bottle</option><option value="Packet">Packet</option><option value="Box">Box</option>
                             </select>
                         </div>
                     </div>
-                    
                     <div id="initialStockDiv" class="grid grid-cols-2 gap-3 bg-gray-50 p-3 rounded border border-gray-200">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Initial Stock <span class="font-normal text-xs text-gray-400">(Optional)</span></label>
-                            <input type="number" id="prodStock" min="0" placeholder="0" class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Date Added</label>
-                            <input type="date" id="prodDate" class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Initial Stock <span class="font-normal text-xs text-gray-400">(Opt)</span></label><input type="number" id="prodStock" placeholder="0" class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Date Added</label><input type="date" id="prodDate" class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-white"></div>
                     </div>
-
-                    <button type="submit" id="saveProdBtn" class="w-full mt-4 bg-gray-800 text-white px-4 py-2 rounded font-medium text-sm hover:bg-gray-900 cursor-pointer">Save Product</button>
+                    <button type="submit" class="w-full mt-4 bg-gray-800 text-white px-4 py-2 rounded font-medium text-sm hover:bg-gray-900">Save Product</button>
                 </form>
             </div>
         </div>
@@ -446,29 +348,20 @@
 
     <!-- ADD STOCK MODAL -->
     <div id="addStockModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden z-50 relative">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden z-50">
             <div class="px-5 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                <h2 class="font-bold text-gray-800">Add Stock</h2>
+                <h2 class="font-bold text-gray-800">Add New Stock</h2>
                 <button type="button" onclick="closeModal('addStockModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5">
                 <form id="addStockForm" class="space-y-4">
                     <input type="hidden" id="stockProdId">
-                    <div class="mb-2">
-                        <p class="text-sm text-gray-500">Product</p>
-                        <p id="stockProdNameDisplay" class="font-bold text-gray-800"></p>
-                    </div>
+                    <div class="mb-2"><p class="text-sm text-gray-500">Product</p><p id="stockProdNameDisplay" class="font-bold text-gray-800"></p></div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Qty Arrived</label>
-                            <input type="number" id="additionalStock" min="1" placeholder="e.g. 50" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none focus:border-green-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Date Received</label>
-                            <input type="date" id="stockReceiveDate" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-gray-50 font-medium">
-                        </div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Qty Arrived</label><input type="number" id="additionalStock" min="1" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Date Received</label><input type="date" id="stockReceiveDate" required class="w-full rounded border-gray-300 border px-3 py-2 text-sm outline-none bg-gray-50 font-medium"></div>
                     </div>
-                    <button type="submit" id="saveAddStockBtn" class="w-full mt-4 bg-green-600 text-white px-4 py-2 rounded font-medium text-sm hover:bg-green-700 cursor-pointer">Update Stock</button>
+                    <button type="submit" class="w-full mt-4 bg-green-600 text-white px-4 py-2 rounded font-medium text-sm hover:bg-green-700">Update Stock</button>
                 </form>
             </div>
         </div>
@@ -476,16 +369,16 @@
 
     <!-- TOAST -->
     <div id="toast" class="toast fixed top-5 right-5 text-white px-5 py-3 rounded-lg shadow-lg flex items-center z-[100]">
-        <i id="toastIcon" class="mr-3 text-lg"></i>
-        <span id="toastMsg" class="font-medium text-sm">Message</span>
+        <i id="toastIcon" class="mr-3 text-lg"></i><span id="toastMsg" class="font-medium text-sm">Message</span>
     </div>
 
+    <!-- FIREBASE & JS LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, writeBatch, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // FIREBASE CONFIGURATION (LAKFA)
+        // FIREBASE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyCQjO9TcXCve9gI0ysdzCO1thV8SBTFjcc",
             authDomain: "lakfa-3bfb1.firebaseapp.com",
@@ -501,16 +394,10 @@
         const db = getFirestore(app);
 
         let ordersData = []; let productsData = []; let selectedOrderIds = []; let searchQuery = ''; let activeDropdownId = null;
-        let currentOrderFilterTab = 'Pending'; 
-        let isAppInitialized = false; // Prevent multiple listeners
+        let currentOrderFilterTab = 'Pending'; let isAppInitialized = false; 
         
-        let companySettings = { 
-            name: "Lakfa Foods", 
-            addr1: "Sp. Godown, Rottipeedika", 
-            addr2: "Pullisherikund, PO, Pallikal", 
-            statePin: "Kerala 673634", 
-            phone: "079073 45458" 
-        };
+        // Default Settings
+        let companySettings = { name: "Lakfa Foods", addr1: "Sp. Godown, Rottipeedika", addr2: "Pullisherikund, PO, Pallikal", statePin: "Kerala 673634", phone: "079073 45458" };
 
         const globalLoading = document.getElementById('globalLoading');
         
@@ -519,452 +406,221 @@
         function formatDisplayDate(dateString) {
             if(!dateString) return 'N/A';
             if(typeof dateString === 'object' && dateString.toDate) {
-                const d = dateString.toDate();
-                return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                const d = dateString.toDate(); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
             }
-            const str = String(dateString);
-            const parts = str.split('-');
-            if(parts.length !== 3) return str;
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            const str = String(dateString); const parts = str.split('-'); if(parts.length !== 3) return str; return `${parts[2]}/${parts[1]}/${parts[0]}`;
         }
 
         window.switchTab = (tabId) => {
-            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`nav-${tabId}`).classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active')); document.getElementById(`nav-${tabId}`).classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.getElementById(`tab-${tabId}`).classList.add('active');
             const titles = { 'dashboard': 'Dashboard Overview', 'orders': 'Order Management', 'inventory': 'Inventory & Pricing', 'settings': 'Application Settings' };
-            document.getElementById('pageTitle').textContent = titles[tabId];
-            document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open');
+            document.getElementById('pageTitle').textContent = titles[tabId]; document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open');
         };
 
         document.getElementById('mobileMenuBtn').addEventListener('click', () => { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('open'); });
         document.getElementById('overlay').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); });
 
         window.showToast = (message, type = 'success') => {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMsg').textContent = message;
-            toast.style.backgroundColor = type === 'error' ? '#ef4444' : '#10b981';
-            document.getElementById('toastIcon').className = type === 'error' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-check-circle';
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 4000);
+            const toast = document.getElementById('toast'); document.getElementById('toastMsg').textContent = message;
+            toast.style.backgroundColor = type === 'error' ? '#ef4444' : '#10b981'; document.getElementById('toastIcon').className = type === 'error' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-check-circle';
+            toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 4000);
         };
-
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
         window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
 
+        // --- PASSWORD VISIBILITY TOGGLE ---
+        document.getElementById('togglePasswordBtn').addEventListener('click', () => {
+            const pwdInput = document.getElementById('loginPassword');
+            const icon = document.getElementById('togglePasswordIcon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash');
+            } else {
+                pwdInput.type = 'password'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye');
+            }
+        });
 
-        // --- AUTHENTICATION LOGIC ---
-        
+        // --- FETCH SETTINGS (Global Cloud Sync) ---
+        // Runs immediately so the login screen gets updated info
+        onSnapshot(doc(db, 'settings', 'company'), (docSnap) => {
+            if (docSnap.exists()) { companySettings = { ...companySettings, ...docSnap.data() }; }
+            // Update UI elements
+            document.getElementById('displayLoginName').textContent = companySettings.name;
+            document.getElementById('displayLoginAddress').textContent = companySettings.addr1;
+            document.getElementById('displaySidebarName').textContent = companySettings.name;
+            
+            // Populate Settings Form fields
+            document.getElementById('settingCompanyName').value = companySettings.name || '';
+            document.getElementById('settingAddress1').value = companySettings.addr1 || '';
+            document.getElementById('settingAddress2').value = companySettings.addr2 || '';
+            document.getElementById('settingStatePin').value = companySettings.statePin || '';
+            document.getElementById('settingPhone').value = companySettings.phone || '';
+        }, (error) => { console.log("Settings fetch error:", error.message); });
+
+
+        // --- AUTHENTICATION ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // User is signed in. Hide login, show app.
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'flex';
-                document.getElementById('appContainer').classList.remove('hidden');
-                
-                // Initialize Data fetching only once per session
-                if(!isAppInitialized) {
-                    initAppData();
-                    isAppInitialized = true;
-                }
+                document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appContainer').style.display = 'flex'; document.getElementById('appContainer').classList.remove('hidden');
+                if(!isAppInitialized) { initAppData(); isAppInitialized = true; }
             } else {
-                // No user signed in. Show login, hide app.
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('appContainer').style.display = 'none';
-                document.getElementById('appContainer').classList.add('hidden');
+                document.getElementById('loginScreen').style.display = 'flex'; document.getElementById('appContainer').style.display = 'none'; document.getElementById('appContainer').classList.add('hidden');
             }
         });
 
-        // Login Form Submission
         document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPassword').value;
-            const btn = document.getElementById('loginBtn');
-            
-            btn.textContent = 'Logging in...'; 
-            btn.disabled = true;
-
-            signInWithEmailAndPassword(auth, email, pass)
-                .then((userCredential) => {
-                    document.getElementById('loginForm').reset();
-                    showToast("Login Successful!");
-                    btn.textContent = 'Sign In'; btn.disabled = false;
-                })
-                .catch((error) => {
-                    let errMsg = "Login failed. Check your details.";
-                    if(error.code === 'auth/invalid-credential') errMsg = "Incorrect Email or Password";
-                    showToast(errMsg, "error");
-                    btn.textContent = 'Sign In'; btn.disabled = false;
-                });
+            e.preventDefault(); const email = document.getElementById('loginEmail').value; const pass = document.getElementById('loginPassword').value; const btn = document.getElementById('loginBtn');
+            btn.textContent = 'Logging in...'; btn.disabled = true;
+            signInWithEmailAndPassword(auth, email, pass).then(() => { document.getElementById('loginForm').reset(); showToast("Login Successful!"); btn.textContent = 'Secure Login'; btn.disabled = false; })
+                .catch((error) => { showToast(error.code === 'auth/invalid-credential' ? "Incorrect Email or Password" : error.message, "error"); btn.textContent = 'Secure Login'; btn.disabled = false; });
         });
 
-        // Logout Button
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            if(confirm("Are you sure you want to log out?")) {
-                signOut(auth).then(() => {
-                    showToast("Logged out successfully");
-                    // Reset internal data state securely
-                    ordersData = []; productsData = []; 
-                    isAppInitialized = false;
-                });
-            }
+            if(confirm("Are you sure you want to log out?")) { signOut(auth).then(() => { showToast("Logged out"); ordersData = []; productsData = []; isAppInitialized = false; }); }
         });
 
 
-        // --- INIT DATA FETCHING (Runs only after successful login) ---
+        // --- INIT MAIN DATA ---
         function initAppData() {
             globalLoading.style.display = 'flex';
-            const savedSettings = localStorage.getItem('lakfaSettings');
-            if(savedSettings) { companySettings = JSON.parse(savedSettings); }
-            populateSettingsForm();
-
-            // Fetch Products
+            
+            // Products Listener
             onSnapshot(collection(db, 'products'), (snapshot) => {
-                productsData = [];
-                snapshot.forEach(doc => productsData.push({ id: doc.id, ...doc.data() }));
-                renderInventory(); updateDashboardStats();
-                if(ordersData.length >= 0) globalLoading.style.display = 'none';
-            }, (error) => { console.error(error); showToast("Database access denied. Check rules.", "error"); globalLoading.style.display = 'none';});
+                productsData = []; snapshot.forEach(doc => productsData.push({ id: doc.id, ...doc.data() }));
+                renderInventory(); updateDashboardStats(); if(ordersData.length >= 0) globalLoading.style.display = 'none';
+            });
 
-            // Fetch Orders
+            // Orders Listener
             const q = query(collection(db, 'orders'), orderBy("createdAt", "desc"));
             onSnapshot(q, (snapshot) => {
-                ordersData = [];
-                snapshot.forEach(doc => ordersData.push({ id: doc.id, ...doc.data() }));
-                renderOrdersTable(); updateDashboardStats();
-                globalLoading.style.display = 'none';
-            }, (error) => {
-                onSnapshot(collection(db, 'orders'), snap => {
-                    ordersData = []; snap.forEach(doc => ordersData.push({ id: doc.id, ...doc.data() }));
-                    renderOrdersTable(); globalLoading.style.display = 'none';
-                });
+                ordersData = []; snapshot.forEach(doc => ordersData.push({ id: doc.id, ...doc.data() }));
+                renderOrdersTable(); updateDashboardStats(); globalLoading.style.display = 'none';
+            }, () => {
+                onSnapshot(collection(db, 'orders'), snap => { ordersData = []; snap.forEach(doc => ordersData.push({ id: doc.id, ...doc.data() })); renderOrdersTable(); globalLoading.style.display = 'none'; });
             });
         }
 
         function updateDashboardStats() {
-            document.getElementById('stat-total-orders').textContent = ordersData.length;
-            document.getElementById('stat-pending').textContent = ordersData.filter(o => o.status !== 'Delivered').length;
-            document.getElementById('stat-low-stock').textContent = productsData.filter(p => Number(p.stock) <= 5).length;
+            document.getElementById('stat-total-orders').textContent = ordersData.length; document.getElementById('stat-pending').textContent = ordersData.filter(o => o.status !== 'Delivered').length; document.getElementById('stat-low-stock').textContent = productsData.filter(p => Number(p.stock) <= 5).length;
         }
 
-        // --- REST OF THE APPLICATION LOGIC ---
-        // (Inventory, Orders, PDF, Settings remain exactly the same)
-
-        document.getElementById('addProductBtn').addEventListener('click', () => {
-            document.getElementById('productForm').reset();
-            document.getElementById('prodId').value = '';
-            document.getElementById('initialStockDiv').style.display = 'grid';
-            document.getElementById('prodDate').value = getTodayDateStr();
-            document.getElementById('productModalTitle').textContent = 'Add New Product';
-            openModal('productModal');
-        });
+        // --- PRODUCT MANAGEMENT ---
+        document.getElementById('addProductBtn').addEventListener('click', () => { document.getElementById('productForm').reset(); document.getElementById('prodId').value = ''; document.getElementById('initialStockDiv').style.display = 'grid'; document.getElementById('prodDate').value = getTodayDateStr(); document.getElementById('productModalTitle').textContent = 'Add New Product'; openModal('productModal'); });
 
         document.getElementById('productForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('prodId').value;
-            const pPrice = parseFloat(document.getElementById('prodPrice').value);
-            const pName = document.getElementById('prodName').value.trim();
-            const pUnit = document.getElementById('prodUnit').value;
-
-            if (isNaN(pPrice)) { showToast("Price must be a valid number", "error"); return; }
+            e.preventDefault(); const id = document.getElementById('prodId').value; const pPrice = parseFloat(document.getElementById('prodPrice').value); const pName = document.getElementById('prodName').value.trim(); const pUnit = document.getElementById('prodUnit').value;
+            if (isNaN(pPrice)) { showToast("Price must be a number", "error"); return; }
             const data = { name: pName, price: pPrice, unit: pUnit, updatedAt: serverTimestamp() };
-
             try {
-                if (id) {
-                    await updateDoc(doc(db, 'products', id), data);
-                    showToast("Product details updated");
-                } else {
-                    const rawStock = document.getElementById('prodStock').value;
-                    const pStock = rawStock === '' ? 0 : parseInt(rawStock);
-                    data.stock = pStock;
-                    data.dateAdded = document.getElementById('prodDate').value || getTodayDateStr();
-                    data.lastStockUpdate = data.dateAdded;
-                    data.createdAt = serverTimestamp();
-                    
-                    await addDoc(collection(db, 'products'), data);
-                    showToast("New product added");
+                if (id) { await updateDoc(doc(db, 'products', id), data); showToast("Product updated"); } 
+                else {
+                    const rawStock = document.getElementById('prodStock').value; const pStock = rawStock === '' ? 0 : parseInt(rawStock);
+                    data.stock = isNaN(pStock) ? 0 : pStock; data.dateAdded = document.getElementById('prodDate').value || getTodayDateStr(); data.lastStockUpdate = data.dateAdded; data.createdAt = serverTimestamp();
+                    await addDoc(collection(db, 'products'), data); showToast("Product added");
                 }
                 closeModal('productModal');
-            } catch (err) { console.error(err); showToast(err.message, "error"); }
+            } catch (err) { showToast(err.message, "error"); }
         });
 
-        window.editProduct = (id) => {
-            const p = productsData.find(x => x.id === id); if(!p) return;
-            document.getElementById('prodId').value = p.id;
-            document.getElementById('prodName').value = p.name || '';
-            document.getElementById('prodPrice').value = p.price || 0;
-            document.getElementById('prodUnit').value = p.unit || 'Jar';
-            document.getElementById('initialStockDiv').style.display = 'none';
-            document.getElementById('productModalTitle').textContent = 'Edit Product Details';
-            openModal('productModal');
-        };
+        window.editProduct = (id) => { const p = productsData.find(x => x.id === id); if(!p) return; document.getElementById('prodId').value = p.id; document.getElementById('prodName').value = p.name || ''; document.getElementById('prodPrice').value = p.price || 0; document.getElementById('prodUnit').value = p.unit || 'Jar'; document.getElementById('initialStockDiv').style.display = 'none'; document.getElementById('productModalTitle').textContent = 'Edit Details'; openModal('productModal'); };
 
-        window.openAddStockModal = (id) => {
-            const p = productsData.find(x => x.id === id); if(!p) return;
-            document.getElementById('addStockForm').reset();
-            document.getElementById('stockProdId').value = p.id;
-            document.getElementById('stockProdNameDisplay').textContent = `${p.name} (Current: ${p.stock || 0})`;
-            document.getElementById('stockReceiveDate').value = getTodayDateStr();
-            openModal('addStockModal');
-        };
+        window.openAddStockModal = (id) => { const p = productsData.find(x => x.id === id); if(!p) return; document.getElementById('addStockForm').reset(); document.getElementById('stockProdId').value = p.id; document.getElementById('stockProdNameDisplay').textContent = `${p.name} (Current: ${p.stock || 0})`; document.getElementById('stockReceiveDate').value = getTodayDateStr(); openModal('addStockModal'); };
 
         document.getElementById('addStockForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('stockProdId').value;
-            const p = productsData.find(x => x.id === id); if(!p) return;
-            const addQty = parseInt(document.getElementById('additionalStock').value);
-            const dateRec = document.getElementById('stockReceiveDate').value;
-
-            if (isNaN(addQty) || addQty <= 0) { showToast("Enter a valid quantity", "error"); return; }
-            const newStock = (p.stock || 0) + addQty;
-
-            try {
-                await updateDoc(doc(db, 'products', id), { stock: newStock, lastStockUpdate: dateRec, updatedAt: serverTimestamp() });
-                showToast(`Stock updated! New total: ${newStock}`);
-                closeModal('addStockModal');
-            } catch(e) { showToast(e.message, "error"); }
+            e.preventDefault(); const id = document.getElementById('stockProdId').value; const p = productsData.find(x => x.id === id); if(!p) return; const addQty = parseInt(document.getElementById('additionalStock').value); const dateRec = document.getElementById('stockReceiveDate').value;
+            if (isNaN(addQty) || addQty <= 0) { showToast("Valid quantity required", "error"); return; }
+            try { await updateDoc(doc(db, 'products', id), { stock: (p.stock || 0) + addQty, lastStockUpdate: dateRec, updatedAt: serverTimestamp() }); showToast(`Stock updated!`); closeModal('addStockModal'); } catch(e) { showToast(e.message, "error"); }
         });
 
-        window.deleteProduct = async (id) => {
-            if(confirm("Delete this product?")) {
-                try { await deleteDoc(doc(db, 'products', id)); showToast("Deleted"); } 
-                catch(e) { showToast(e.message, "error"); }
-            }
-        };
+        window.deleteProduct = async (id) => { if(confirm("Delete this product?")) { try { await deleteDoc(doc(db, 'products', id)); showToast("Deleted"); } catch(e) { showToast(e.message, "error"); } } };
 
         function renderInventory() {
-            const grid = document.getElementById('inventoryGrid');
-            if (productsData.length === 0) { grid.style.display = 'none'; document.getElementById('inventoryEmptyState').style.display = 'flex'; return; }
-            grid.style.display = 'grid'; document.getElementById('inventoryEmptyState').style.display = 'none'; grid.innerHTML = '';
-
+            const grid = document.getElementById('inventoryGrid'); grid.innerHTML = '';
+            if (productsData.length === 0) return;
             productsData.forEach(p => {
-                const stockVal = p.stock || 0; const isLow = stockVal <= 5;
-                const stockDateStr = p.lastStockUpdate ? `Updated: ${formatDisplayDate(p.lastStockUpdate)}` : (p.dateAdded ? `Added: ${formatDisplayDate(p.dateAdded)}` : 'No dates recorded');
-
-                const div = document.createElement('div');
-                div.className = `bg-white rounded-lg border p-4 shadow-sm relative flex flex-col ${isLow ? 'border-red-300' : 'border-gray-200'}`;
-                div.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <h4 class="font-bold text-gray-800 pr-6">${p.name || 'Unnamed'}</h4>
-                        <div class="absolute top-4 right-4 flex space-x-2">
-                            <button onclick="editProduct('${p.id}')" title="Edit Product" class="text-gray-400 hover:text-blue-600"><i class="fa-solid fa-pen text-sm"></i></button>
-                            <button onclick="deleteProduct('${p.id}')" title="Delete Product" class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash text-sm"></i></button>
-                        </div>
-                    </div>
-                    <div class="mt-2 mb-4">
-                        <p class="text-xs text-gray-500 uppercase tracking-wide">Price</p>
-                        <p class="font-bold text-gray-900">₹${p.price || 0} <span class="text-xs font-normal text-gray-500">/${p.unit || 'unit'}</span></p>
-                    </div>
-                    <div class="mt-auto border-t border-gray-100 pt-3 flex justify-between items-end">
-                        <div>
-                            <span class="inline-block px-2 py-1 rounded text-xs font-bold ${isLow ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}">${stockVal} in Stock</span>
-                            <p class="text-[10px] text-gray-400 mt-1"><i class="fa-solid fa-calendar-alt mr-1"></i>${stockDateStr}</p>
-                        </div>
-                        <button onclick="openAddStockModal('${p.id}')" class="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1.5 rounded hover:bg-green-100 font-semibold transition">
-                            <i class="fa-solid fa-plus mr-1"></i> Stock
-                        </button>
-                    </div>
-                `;
+                const stockVal = p.stock || 0; const isLow = stockVal <= 5; const stockDateStr = p.lastStockUpdate ? `Updated: ${formatDisplayDate(p.lastStockUpdate)}` : (p.dateAdded ? `Added: ${formatDisplayDate(p.dateAdded)}` : '');
+                const div = document.createElement('div'); div.className = `bg-white rounded-lg border p-4 shadow-sm relative flex flex-col ${isLow ? 'border-red-300' : 'border-gray-200'}`;
+                div.innerHTML = `<div class="flex justify-between items-start mb-2"><h4 class="font-bold text-gray-800 pr-6">${p.name}</h4><div class="absolute top-4 right-4 flex space-x-2"><button onclick="editProduct('${p.id}')" class="text-gray-400 hover:text-blue-600"><i class="fa-solid fa-pen text-sm"></i></button><button onclick="deleteProduct('${p.id}')" class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash text-sm"></i></button></div></div><div class="mt-2 mb-4"><p class="text-xs text-gray-500 uppercase tracking-wide">Price</p><p class="font-bold text-gray-900">₹${p.price || 0} <span class="text-xs font-normal text-gray-500">/${p.unit || 'unit'}</span></p></div><div class="mt-auto border-t border-gray-100 pt-3 flex justify-between items-end"><div><span class="inline-block px-2 py-1 rounded text-xs font-bold ${isLow ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}">${stockVal} in Stock</span><p class="text-[10px] text-gray-400 mt-1"><i class="fa-solid fa-calendar-alt mr-1"></i>${stockDateStr}</p></div><button onclick="openAddStockModal('${p.id}')" class="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1.5 rounded hover:bg-green-100 font-semibold transition"><i class="fa-solid fa-plus mr-1"></i> Stock</button></div>`;
                 grid.appendChild(div);
             });
         }
 
-        window.filterOrderStatus = (status, btnElement) => {
-            currentOrderFilterTab = status;
-            document.querySelectorAll('.order-subtab').forEach(el => el.classList.remove('active'));
-            btnElement.classList.add('active');
-            selectedOrderIds = []; updateBulkPanel(); renderOrdersTable();
-        };
+        // --- ORDER MANAGEMENT ---
+        window.filterOrderStatus = (status, btnElement) => { currentOrderFilterTab = status; document.querySelectorAll('.order-subtab').forEach(el => el.classList.remove('active')); btnElement.classList.add('active'); selectedOrderIds = []; updateBulkPanel(); renderOrdersTable(); };
 
         window.addOrderItemRow = (prodId = '', qty = 1) => {
-            const container = document.getElementById('orderItemsContainer');
-            if(productsData.length === 0) { showToast("Add products to inventory first", "error"); switchTab('inventory'); return; }
+            const container = document.getElementById('orderItemsContainer'); if(productsData.length === 0) { showToast("Add products first", "error"); switchTab('inventory'); return; }
             const row = document.createElement('div'); row.className = 'flex items-center space-x-2 mb-2 order-item-row';
-            let optionsHTML = '<option value="">Select Product...</option>';
-            productsData.forEach(p => { optionsHTML += `<option value="${p.id}" data-price="${p.price}" data-name="${p.name}" ${p.id === prodId ? 'selected' : ''}>${p.name} (Stock: ${p.stock})</option>`; });
-            row.innerHTML = `
-                <select class="flex-1 rounded border-gray-300 border px-2 py-1.5 text-sm outline-none bg-gray-50 item-select" required>${optionsHTML}</select>
-                <input type="number" min="1" value="${qty}" class="w-20 rounded border-gray-300 border px-2 py-1.5 text-sm outline-none bg-gray-50 item-qty" placeholder="Qty" required>
-                <button type="button" onclick="this.closest('.order-item-row').remove()" class="text-red-500 hover:text-red-700 p-1.5"><i class="fa-solid fa-minus-circle"></i></button>
-            `;
-            container.appendChild(row);
+            let opts = '<option value="">Select Product...</option>'; productsData.forEach(p => { opts += `<option value="${p.id}" data-price="${p.price}" data-name="${p.name}" ${p.id === prodId ? 'selected' : ''}>${p.name} (Stock: ${p.stock})</option>`; });
+            row.innerHTML = `<select class="flex-1 rounded border-gray-300 border px-2 py-1.5 text-sm outline-none bg-gray-50 item-select" required>${opts}</select><input type="number" min="1" value="${qty}" class="w-20 rounded border-gray-300 border px-2 py-1.5 text-sm outline-none bg-gray-50 item-qty" placeholder="Qty" required><button type="button" onclick="this.closest('.order-item-row').remove()" class="text-red-500 hover:text-red-700 p-1.5"><i class="fa-solid fa-minus-circle"></i></button>`; container.appendChild(row);
         };
 
-        document.getElementById('addNewBtn').addEventListener('click', () => {
-            document.getElementById('orderForm').reset();
-            document.getElementById('orderId').value = '';
-            document.getElementById('orderDate').value = getTodayDateStr();
-            document.getElementById('orderStatus').value = 'Pending';
-            document.getElementById('orderItemsContainer').innerHTML = '';
-            window.addOrderItemRow(); 
-            document.getElementById('modalTitle').textContent = 'New WhatsApp Order';
-            openModal('formModal');
-        });
+        document.getElementById('addNewBtn').addEventListener('click', () => { document.getElementById('orderForm').reset(); document.getElementById('orderId').value = ''; document.getElementById('orderDate').value = getTodayDateStr(); document.getElementById('orderStatus').value = 'Pending'; document.getElementById('orderItemsContainer').innerHTML = ''; window.addOrderItemRow(); document.getElementById('modalTitle').textContent = 'New Order'; openModal('formModal'); });
 
         document.getElementById('saveOrderBtn').addEventListener('click', async () => {
-            const form = document.getElementById('orderForm');
-            if (!form.checkValidity()) { form.reportValidity(); return; }
-
-            const orderId = document.getElementById('orderId').value;
-            const isNew = !orderId;
-            const manualDate = document.getElementById('orderDate').value;
-            const status = document.getElementById('orderStatus').value;
-            
+            const form = document.getElementById('orderForm'); if (!form.checkValidity()) { form.reportValidity(); return; }
+            const orderId = document.getElementById('orderId').value; const isNew = !orderId; const manualDate = document.getElementById('orderDate').value;
             const parsedItems = []; let displayItemsText = '';
             document.querySelectorAll('.order-item-row').forEach(row => {
-                const select = row.querySelector('.item-select'); const qty = parseInt(row.querySelector('.item-qty').value);
-                if(select.value && qty > 0) {
-                    const option = select.options[select.selectedIndex];
-                    parsedItems.push({ id: select.value, name: option.dataset.name, qty: qty, price: parseFloat(option.dataset.price) });
-                    displayItemsText += `${qty}x ${option.dataset.name}, `;
-                }
+                const sel = row.querySelector('.item-select'); const qty = parseInt(row.querySelector('.item-qty').value);
+                if(sel.value && qty > 0) { const opt = sel.options[sel.selectedIndex]; parsedItems.push({ id: sel.value, name: opt.dataset.name, qty: qty, price: parseFloat(opt.dataset.price) }); displayItemsText += `${qty}x ${opt.dataset.name}, `; }
             });
-
-            const manualNotes = document.getElementById('itemsOrderedText').value;
-            if(manualNotes) displayItemsText += `Notes: ${manualNotes}`;
-
             const orderData = {
-                orderDate: manualDate, name: document.getElementById('customerName').value.trim(),
-                phone: document.getElementById('contactNumber').value.trim(), address: document.getElementById('fullAddress').value.trim(),
-                pincode: document.getElementById('pincode').value.trim(), location: document.getElementById('locationLink').value.trim(),
-                status: status, statusDate: manualDate, structuredItems: parsedItems, itemsDisplay: displayItemsText, manualNotes: manualNotes, updatedAt: serverTimestamp()
+                orderDate: manualDate, name: document.getElementById('customerName').value.trim(), phone: document.getElementById('contactNumber').value.trim(), address: document.getElementById('fullAddress').value.trim(), pincode: document.getElementById('pincode').value.trim(), location: document.getElementById('locationLink').value.trim(), status: document.getElementById('orderStatus').value, statusDate: manualDate, structuredItems: parsedItems, itemsDisplay: displayItemsText, manualNotes: document.getElementById('itemsOrderedText').value, updatedAt: serverTimestamp()
             };
-
-            const btn = document.getElementById('saveOrderBtn'); btn.innerHTML = 'Processing...'; btn.disabled = true;
-
+            const btn = document.getElementById('saveOrderBtn'); btn.innerHTML = 'Saving...'; btn.disabled = true;
             try {
                 const batch = writeBatch(db);
                 if (isNew) {
-                    const newOrderRef = doc(collection(db, 'orders'));
-                    orderData.createdAt = serverTimestamp();
-                    batch.set(newOrderRef, orderData);
-                    parsedItems.forEach(item => {
-                        const product = productsData.find(p => p.id === item.id);
-                        if(product) { const pRef = doc(db, 'products', item.id); batch.update(pRef, { stock: Math.max(0, (product.stock || 0) - item.qty) }); }
-                    });
+                    const newRef = doc(collection(db, 'orders')); orderData.createdAt = serverTimestamp(); batch.set(newRef, orderData);
+                    parsedItems.forEach(item => { const p = productsData.find(p => p.id === item.id); if(p) { batch.update(doc(db, 'products', item.id), { stock: Math.max(0, (p.stock || 0) - item.qty), lastStockUpdate: manualDate }); } });
                 } else { batch.update(doc(db, 'orders', orderId), orderData); }
-                await batch.commit(); showToast("Order Saved Successfully!"); closeModal('formModal');
+                await batch.commit(); showToast("Order Saved!"); closeModal('formModal');
             } catch (err) { showToast(err.message, "error"); } finally { btn.innerHTML = 'Save Order'; btn.disabled = false; }
         });
 
-        window.openStatusModal = (id, currentStatus) => {
-            document.getElementById('statusUpdateOrderId').value = id; document.getElementById('newStatusSelect').value = currentStatus;
-            document.getElementById('statusChangeDate').value = getTodayDateStr(); openModal('updateStatusModal');
-            if(activeDropdownId) toggleDropdown(activeDropdownId, new Event('click'));
-        };
+        window.openStatusModal = (id, curStatus) => { document.getElementById('statusUpdateOrderId').value = id; document.getElementById('newStatusSelect').value = curStatus; document.getElementById('statusChangeDate').value = getTodayDateStr(); openModal('updateStatusModal'); if(activeDropdownId) toggleDropdown(activeDropdownId, new Event('click')); };
+        document.getElementById('statusUpdateForm').addEventListener('submit', async (e) => { e.preventDefault(); try { await updateDoc(doc(db, 'orders', document.getElementById('statusUpdateOrderId').value), { status: document.getElementById('newStatusSelect').value, statusDate: document.getElementById('statusChangeDate').value, updatedAt: serverTimestamp() }); showToast("Status updated"); closeModal('updateStatusModal'); } catch(err) { showToast(err.message, "error"); } });
 
-        document.getElementById('statusUpdateForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('statusUpdateOrderId').value; const newStatus = document.getElementById('newStatusSelect').value; const changeDate = document.getElementById('statusChangeDate').value;
-            try { await updateDoc(doc(db, 'orders', id), { status: newStatus, statusDate: changeDate, updatedAt: serverTimestamp() }); showToast(`Status changed to ${newStatus}`); closeModal('updateStatusModal'); } catch(err) { showToast(err.message, "error"); }
-        });
-
-        window.editOrder = (id) => {
-            const order = ordersData.find(o => o.id === id); if(!order) return;
-            document.getElementById('orderId').value = order.id; document.getElementById('orderDate').value = order.orderDate || getTodayDateStr();
-            document.getElementById('customerName').value = order.name || ''; document.getElementById('contactNumber').value = order.phone || '';
-            document.getElementById('fullAddress').value = order.address || ''; document.getElementById('pincode').value = order.pincode || '';
-            document.getElementById('locationLink').value = order.location || ''; document.getElementById('orderStatus').value = order.status || 'Pending';
-            document.getElementById('itemsOrderedText').value = order.manualNotes || '';
-            const container = document.getElementById('orderItemsContainer'); container.innerHTML = '';
-            if(order.structuredItems && order.structuredItems.length > 0) order.structuredItems.forEach(item => addOrderItemRow(item.id, item.qty));
-            document.getElementById('modalTitle').textContent = 'Edit Order Info'; openModal('formModal');
-            if(activeDropdownId) toggleDropdown(activeDropdownId, new Event('click'));
-        };
-
-        window.deleteOrder = async (id) => {
-            if(confirm("Delete this order completely?")) {
-                try { await deleteDoc(doc(db, 'orders', id)); selectedOrderIds = selectedOrderIds.filter(selId => selId !== id); updateBulkPanel(); showToast("Order deleted"); } catch(e) { showToast(e.message, "error"); }
-            }
-        };
+        window.editOrder = (id) => { const o = ordersData.find(o => o.id === id); if(!o) return; document.getElementById('orderId').value = o.id; document.getElementById('orderDate').value = o.orderDate || getTodayDateStr(); document.getElementById('customerName').value = o.name || ''; document.getElementById('contactNumber').value = o.phone || ''; document.getElementById('fullAddress').value = o.address || ''; document.getElementById('pincode').value = o.pincode || ''; document.getElementById('locationLink').value = o.location || ''; document.getElementById('orderStatus').value = o.status || 'Pending'; document.getElementById('itemsOrderedText').value = o.manualNotes || ''; document.getElementById('orderItemsContainer').innerHTML = ''; if(o.structuredItems) o.structuredItems.forEach(item => addOrderItemRow(item.id, item.qty)); document.getElementById('modalTitle').textContent = 'Edit Order'; openModal('formModal'); if(activeDropdownId) toggleDropdown(activeDropdownId, new Event('click')); };
+        window.deleteOrder = async (id) => { if(confirm("Delete this order?")) { try { await deleteDoc(doc(db, 'orders', id)); selectedOrderIds = selectedOrderIds.filter(selId => selId !== id); updateBulkPanel(); showToast("Deleted"); } catch(e) { showToast(e.message, "error"); } } };
 
         function renderOrdersTable() {
-            const tableBody = document.getElementById('ordersTableBody'); const searchLower = searchQuery.toLowerCase();
-            let filtered = ordersData;
-            if(currentOrderFilterTab !== 'All') { filtered = filtered.filter(o => o.status === currentOrderFilterTab); }
-            filtered = filtered.filter(o => (o.name && o.name.toLowerCase().includes(searchLower)) || (o.phone && o.phone.includes(searchLower)));
-            tableBody.innerHTML = ''; document.getElementById('recordCount').textContent = `Showing: ${filtered.length} orders`;
-            document.getElementById('selectAllCheckbox').checked = (filtered.length > 0 && selectedOrderIds.length === filtered.length);
-
-            if (filtered.length === 0) { document.getElementById('emptyState').style.display = 'flex'; tableBody.parentElement.style.display = 'none'; } 
+            const tbody = document.getElementById('ordersTableBody'); const search = searchQuery.toLowerCase(); let filtered = ordersData;
+            if(currentOrderFilterTab !== 'All') filtered = filtered.filter(o => o.status === currentOrderFilterTab);
+            filtered = filtered.filter(o => (o.name && o.name.toLowerCase().includes(search)) || (o.phone && o.phone.includes(search)));
+            tbody.innerHTML = ''; document.getElementById('selectAllCheckbox').checked = (filtered.length > 0 && selectedOrderIds.length === filtered.length);
+            if (filtered.length === 0) { document.getElementById('emptyState').style.display = 'flex'; tbody.parentElement.style.display = 'none'; } 
             else {
-                document.getElementById('emptyState').style.display = 'none'; tableBody.parentElement.style.display = 'table';
-                filtered.forEach(order => {
-                    const isChecked = selectedOrderIds.includes(order.id); const tr = document.createElement('tr');
-                    tr.className = `hover:bg-gray-50 transition-colors ${isChecked ? 'bg-red-50' : ''}`;
-                    const sc = { 'Pending': 'bg-yellow-100 text-yellow-800 border-yellow-200', 'Processing': 'bg-blue-100 text-blue-800 border-blue-200', 'Shipped': 'bg-purple-100 text-purple-800 border-purple-200', 'Delivered': 'bg-green-100 text-green-800 border-green-200' }[order.status] || 'bg-gray-100 text-gray-800 border-gray-200';
-                    const displayDate = formatDisplayDate(order.orderDate);
-                    const statusDateStr = order.statusDate && order.statusDate !== order.orderDate ? `<div class="text-[10px] text-gray-500 mt-1">Status changed:<br>${formatDisplayDate(order.statusDate)}</div>` : '';
-
-                    tr.innerHTML = `
-                        <td class="px-6 py-4"><input type="checkbox" class="custom-checkbox row-cb" data-id="${order.id}" ${isChecked ? 'checked' : ''}></td>
-                        <td class="px-6 py-4 align-top whitespace-nowrap"><span class="font-medium text-gray-800">${displayDate}</span></td>
-                        <td class="px-6 py-4 align-top">
-                            <div class="font-bold text-gray-900">${order.name}</div>
-                            <div class="text-sm text-gray-700 mt-1 max-w-xs truncate">${order.address}</div>
-                            <div class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-phone mr-1"></i>${order.phone}</div>
-                        </td>
-                        <td class="px-6 py-4 align-top text-center whitespace-nowrap"><span class="px-2.5 py-1 text-xs font-bold rounded-md border ${sc}">${order.status}</span>${statusDateStr}</td>
-                        <td class="px-6 py-4 align-top text-right relative whitespace-nowrap">
-                            <div class="flex items-center justify-end space-x-1">
-                                <button class="text-gray-400 hover:text-gray-800 p-1.5 rounded print-single" data-id="${order.id}" title="Print Label"><i class="fa-solid fa-print text-lg"></i></button>
-                                <div class="relative">
-                                    <button class="menu-btn text-gray-400 hover:text-gray-800 p-1.5" onclick="toggleDropdown('${order.id}', event)"><i class="fa-solid fa-ellipsis-vertical text-lg px-2"></i></button>
-                                    <div id="dd-${order.id}" class="dropdown-menu">
-                                        <button onclick="openStatusModal('${order.id}', '${order.status}')" class="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 text-left font-medium border-b border-gray-100"><i class="fa-solid fa-truck-fast w-4 mr-2"></i> Update Status</button>
-                                        <button onclick="editOrder('${order.id}')" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"><i class="fa-solid fa-pen w-4 mr-2"></i> Edit Details</button>
-                                        <button onclick="deleteOrder('${order.id}')" class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left"><i class="fa-solid fa-trash w-4 mr-2"></i> Delete Order</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    `;
-                    tr.querySelector('.row-cb').addEventListener('change', (e) => { if(e.target.checked) selectedOrderIds.push(order.id); else selectedOrderIds = selectedOrderIds.filter(id => id !== order.id); updateBulkPanel(); renderOrdersTable(); });
-                    tr.querySelector('.print-single').addEventListener('click', () => generatePDF([order])); tableBody.appendChild(tr);
+                document.getElementById('emptyState').style.display = 'none'; tbody.parentElement.style.display = 'table';
+                filtered.forEach(o => {
+                    const isChecked = selectedOrderIds.includes(o.id); const tr = document.createElement('tr'); tr.className = `hover:bg-gray-50 transition-colors ${isChecked ? 'bg-red-50' : ''}`;
+                    const sc = { 'Pending': 'bg-yellow-100 text-yellow-800', 'Processing': 'bg-blue-100 text-blue-800', 'Shipped': 'bg-purple-100 text-purple-800', 'Delivered': 'bg-green-100 text-green-800' }[o.status] || 'bg-gray-100 text-gray-800';
+                    const statDate = o.statusDate && o.statusDate !== o.orderDate ? `<div class="text-[10px] text-gray-500 mt-1">Updated: ${formatDisplayDate(o.statusDate)}</div>` : '';
+                    tr.innerHTML = `<td class="px-6 py-4"><input type="checkbox" class="custom-checkbox row-cb" ${isChecked ? 'checked' : ''}></td><td class="px-6 py-4"><span class="font-medium text-gray-800">${formatDisplayDate(o.orderDate)}</span></td><td class="px-6 py-4"><div class="font-bold text-gray-900">${o.name}</div><div class="text-sm text-gray-700 mt-1">${o.address}</div><div class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-phone mr-1"></i>${o.phone}</div></td><td class="px-6 py-4 text-center"><span class="px-2.5 py-1 text-xs font-bold rounded-md ${sc}">${o.status}</span>${statDate}</td><td class="px-6 py-4 text-right relative"><div class="flex items-center justify-end space-x-1"><button class="text-gray-400 hover:text-gray-800 p-1.5 print-single" title="Print Label"><i class="fa-solid fa-print text-lg"></i></button><div class="relative"><button class="text-gray-400 hover:text-gray-800 p-1.5" onclick="toggleDropdown('${o.id}', event)"><i class="fa-solid fa-ellipsis-vertical text-lg px-2"></i></button><div id="dd-${o.id}" class="dropdown-menu"><button onclick="openStatusModal('${o.id}', '${o.status}')" class="flex items-center w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 text-left font-medium"><i class="fa-solid fa-truck-fast w-4 mr-2"></i> Status</button><button onclick="editOrder('${o.id}')" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"><i class="fa-solid fa-pen w-4 mr-2"></i> Edit</button><button onclick="deleteOrder('${o.id}')" class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left"><i class="fa-solid fa-trash w-4 mr-2"></i> Delete</button></div></div></div></td>`;
+                    tr.querySelector('.row-cb').addEventListener('change', (e) => { if(e.target.checked) selectedOrderIds.push(o.id); else selectedOrderIds = selectedOrderIds.filter(id => id !== o.id); updateBulkPanel(); renderOrdersTable(); });
+                    tr.querySelector('.print-single').addEventListener('click', () => generatePDF([o])); tbody.appendChild(tr);
                 });
             }
         }
-
         document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; renderOrdersTable(); });
         document.getElementById('selectAllCheckbox').addEventListener('change', e => {
-            const searchLower = searchQuery.toLowerCase(); let filtered = ordersData;
-            if(currentOrderFilterTab !== 'All') filtered = filtered.filter(o => o.status === currentOrderFilterTab);
-            filtered = filtered.filter(o => (o.name && o.name.toLowerCase().includes(searchLower)) || (o.phone && o.phone.includes(searchLower)));
-            selectedOrderIds = e.target.checked ? filtered.map(o => o.id) : []; updateBulkPanel(); renderOrdersTable();
+            let f = ordersData; if(currentOrderFilterTab !== 'All') f = f.filter(o => o.status === currentOrderFilterTab);
+            const s = searchQuery.toLowerCase(); f = f.filter(o => (o.name && o.name.toLowerCase().includes(s)) || (o.phone && o.phone.includes(s)));
+            selectedOrderIds = e.target.checked ? f.map(o => o.id) : []; updateBulkPanel(); renderOrdersTable();
         });
-
-        function updateBulkPanel() {
-            const panel = document.getElementById('bulkActionPanel');
-            if (selectedOrderIds.length > 0) { panel.classList.remove('hidden'); document.getElementById('selectedCountText').textContent = `${selectedOrderIds.length} selected`; } else { panel.classList.add('hidden'); }
-        }
-
-        window.toggleDropdown = (id, event) => {
-            event.stopPropagation();
-            if(activeDropdownId && activeDropdownId !== id) { const ex = document.getElementById(`dd-${activeDropdownId}`); if(ex) ex.classList.remove('show'); }
-            const dd = document.getElementById(`dd-${id}`); if(dd) { dd.classList.toggle('show'); activeDropdownId = dd.classList.contains('show') ? id : null; }
-        };
+        function updateBulkPanel() { const p = document.getElementById('bulkActionPanel'); if (selectedOrderIds.length > 0) { p.classList.remove('hidden'); document.getElementById('selectedCountText').textContent = `${selectedOrderIds.length} selected`; } else { p.classList.add('hidden'); } }
+        window.toggleDropdown = (id, event) => { event.stopPropagation(); if(activeDropdownId && activeDropdownId !== id) { const ex = document.getElementById(`dd-${activeDropdownId}`); if(ex) ex.classList.remove('show'); } const dd = document.getElementById(`dd-${id}`); if(dd) { dd.classList.toggle('show'); activeDropdownId = dd.classList.contains('show') ? id : null; } };
         document.addEventListener('click', () => { if(activeDropdownId) { const dd = document.getElementById(`dd-${activeDropdownId}`); if(dd) dd.classList.remove('show'); activeDropdownId = null; } });
 
-        document.getElementById('exportCsvBtn').addEventListener('click', () => {
-            if(ordersData.length === 0) { showToast("No data to export", "error"); return; }
-            const headers = ["OrderDate", "Name", "Phone", "Address", "Pincode", "Location", "Items", "Status", "StatusDate"];
-            const rows = ordersData.map(order => [ order.orderDate || '', `"${order.name}"`, `"${order.phone}"`, `"${order.address}"`, `"${order.pincode}"`, `"${order.location}"`, `"${order.itemsDisplay || ''}"`, order.status, order.statusDate || '' ]);
-            let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n"; rows.forEach(row => { csvContent += row.join(",") + "\n"; });
-            const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "Lakfa_Orders.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        });
-
+        // --- PDF PRINTING (A4 - 4 Quadrants) ---
         function generatePDF(ordersList) {
             if (!window.jspdf) { showToast("Loading PDF tool...", "error"); return; }
             const { jsPDF } = window.jspdf; const doc = new jsPDF(); const w = 210, h = 297; 
             
-            const drawGuides = () => {
-                doc.setDrawColor(200); doc.setLineDashPattern([1, 1.5], 0); doc.setLineWidth(0.2);
-                doc.line(w/2, 0, w/2, h); doc.line(0, h/2, w, h/2); doc.setLineDashPattern([], 0);
-            };
-
+            const drawGuides = () => { doc.setDrawColor(200); doc.setLineDashPattern([1, 1.5], 0); doc.setLineWidth(0.2); doc.line(w/2, 0, w/2, h); doc.line(0, h/2, w, h/2); doc.setLineDashPattern([], 0); };
             drawGuides();
+
             ordersList.forEach((order, i) => {
                 if (i > 0 && i % 4 === 0) { doc.addPage(); drawGuides(); }
                 const col = i % 2, row = Math.floor((i % 4) / 2);
@@ -983,26 +639,42 @@
                 doc.setFont("helvetica", "normal"); doc.setFontSize(18);
                 
                 let addrStr = order.address || ""; if(addrStr.endsWith(',')) addrStr = addrStr.slice(0, -1);
-                const fullAddressText = `${addrStr}\nPIN: ${order.pincode || ""}`;
-                const splitAddr = doc.splitTextToSize(fullAddressText, boxW - 10);
+                const splitAddr = doc.splitTextToSize(`${addrStr}\nPIN: ${order.pincode || ""}`, boxW - 10);
                 doc.text(splitAddr, startX + 5, currentY);
-                
                 currentY += (splitAddr.length * 9) + 12;
                 doc.setFont("helvetica", "bold"); doc.setFontSize(20); doc.text(`Ph: ${order.phone || ""}`, startX + 5, currentY);
             });
-            doc.save("Lakfa_Labels.pdf");
-            if(ordersList.length > 1) { selectedOrderIds = []; updateBulkPanel(); renderOrdersTable(); }
+            doc.save("Lakfa_Labels.pdf"); if(ordersList.length > 1) { selectedOrderIds = []; updateBulkPanel(); renderOrdersTable(); }
         }
-
         document.getElementById('bulkPrintBtn').addEventListener('click', () => { const list = ordersData.filter(o => selectedOrderIds.includes(o.id)); if(list.length > 0) generatePDF(list); });
 
-        function populateSettingsForm() { 
-            document.getElementById('settingCompanyName').value = companySettings.name; document.getElementById('settingAddress1').value = companySettings.addr1; 
-            document.getElementById('settingAddress2').value = companySettings.addr2; document.getElementById('settingStatePin').value = companySettings.statePin; document.getElementById('settingPhone').value = companySettings.phone; 
-        }
-        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-            companySettings = { name: document.getElementById('settingCompanyName').value, addr1: document.getElementById('settingAddress1').value, addr2: document.getElementById('settingAddress2').value, statePin: document.getElementById('settingStatePin').value, phone: document.getElementById('settingPhone').value };
-            localStorage.setItem('lakfaSettings', JSON.stringify(companySettings)); showToast("Settings saved!");
+        // --- EXPORT EXCEL ---
+        document.getElementById('exportCsvBtn').addEventListener('click', () => {
+            if(ordersData.length === 0) { showToast("No data to export", "error"); return; }
+            const rows = ordersData.map(o => [ o.orderDate || '', `"${o.name}"`, `"${o.phone}"`, `"${o.address}"`, `"${o.pincode}"`, `"${o.location}"`, `"${o.itemsDisplay || ''}"`, o.status, o.statusDate || '' ]);
+            let csvContent = "data:text/csv;charset=utf-8,Date,Name,Phone,Address,Pincode,Location,Items,Status,StatusDate\n" + rows.map(r => r.join(",")).join("\n");
+            const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", "Lakfa_Orders.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        });
+
+        // --- SETTINGS CLOUD SYNC SAVE ---
+        document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveSettingsBtn'); btn.textContent = "Saving..."; btn.disabled = true;
+            const newSettings = {
+                name: document.getElementById('settingCompanyName').value,
+                addr1: document.getElementById('settingAddress1').value,
+                addr2: document.getElementById('settingAddress2').value,
+                statePin: document.getElementById('settingStatePin').value,
+                phone: document.getElementById('settingPhone').value
+            };
+            try {
+                // Use setDoc so it creates the document if it doesn't exist
+                await setDoc(doc(db, 'settings', 'company'), newSettings);
+                showToast("Settings Saved & Synced globally!");
+            } catch(e) {
+                showToast(e.message, "error");
+            } finally {
+                btn.textContent = "Save Configuration"; btn.disabled = false;
+            }
         });
 
     </script>
