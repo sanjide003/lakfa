@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- jsPDF for PDF generation -->
+    <!-- jsPDF for PDF generation from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
@@ -92,7 +92,7 @@
             <div id="bulkActionPanel" class="hidden flex items-center space-x-3 bg-red-50 px-4 py-2 rounded-lg border border-red-100 transition-all">
                 <span id="selectedCountText" class="text-red-700 font-medium text-sm">0 selected</span>
                 <button id="bulkPrintBtn" class="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 shadow-sm transition">
-                    <i class="fa-solid fa-print mr-2"></i> Print Selected
+                    <i class="fa-solid fa-print mr-2"></i> Print Selected (PDF)
                 </button>
             </div>
         </div>
@@ -161,7 +161,7 @@
                         
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">2. Contact Number (ഫോൺ)</label>
-                            <input type="tel" id="contactNumber" required class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="Phone Number">
+                            <input type="text" id="contactNumber" required class="w-full rounded-md border-gray-300 border px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" placeholder="Phone Number">
                         </div>
 
                         <div class="sm:col-span-2">
@@ -239,7 +239,7 @@
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // ==========================================
-        // YOUR FIREBASE CONFIGURATION HERE
+        // 1. YOUR FIREBASE CONFIGURATION HERE
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyCQjO9TcXCve9gI0ysdzCO1thV8SBTFjcc",
@@ -297,25 +297,22 @@
         };
 
         // ==========================================
-        // 1. Initialization
+        // 2. Initialization
         // ==========================================
         async function initApp() {
             try {
-                // Initialize Firebase
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // Sign in anonymously to allow reading/writing without user login
-                // IMPORTANT: Ensure your Firestore Security Rules allow this!
-                // Rule should be something like: allow read, write: if true;
+                // Sign in anonymously to allow reading/writing
                 await signInAnonymously(auth);
                 console.log("Firebase connected successfully");
                 
                 setupRealtimeListener();
             } catch (error) {
                 console.error("Firebase init failed:", error);
-                showToast("Database connection failed. Please check your config and rules.", "error");
+                showToast("Database connection failed. Please check config.", "error");
                 loadingState.style.display = 'none';
                 emptyState.style.display = 'flex';
                 emptyState.querySelector('p').textContent = 'Database Connection Error';
@@ -323,12 +320,10 @@
         }
 
         // ==========================================
-        // 2. Database Sync (Realtime)
+        // 3. Database Sync (Realtime)
         // ==========================================
         function setupRealtimeListener() {
-            // Reference to the 'orders' collection in your Firestore
             const ordersRef = collection(db, 'orders');
-            // Query to sort by creation date (newest first)
             const q = query(ordersRef, orderBy("createdAt", "desc"));
             
             onSnapshot(q, (snapshot) => {
@@ -347,10 +342,8 @@
                 renderTable();
             }, (error) => {
                 console.error("Error fetching data:", error);
-                // Fallback rendering if order index is missing
                 if(error.message.includes('index')) {
-                    showToast("Firestore index building. Loading data without sorting temporarily.", "error");
-                    // Try without sorting
+                    showToast("Loading data without sorting temporarily (Index building).", "error");
                     onSnapshot(collection(db, 'orders'), (snap) => {
                          ordersData = [];
                          snap.forEach(doc => ordersData.push({ id: doc.id, ...doc.data() }));
@@ -365,7 +358,7 @@
         }
 
         // ==========================================
-        // 3. UI rendering logic
+        // 4. UI rendering logic
         // ==========================================
         function getStatusBadge(status) {
             let colors = '';
@@ -489,7 +482,7 @@
         }
 
         // ==========================================
-        // 4. Selection & Bulk Logic
+        // 5. Selection & Bulk Logic
         // ==========================================
         function toggleOrderSelection(id, isChecked) {
             if (isChecked) {
@@ -498,7 +491,7 @@
                 selectedOrderIds = selectedOrderIds.filter(selectedId => selectedId !== id);
             }
             updateBulkActionPanel();
-            renderTable(); // Re-render to show background color changes
+            renderTable();
         }
 
         function toggleSelectAll(isChecked) {
@@ -528,10 +521,9 @@
         }
 
         // ==========================================
-        // 5. Dropdown Menu Logic
+        // 6. Dropdown Menu Logic
         // ==========================================
         function toggleDropdown(id) {
-            // Close existing
             if (activeDropdownId && activeDropdownId !== id) {
                 const existing = document.getElementById(`dropdown-${activeDropdownId}`);
                 if(existing) existing.classList.remove('show');
@@ -544,7 +536,6 @@
             }
         }
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', () => {
             if (activeDropdownId) {
                 const dropdown = document.getElementById(`dropdown-${activeDropdownId}`);
@@ -554,7 +545,7 @@
         });
 
         // ==========================================
-        // 6. Form Handlers (Add/Edit)
+        // 7. Form Handlers (Add/Edit)
         // ==========================================
         function openForm() {
             formModal.classList.remove('hidden');
@@ -581,11 +572,10 @@
             modalTitle.textContent = 'Edit Order';
             saveBtnText.textContent = 'Update Order';
             openForm();
-            if(activeDropdownId) toggleDropdown(activeDropdownId); // close menu
+            if(activeDropdownId) toggleDropdown(activeDropdownId);
         }
 
         async function saveOrderData() {
-            // HTML5 Form validation check
             if (!orderForm.checkValidity()) {
                 orderForm.reportValidity();
                 return;
@@ -610,21 +600,18 @@
                 const colRef = collection(db, 'orders');
                 
                 if (docId) {
-                    // Update existing
                     const docRef = doc(db, 'orders', docId);
                     await updateDoc(docRef, { ...orderData, updatedAt: serverTimestamp() });
                     showToast("Order updated successfully!");
                 } else {
-                    // Add new order
                     await addDoc(colRef, { ...orderData, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
                     showToast("New order added!");
                 }
                 closeForm();
             } catch (error) {
                 console.error("Save error:", error);
-                // Check if it is a permission issue
                 if(error.code === 'permission-denied') {
-                    showToast("Permission Denied: Please update Firestore Security Rules to allow writes.", "error");
+                    showToast("Permission Denied: Please update Firestore Rules.", "error");
                 } else {
                     showToast("Error saving order. Check console.", "error");
                 }
@@ -635,12 +622,12 @@
         }
 
         // ==========================================
-        // 7. Delete Handlers
+        // 8. Delete Handlers
         // ==========================================
         function promptDelete(id) {
             orderToDeleteId = id;
             deleteModal.classList.remove('hidden');
-            if(activeDropdownId) toggleDropdown(activeDropdownId); // close menu
+            if(activeDropdownId) toggleDropdown(activeDropdownId);
         }
 
         async function executeDelete() {
@@ -650,18 +637,13 @@
                 const docRef = doc(db, 'orders', orderToDeleteId);
                 await deleteDoc(docRef);
                 
-                // Remove from selection if selected
                 selectedOrderIds = selectedOrderIds.filter(id => id !== orderToDeleteId);
                 updateBulkActionPanel();
                 
                 showToast("Order deleted successfully", "success");
             } catch (error) {
                 console.error("Delete failed:", error);
-                if(error.code === 'permission-denied') {
-                    showToast("Permission Denied: Cannot delete.", "error");
-                } else {
-                    showToast("Failed to delete order", "error");
-                }
+                showToast("Failed to delete order", "error");
             } finally {
                 deleteModal.classList.add('hidden');
                 orderToDeleteId = null;
@@ -669,7 +651,7 @@
         }
 
         // ==========================================
-        // 8. PDF Generation Logic (jsPDF)
+        // 9. PDF Generation Logic (4 per A4 page)
         // ==========================================
         function generatePDF(ordersList) {
             if (!window.jspdf || !window.jspdf.jsPDF) {
@@ -685,78 +667,96 @@
 
                 showToast("Preparing PDF...", "success");
 
-                ordersList.forEach((order, index) => {
-                    // New page after every 2 orders
-                    if (index > 0 && index % 2 === 0) {
-                        doc.addPage();
-                    }
-
-                    const isTopHalf = index % 2 === 0;
-                    const startY = isTopHalf ? 15 : (pageHeight / 2) + 15;
-                    
-                    // Draw cutting line for bottom half
-                    if (!isTopHalf) {
-                        doc.setLineDashPattern([2, 2], 0);
-                        doc.line(10, pageHeight / 2, pageWidth - 10, pageHeight / 2);
-                        doc.setLineDashPattern([], 0); 
-                        doc.setFontSize(8);
-                        doc.setTextColor(150);
-                        doc.text("✄ Cut Here", 15, (pageHeight / 2) + 4);
-                        doc.setTextColor(0); 
-                    }
-
-                    // Main Box Border
-                    doc.setLineWidth(0.5);
+                // Function to draw guidelines for cutting
+                const drawCutLines = () => {
+                    doc.setLineDashPattern([2, 2], 0);
                     doc.setDrawColor(200);
-                    doc.rect(15, startY + 5, pageWidth - 30, (pageHeight / 2) - 30);
+                    doc.line(pageWidth / 2, 0, pageWidth / 2, pageHeight); // Vertical middle
+                    doc.line(0, pageHeight / 2, pageWidth, pageHeight / 2); // Horizontal middle
+                    doc.setLineDashPattern([], 0);
+                };
 
-                    // Heading
-                    doc.setFontSize(16);
+                // Draw lines on first page
+                drawCutLines();
+
+                ordersList.forEach((order, index) => {
+                    // New page after every 4 orders
+                    if (index > 0 && index % 4 === 0) {
+                        doc.addPage();
+                        drawCutLines();
+                    }
+
+                    // Determine the position (Row and Column)
+                    const col = index % 2; // 0 for left, 1 for right
+                    const row = Math.floor((index % 4) / 2); // 0 for top, 1 for bottom
+                    
+                    const boxWidth = pageWidth / 2; // 105mm
+                    const boxHeight = pageHeight / 2; // 148.5mm
+                    
+                    const offsetX = col * boxWidth;
+                    const offsetY = row * boxHeight;
+                    
+                    // 12mm margin from the cutting lines
+                    const margin = 12; 
+
+                    // Draw Inner Border (Margin Box)
+                    doc.setLineWidth(0.6);
+                    doc.setDrawColor(100);
+                    doc.rect(offsetX + margin, offsetY + margin, boxWidth - (margin * 2), boxHeight - (margin * 2));
+
+                    // --- FROM ADDRESS ---
+                    let currentY = offsetY + margin + 12; 
+                    doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
-                    doc.text("SHIPPING LABEL", pageWidth / 2, startY, { align: "center" });
-
-                    // Center Divider Line
-                    doc.line(pageWidth / 2, startY + 5, pageWidth / 2, startY + 55);
-
-                    // --- LEFT SIDE: FROM ADDRESS ---
-                    doc.setFontSize(10);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("From:", 20, startY + 15);
+                    doc.text("From:", offsetX + margin + 8, currentY);
                     
-                    doc.setFontSize(14);
-                    doc.text("Lakfa Foods", 20, startY + 23);
+                    currentY += 8;
+                    doc.setFontSize(18); // Larger text for Lakfa Foods
+                    doc.text("Lakfa Foods", offsetX + margin + 8, currentY);
                     
-                    doc.setFont("helvetica", "normal");
-                    doc.setFontSize(10);
-                    const fromAddress = "Sp. Godown, Rottipeedika\nPullisherikund, PO,\nPallikal, Kerala 673634\n\nPh: 079073 45458";
-                    doc.text(fromAddress, 20, startY + 30);
-
-                    // --- RIGHT SIDE: TO ADDRESS ---
-                    doc.setFontSize(11);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("To:", (pageWidth / 2) + 5, startY + 15);
-                    
-                    doc.setFontSize(16);
-                    doc.text(order.name || "Customer", (pageWidth / 2) + 5, startY + 23);
-                    
+                    currentY += 7;
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(12);
-                    const addressText = `${order.address || ""}\n\nPIN: ${order.pincode || ""}\nPh: ${order.phone || ""}`;
-                    const splitAddress = doc.splitTextToSize(addressText, (pageWidth / 2) - 15);
-                    doc.text(splitAddress, (pageWidth / 2) + 5, startY + 30);
+                    const fromAddress = "Sp. Godown, Rottipeedika\nPullisherikund, PO,\nPallikal, Kerala 673634\nPh: 079073 45458";
+                    doc.text(fromAddress, offsetX + margin + 8, currentY);
 
-                    // --- BOTTOM SECTION: ITEMS ---
+                    // Separator line between From and To
+                    currentY += 25;
                     doc.setDrawColor(200);
-                    doc.line(15, startY + 55, pageWidth - 15, startY + 55); 
-                    
-                    doc.setFontSize(11);
+                    doc.line(offsetX + margin + 8, currentY, offsetX + boxWidth - margin - 8, currentY);
+
+                    // --- TO ADDRESS ---
+                    currentY += 12;
+                    doc.setFontSize(14);
                     doc.setFont("helvetica", "bold");
-                    doc.text("Order Items:", 20, startY + 65);
+                    doc.text("To:", offsetX + margin + 8, currentY);
                     
+                    currentY += 9;
+                    doc.setFontSize(20); // Very large text for Customer Name
+                    doc.text(order.name || "Customer", offsetX + margin + 8, currentY);
+                    
+                    currentY += 9;
                     doc.setFont("helvetica", "normal");
-                    doc.setFontSize(11);
-                    const itemsList = doc.splitTextToSize(order.items || "N/A", pageWidth - 40);
-                    doc.text(itemsList, 20, startY + 72);
+                    doc.setFontSize(14); // Larger address text
+                    
+                    // Format address and integrate Pincode
+                    let addrStr = order.address ? order.address.trim() : "";
+                    if (addrStr.endsWith(',')) {
+                        addrStr = addrStr.slice(0, -1); // remove trailing comma if present
+                    }
+                    const pinStr = order.pincode ? ` - PIN: ${order.pincode}` : "";
+                    
+                    const fullAddressText = `${addrStr}${pinStr}`;
+                    const splitAddress = doc.splitTextToSize(fullAddressText, boxWidth - (margin * 2) - 16);
+                    doc.text(splitAddress, offsetX + margin + 8, currentY);
+
+                    // Add dynamic spacing based on how many lines the address took
+                    currentY += (splitAddress.length * 7) + 5; 
+                    
+                    // Print Phone number in BOLD below the address
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(15); 
+                    doc.text(`Phone: ${order.phone || ""}`, offsetX + margin + 8, currentY);
                 });
 
                 doc.save("Lakfa_Shipping_Labels.pdf");
@@ -786,7 +786,7 @@
         }
 
         // ==========================================
-        // 9. Excel/CSV Export
+        // 10. Excel/CSV Export
         // ==========================================
         function exportToCSV() {
             if(ordersData.length === 0) {
@@ -802,7 +802,6 @@
             ordersData.forEach(o => {
                 let dateStr = '';
                 if(o.createdAt) {
-                    // Check if it's a Firestore Timestamp
                     if(typeof o.createdAt.toDate === 'function') {
                         dateStr = o.createdAt.toDate().toLocaleDateString();
                     } else {
@@ -810,7 +809,6 @@
                     }
                 }
 
-                // Escape quotes and wrap in quotes to handle commas inside text
                 const name = `"${(o.name || '').replace(/"/g, '""')}"`;
                 const phone = `"${(o.phone || '').replace(/"/g, '""')}"`;
                 const address = `"${(o.address || '').replace(/"/g, '""')}"`;
@@ -838,13 +836,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
 
-            // Search
             searchInput.addEventListener('input', (e) => {
                 searchQuery = e.target.value;
                 renderTable();
             });
 
-            // Modal Toggles
             addNewBtn.addEventListener('click', () => {
                 orderForm.reset();
                 inputs.id.value = '';
@@ -855,32 +851,26 @@
             closeModalBtn.addEventListener('click', closeForm);
             cancelBtn.addEventListener('click', closeForm);
 
-            // Close modal when clicking outside
             formModal.addEventListener('click', (e) => {
                 if (e.target === formModal) closeForm();
             });
 
-            // Save Order (prevent default form submission)
             saveBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 saveOrderData();
             });
 
-            // Delete Modal
             document.getElementById('cancelDelBtn').addEventListener('click', () => {
                 deleteModal.classList.add('hidden');
                 orderToDeleteId = null;
             });
             document.getElementById('confirmDelBtn').addEventListener('click', executeDelete);
 
-            // Checkboxes
             selectAllCheckbox.addEventListener('change', (e) => toggleSelectAll(e.target.checked));
             
-            // Bulk Print & Export
             bulkPrintBtn.addEventListener('click', handleBulkPrint);
             exportCsvBtn.addEventListener('click', exportToCSV);
         });
-
     </script>
 </body>
 </html>
