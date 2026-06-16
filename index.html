@@ -367,6 +367,33 @@
         </div>
     </div>
 
+    <!-- STOCK HISTORY MODAL -->
+    <div id="stockHistoryModal" class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden z-50 flex flex-col max-h-[80vh]">
+            <div class="px-5 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
+                <h2 class="font-bold text-gray-800">Stock History: <span id="historyProdName" class="text-red-600"></span></h2>
+                <button type="button" onclick="closeModal('stockHistoryModal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-0 overflow-y-auto flex-1 bg-white">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Date</th>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Action</th>
+                            <th class="px-4 py-2 text-right font-medium text-gray-500">Added</th>
+                            <th class="px-4 py-2 text-right font-medium text-gray-500">Running Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody" class="divide-y divide-gray-100"></tbody>
+                </table>
+            </div>
+            <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center shrink-0">
+                <div class="text-sm text-gray-500">Items Ordered/Sold: <span id="historyTotalSold" class="font-bold text-orange-600">0</span></div>
+                <div class="text-sm text-gray-500">Current Balance: <span id="historyCurrentBal" class="font-bold text-green-600">0</span></div>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div id="toast" class="toast fixed top-5 right-5 text-white px-5 py-3 rounded-lg shadow-lg flex items-center z-[100]">
         <i id="toastIcon" class="mr-3 text-lg"></i><span id="toastMsg" class="font-medium text-sm">Message</span>
@@ -510,37 +537,148 @@
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault(); const id = document.getElementById('prodId').value; const pPrice = parseFloat(document.getElementById('prodPrice').value); const pName = document.getElementById('prodName').value.trim(); const pUnit = document.getElementById('prodUnit').value;
             if (isNaN(pPrice)) { showToast("Price must be a number", "error"); return; }
-            const data = { name: pName, price: pPrice, unit: pUnit, updatedAt: serverTimestamp() };
+            
+            const rawStock = document.getElementById('prodStock').value; 
+            const newInitial = rawStock === '' ? 0 : parseFloat(rawStock);
+            const dAdded = document.getElementById('prodDate').value || getTodayDateStr();
+
             try {
-                if (id) { await updateDoc(doc(db, 'products', id), data); showToast("Product updated"); } 
+                if (id) { 
+                    const p = productsData.find(x => x.id === id);
+                    const oldInitial = parseFloat(document.getElementById('prodStock').dataset.oldInitial || 0);
+                    const diff = newInitial - oldInitial;
+                    
+                    let newLogs = p.stockLogs || [];
+                    if (diff !== 0) {
+                        const initialLogIndex = newLogs.findIndex(l => l.type === 'Initial');
+                        if(initialLogIndex !== -1) { newLogs[initialLogIndex].qty = newInitial; } 
+                        else { newLogs.unshift({ date: p.dateAdded || dAdded, qty: newInitial, type: 'Initial' }); }
+                    }
+
+                    const updateData = { 
+                        name: pName, price: pPrice, unit: pUnit, updatedAt: serverTimestamp(),
+                        initialStock: newInitial,
+                        totalStockAdded: (p.totalStockAdded || p.stock || 0) + diff,
+                        stock: (p.stock || 0) + diff,
+                        stockLogs: newLogs
+                    };
+                    await updateDoc(doc(db, 'products', id), updateData); 
+                    showToast("Product updated"); 
+                } 
                 else {
-                    const rawStock = document.getElementById('prodStock').value; const pStock = rawStock === '' ? 0 : parseInt(rawStock);
-                    data.stock = isNaN(pStock) ? 0 : pStock; data.dateAdded = document.getElementById('prodDate').value || getTodayDateStr(); data.lastStockUpdate = data.dateAdded; data.createdAt = serverTimestamp();
-                    await addDoc(collection(db, 'products'), data); showToast("Product added");
+                    const data = { 
+                        name: pName, price: pPrice, unit: pUnit,
+                        stock: newInitial, initialStock: newInitial, totalStockAdded: newInitial,
+                        dateAdded: dAdded, lastStockUpdate: dAdded, createdAt: serverTimestamp(),
+                        stockLogs: [{ date: dAdded, qty: newInitial, type: 'Initial' }]
+                    };
+                    await addDoc(collection(db, 'products'), data); 
+                    showToast("Product added");
                 }
                 closeModal('productModal');
             } catch (err) { showToast(err.message, "error"); }
         });
 
-        window.editProduct = (id) => { const p = productsData.find(x => x.id === id); if(!p) return; document.getElementById('prodId').value = p.id; document.getElementById('prodName').value = p.name || ''; document.getElementById('prodPrice').value = p.price || 0; document.getElementById('prodUnit').value = p.unit || 'Jar'; document.getElementById('initialStockDiv').style.display = 'none'; document.getElementById('productModalTitle').textContent = 'Edit Details'; openModal('productModal'); };
+        window.editProduct = (id) => { 
+            const p = productsData.find(x => x.id === id); if(!p) return; 
+            document.getElementById('prodId').value = p.id; 
+            document.getElementById('prodName').value = p.name || ''; 
+            document.getElementById('prodPrice').value = p.price || 0; 
+            document.getElementById('prodUnit').value = p.unit || 'Jar'; 
+            document.getElementById('initialStockDiv').style.display = 'grid'; // Changed to show
+            document.getElementById('prodStock').value = p.initialStock !== undefined ? p.initialStock : (p.stock || 0);
+            document.getElementById('prodStock').dataset.oldInitial = p.initialStock !== undefined ? p.initialStock : (p.stock || 0);
+            document.getElementById('prodDate').value = p.dateAdded || getTodayDateStr();
+            document.getElementById('productModalTitle').textContent = 'Edit Details & Initial Stock'; 
+            openModal('productModal'); 
+        };
 
-        window.openAddStockModal = (id) => { const p = productsData.find(x => x.id === id); if(!p) return; document.getElementById('addStockForm').reset(); document.getElementById('stockProdId').value = p.id; document.getElementById('stockProdNameDisplay').textContent = `${p.name} (Current: ${p.stock || 0})`; document.getElementById('stockReceiveDate').value = getTodayDateStr(); openModal('addStockModal'); };
+        window.openAddStockModal = (id) => { const p = productsData.find(x => x.id === id); if(!p) return; document.getElementById('addStockForm').reset(); document.getElementById('stockProdId').value = p.id; document.getElementById('stockProdNameDisplay').textContent = `${p.name} (Current Balance: ${p.stock || 0})`; document.getElementById('stockReceiveDate').value = getTodayDateStr(); openModal('addStockModal'); };
 
         document.getElementById('addStockForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); const id = document.getElementById('stockProdId').value; const p = productsData.find(x => x.id === id); if(!p) return; const addQty = parseInt(document.getElementById('additionalStock').value); const dateRec = document.getElementById('stockReceiveDate').value;
+            e.preventDefault(); const id = document.getElementById('stockProdId').value; const p = productsData.find(x => x.id === id); if(!p) return; const addQty = parseFloat(document.getElementById('additionalStock').value); const dateRec = document.getElementById('stockReceiveDate').value;
             if (isNaN(addQty) || addQty <= 0) { showToast("Valid quantity required", "error"); return; }
-            try { await updateDoc(doc(db, 'products', id), { stock: (p.stock || 0) + addQty, lastStockUpdate: dateRec, updatedAt: serverTimestamp() }); showToast(`Stock updated!`); closeModal('addStockModal'); } catch(e) { showToast(e.message, "error"); }
+            
+            const newLogs = p.stockLogs || [];
+            newLogs.push({ date: dateRec, qty: addQty, type: 'Added' });
+
+            try { 
+                await updateDoc(doc(db, 'products', id), { 
+                    stock: (p.stock || 0) + addQty, 
+                    totalStockAdded: (p.totalStockAdded || p.stock || 0) + addQty,
+                    lastStockUpdate: dateRec, 
+                    stockLogs: newLogs,
+                    updatedAt: serverTimestamp() 
+                }); 
+                showToast(`Stock updated!`); closeModal('addStockModal'); 
+            } catch(e) { showToast(e.message, "error"); }
         });
 
         window.deleteProduct = async (id) => { if(confirm("Delete this product?")) { try { await deleteDoc(doc(db, 'products', id)); showToast("Deleted"); } catch(e) { showToast(e.message, "error"); } } };
+
+        window.viewStockHistory = (id) => {
+            const p = productsData.find(x => x.id === id); if(!p) return;
+            document.getElementById('historyProdName').textContent = p.name;
+            const tbody = document.getElementById('historyTableBody'); tbody.innerHTML = '';
+            
+            let logs = p.stockLogs || [];
+            if (logs.length === 0) { logs = [{ date: p.dateAdded || p.lastStockUpdate || getTodayDateStr(), qty: p.totalStockAdded || p.stock || 0, type: 'Initial' }]; }
+            
+            let runningTotal = 0;
+            logs.forEach(log => {
+                runningTotal += parseFloat(log.qty || 0);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td class="px-4 py-3 text-gray-700">${formatDisplayDate(log.date)}</td><td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-xs font-bold ${log.type === 'Initial' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">${log.type}</span></td><td class="px-4 py-3 text-right font-bold text-gray-800">+${log.qty}</td><td class="px-4 py-3 text-right text-gray-600">${runningTotal}</td>`;
+                tbody.appendChild(tr);
+            });
+
+            const totalAdded = p.totalStockAdded || p.stock || 0;
+            const currentStock = p.stock || 0;
+            document.getElementById('historyTotalSold').textContent = totalAdded - currentStock;
+            document.getElementById('historyCurrentBal').textContent = currentStock;
+            openModal('stockHistoryModal');
+        };
 
         function renderInventory() {
             const grid = document.getElementById('inventoryGrid'); grid.innerHTML = '';
             if (productsData.length === 0) return;
             productsData.forEach(p => {
-                const stockVal = p.stock || 0; const isLow = stockVal <= 5; const stockDateStr = p.lastStockUpdate ? `Updated: ${formatDisplayDate(p.lastStockUpdate)}` : (p.dateAdded ? `Added: ${formatDisplayDate(p.dateAdded)}` : '');
+                const currentStock = p.stock || 0; 
+                const totalAdded = p.totalStockAdded || p.stock || 0;
+                const orderedQty = totalAdded - currentStock;
+                const isLow = currentStock <= 5; 
+                const stockDateStr = p.lastStockUpdate ? `Updated: ${formatDisplayDate(p.lastStockUpdate)}` : (p.dateAdded ? `Added: ${formatDisplayDate(p.dateAdded)}` : '');
                 const div = document.createElement('div'); div.className = `bg-white rounded-lg border p-4 shadow-sm relative flex flex-col ${isLow ? 'border-red-300' : 'border-gray-200'}`;
-                div.innerHTML = `<div class="flex justify-between items-start mb-2"><h4 class="font-bold text-gray-800 pr-6">${p.name}</h4><div class="absolute top-4 right-4 flex space-x-2"><button onclick="editProduct('${p.id}')" class="text-gray-400 hover:text-blue-600"><i class="fa-solid fa-pen text-sm"></i></button><button onclick="deleteProduct('${p.id}')" class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash text-sm"></i></button></div></div><div class="mt-2 mb-4"><p class="text-xs text-gray-500 uppercase tracking-wide">Price</p><p class="font-bold text-gray-900">₹${p.price || 0} <span class="text-xs font-normal text-gray-500">/${p.unit || 'unit'}</span></p></div><div class="mt-auto border-t border-gray-100 pt-3 flex justify-between items-end"><div><span class="inline-block px-2 py-1 rounded text-xs font-bold ${isLow ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}">${stockVal} in Stock</span><p class="text-[10px] text-gray-400 mt-1"><i class="fa-solid fa-calendar-alt mr-1"></i>${stockDateStr}</p></div><button onclick="openAddStockModal('${p.id}')" class="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1.5 rounded hover:bg-green-100 font-semibold transition"><i class="fa-solid fa-plus mr-1"></i> Stock</button></div>`;
+                
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-gray-800 pr-6">${p.name}</h4>
+                        <div class="absolute top-4 right-4 flex space-x-2">
+                            <button onclick="editProduct('${p.id}')" class="text-gray-400 hover:text-blue-600"><i class="fa-solid fa-pen text-sm"></i></button>
+                            <button onclick="deleteProduct('${p.id}')" class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash text-sm"></i></button>
+                        </div>
+                    </div>
+                    <div class="mt-1 mb-3">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-wide">Price</p>
+                        <p class="font-bold text-gray-900">₹${p.price || 0} <span class="text-xs font-normal text-gray-500">/${p.unit || 'unit'}</span></p>
+                    </div>
+                    <div class="mt-auto border-t border-gray-100 pt-3">
+                        <div onclick="viewStockHistory('${p.id}')" class="bg-gray-50 border border-gray-200 rounded-lg p-2 cursor-pointer hover:bg-red-50 transition flex flex-col mb-3 group" title="Click to view history">
+                            <div class="flex justify-between text-[10px] text-gray-500 uppercase font-bold mb-1">
+                                <span>Total Added</span><span>Ordered</span><span>Balance</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-sm">
+                                <span class="text-blue-600">${totalAdded}</span>
+                                <span class="text-orange-500">${orderedQty}</span>
+                                <span class="${isLow ? 'text-red-600' : 'text-green-600'}">${currentStock}</span>
+                            </div>
+                            <div class="text-[9px] text-center text-gray-400 mt-1 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-clock-rotate-left mr-1"></i>View History</div>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <p class="text-[10px] text-gray-400"><i class="fa-solid fa-calendar-alt mr-1"></i>${stockDateStr}</p>
+                            <button onclick="openAddStockModal('${p.id}')" class="text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1.5 rounded hover:bg-green-100 font-semibold transition"><i class="fa-solid fa-plus mr-1"></i> Stock</button>
+                        </div>
+                    </div>`;
                 grid.appendChild(div);
             });
         }
