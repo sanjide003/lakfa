@@ -1,2 +1,0 @@
-# lakfa
-order reciving and 
