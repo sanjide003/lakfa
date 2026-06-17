@@ -19,6 +19,13 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .nav-btn { flex: 0 0 auto; }
+        @media (max-width: 767px) {
+            .nav-btn { min-width: 11rem; justify-content: center; }
+            .mobile-card-row { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+            .action-button { min-height: 2.5rem; min-width: 2.5rem; }
+        }
+
     </style>
 </head>
 <body class="text-gray-800">
@@ -62,15 +69,15 @@
     </div>
 
     <!-- ================== MAIN DASHBOARD APP ================== -->
-    <div id="main-app" class="hidden h-screen flex overflow-hidden bg-gray-50">
+    <div id="main-app" class="hidden min-h-screen md:h-screen flex flex-col md:flex-row overflow-hidden bg-gray-50">
         
         <!-- Sidebar -->
-        <div class="flex flex-col w-64 bg-white border-r border-gray-200">
+        <div class="flex flex-col w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-gray-200 md:h-screen shrink-0">
             <div class="flex items-center justify-center h-16 border-b border-gray-200 bg-red-600 text-white px-4">
                 <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2">
                 <span class="text-xl font-bold tracking-tight truncate">Lakfa Admin</span>
             </div>
-            <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-2">
+            <nav class="flex md:flex-col overflow-x-auto md:overflow-y-auto py-2 md:py-4 space-x-2 md:space-x-0 md:space-y-1 px-2">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md bg-red-50 text-red-700 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                     Dashboard
@@ -88,7 +95,7 @@
                     Settings
                 </button>
             </nav>
-            <div class="p-4 border-t border-gray-200">
+            <div class="p-2 md:p-4 border-t border-gray-200">
                 <button onclick="handleLogout()" class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
                     <svg class="mr-2 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                     Logout
@@ -97,13 +104,13 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 flex justify-between items-center">
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <header class="bg-white shadow-sm border-b border-gray-200 py-3 md:py-4 px-4 md:px-6 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
                 <h2 id="page-title" class="text-2xl font-bold leading-7 text-gray-900 sm:truncate">Dashboard</h2>
                 <div id="header-actions"></div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
                 
                 <!-- 1. DASHBOARD TAB -->
                 <div id="tab-dashboard" class="tab-content fade-in">
@@ -157,7 +164,7 @@
                 <div id="tab-orders" class="tab-content hidden fade-in">
                     <!-- Status Tabs -->
                     <div class="mb-4 border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-6" aria-label="Tabs" id="order-status-tabs">
+                        <nav class="-mb-px flex space-x-4 sm:space-x-6 overflow-x-auto" aria-label="Tabs" id="order-status-tabs">
                             <button onclick="filterOrdersByStatus('Pending')" class="order-tab active border-red-500 text-red-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Pending</button>
                             <button onclick="filterOrdersByStatus('Processing')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Processing</button>
                             <button onclick="filterOrdersByStatus('Shipped')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Shipped</button>
@@ -317,7 +324,7 @@
                     </div>
                 </form>
             </div>
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
                 <button type="button" onclick="closeModal('order-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
                 <button type="button" onclick="saveOrder()" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">Save Order</button>
             </div>
@@ -352,7 +359,7 @@
                     </div>
                 </form>
             </div>
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
                 <button onclick="closeModal('product-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
                 <button onclick="saveProduct()" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">Save Product</button>
             </div>
@@ -381,7 +388,7 @@
                     </div>
                 </form>
             </div>
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
                 <button onclick="closeModal('stock-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
                 <button onclick="submitNewStock()" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700" id="stock-submit-btn">Save Stock</button>
             </div>
@@ -441,9 +448,27 @@
                     </div>
                 </form>
             </div>
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
                 <button onclick="closeModal('status-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
                 <button onclick="submitStatusUpdate()" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Update</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 bg-gray-900 bg-opacity-60">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-5 py-4 border-b bg-red-50">
+                <h2 id="confirm-title" class="text-lg font-bold text-gray-900">Please Confirm</h2>
+            </div>
+            <div class="p-5">
+                <p id="confirm-message" class="text-sm leading-6 text-gray-700"></p>
+            </div>
+            <div class="px-5 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+                <button id="confirm-cancel" type="button" class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50">Cancel</button>
+                <button id="confirm-ok" type="button" class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">Confirm</button>
             </div>
         </div>
     </div>
@@ -498,6 +523,31 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); }, 3000);
         };
 
+        window.showConfirm = function({ title = 'Please Confirm', message = 'Are you sure?', confirmText = 'Confirm', confirmClass = 'bg-red-600 hover:bg-red-700' } = {}) {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('confirm-title');
+            const msgEl = document.getElementById('confirm-message');
+            const okBtn = document.getElementById('confirm-ok');
+            const cancelBtn = document.getElementById('confirm-cancel');
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            okBtn.innerText = confirmText;
+            okBtn.className = `w-full sm:w-auto px-4 py-2 text-white rounded-md text-sm font-medium ${confirmClass}`;
+            modal.classList.remove('hidden');
+
+            return new Promise(resolve => {
+                const cleanup = (result) => {
+                    modal.classList.add('hidden');
+                    okBtn.onclick = null;
+                    cancelBtn.onclick = null;
+                    resolve(result);
+                };
+                okBtn.onclick = () => cleanup(true);
+                cancelBtn.onclick = () => cleanup(false);
+            });
+        };
+
         function getTodayString() { return new Date().toISOString().split('T')[0]; }
         function formatDisplayDate(dateStr) {
             if(!dateStr) return '';
@@ -535,7 +585,7 @@
             }
         });
 
-        window.handleLogout = async function() { await signOut(auth); window.location.reload(); }
+        window.handleLogout = async function() { if(!(await showConfirm({ title: 'Confirm Logout', message: 'Do you want to log out of the admin dashboard?', confirmText: 'Logout' }))) return; await signOut(auth); window.location.reload(); }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -876,9 +926,10 @@
             container.insertAdjacentHTML('beforeend', html);
         }
 
-        window.editOrder = function(id) {
+        window.editOrder = async function(id) {
             const order = orders.find(o => o.id === id);
             if(!order) return;
+            if(!(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('order-id').value = order.id;
             document.getElementById('order-modal-title').innerText = 'Edit Order';
             document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); 
@@ -926,6 +977,7 @@
 
             try {
                 if (id) {
+                    if(!(await showConfirm({ title: 'Save Order Changes?', message: 'Apply these edits to the existing order?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
                     orderData.updatedAt = getTodayString();
                     await updateDoc(doc(db, "orders", id), orderData);
                     showToast('Order Updated Successfully');
@@ -945,6 +997,8 @@
         }
 
         window.deleteOrder = async function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!(await showConfirm({ title: 'Delete Order?', message: `This will permanently delete the order${order?.name ? ' for ' + order.name : ''}.`, confirmText: 'Delete Order' }))) return;
             try {
                 await deleteDoc(doc(db, "orders", id));
                 selectedOrders.delete(id);
@@ -963,6 +1017,7 @@
             const id = document.getElementById('status-order-id').value;
             const newStatus = document.getElementById('status-select').value;
             const date = document.getElementById('status-date').value;
+            if(!(await showConfirm({ title: 'Update Status?', message: `Change this order status to ${newStatus}?`, confirmText: 'Update Status', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             try {
                 await updateDoc(doc(db, "orders", id), { status: newStatus, updatedAt: date });
                 showToast(`Status updated to ${newStatus}`);
@@ -1023,9 +1078,10 @@
             document.getElementById('product-modal').classList.remove('hidden');
         }
 
-        window.editProduct = function(id) {
+        window.editProduct = async function(id) {
             const p = products.find(x => x.id === id);
             if(!p) return;
+            if(!(await showConfirm({ title: 'Edit Product?', message: `Open ${p.name || 'this product'} for editing?`, confirmText: 'Edit Product', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('product-id').value = p.id;
             document.getElementById('product-modal-title').innerText = 'Edit Product';
             document.getElementById('product-name').value = p.name;
@@ -1046,6 +1102,7 @@
             };
             try {
                 if (id) {
+                    if(!(await showConfirm({ title: 'Save Product Changes?', message: 'Apply these edits to the existing product?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
                     await updateDoc(doc(db, "products", id), data);
                     showToast('Product Updated Successfully');
                 } else {
@@ -1059,6 +1116,8 @@
         }
 
         window.deleteProduct = async function(id) {
+            const p = products.find(x => x.id === id);
+            if(!(await showConfirm({ title: 'Delete Product?', message: `This will permanently delete ${p?.name || 'this product'} and its stock history.`, confirmText: 'Delete Product' }))) return;
             try {
                 await deleteDoc(doc(db, "products", id));
                 showToast('Product Deleted', 'error');
@@ -1066,7 +1125,8 @@
         }
 
         // ================= NEW: STOCK UPDATE & EDIT/DELETE LOGIC =================
-        window.openStockModal = function(id, name, historyIndex = -1) {
+        window.openStockModal = async function(id, name, historyIndex = -1) {
+            if(historyIndex > -1 && !(await showConfirm({ title: 'Edit Stock Entry?', message: `Open stock entry for ${name} for editing?`, confirmText: 'Edit Stock', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('stock-form').reset();
             document.getElementById('stock-product-id').value = id;
             document.getElementById('stock-history-index').value = historyIndex;
@@ -1097,6 +1157,7 @@
             try {
                 let history = [...(p.stockHistory || [])];
                 if (index > -1) {
+                    if(!(await showConfirm({ title: 'Save Stock Edit?', message: 'Apply these changes to the stock entry?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
                     // Edit existing entry
                     history[index] = { date: date, qty: qty };
                     showToast(`Stock updated successfully`);
@@ -1113,6 +1174,7 @@
         window.deleteStockHistory = async function(productId, index) {
             const p = products.find(x => x.id === productId);
             if(!p || !p.stockHistory || index < 0 || index >= p.stockHistory.length) return;
+            if(!(await showConfirm({ title: 'Delete Stock Entry?', message: `Delete this stock entry from ${p.name}?`, confirmText: 'Delete Entry' }))) return;
             try {
                 let history = [...p.stockHistory];
                 history.splice(index, 1);
@@ -1166,6 +1228,7 @@
         }
 
         window.saveSettings = async function() {
+            if(!(await showConfirm({ title: 'Save Settings?', message: 'Update company details used on shipping labels and login screen?', confirmText: 'Save Settings', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             const data = {
                 name: document.getElementById('set-company-name').value,
                 address1: document.getElementById('set-address1').value,
@@ -1180,8 +1243,9 @@
         }
 
         // ================= PDF PRINTING (Updated Sizes) =================
-        window.printSelectedOrders = function() {
+        window.printSelectedOrders = async function() {
             if (selectedOrders.size === 0) return;
+            if(!(await showConfirm({ title: 'Print Selected Orders?', message: `Generate shipping labels for ${selectedOrders.size} selected order(s)?`, confirmText: 'Print Labels', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
             
             try {
