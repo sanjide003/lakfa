@@ -21,7 +21,6 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .nav-btn { flex: 0 0 auto; }
         @media (max-width: 767px) {
-            .nav-btn { min-width: 11rem; justify-content: center; }
             .mobile-card-row { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
             .action-button { min-height: 2.5rem; min-width: 2.5rem; }
         }
@@ -69,15 +68,31 @@
     </div>
 
     <!-- ================== MAIN DASHBOARD APP ================== -->
-    <div id="main-app" class="hidden min-h-screen md:h-screen flex flex-col md:flex-row overflow-hidden bg-gray-50">
+    <div id="main-app" class="hidden min-h-screen md:h-screen flex md:flex-row overflow-hidden bg-gray-50">
         
+        <!-- Mobile Top Bar -->
+        <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-red-600 text-white shadow flex items-center px-4">
+            <button type="button" onclick="toggleMobileMenu(true)" class="mr-3 inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Open navigation menu">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2">
+            <span class="text-lg font-bold tracking-tight truncate">Lakfa Admin</span>
+        </div>
+
+        <div id="mobile-menu-overlay" onclick="toggleMobileMenu(false)" class="hidden fixed inset-0 z-40 bg-gray-900 bg-opacity-50 md:hidden"></div>
+
         <!-- Sidebar -->
-        <div class="flex flex-col w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-gray-200 md:h-screen shrink-0">
-            <div class="flex items-center justify-center h-16 border-b border-gray-200 bg-red-600 text-white px-4">
-                <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2">
-                <span class="text-xl font-bold tracking-tight truncate">Lakfa Admin</span>
+        <div id="sidebar" class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-white border-r border-gray-200 shadow-xl transition-transform duration-200 ease-in-out md:relative md:z-auto md:w-64 md:translate-x-0 md:shadow-none md:h-screen shrink-0">
+            <div class="flex items-center justify-between h-16 border-b border-gray-200 bg-red-600 text-white px-4">
+                <div class="flex items-center min-w-0">
+                    <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2 shrink-0">
+                    <span class="text-xl font-bold tracking-tight truncate">Lakfa Admin</span>
+                </div>
+                <button type="button" onclick="toggleMobileMenu(false)" class="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Close navigation menu">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
             </div>
-            <nav class="flex md:flex-col overflow-x-auto md:overflow-y-auto py-2 md:py-4 space-x-2 md:space-x-0 md:space-y-1 px-2">
+            <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-2">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md bg-red-50 text-red-700 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                     Dashboard
@@ -104,7 +119,7 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden pt-14 md:pt-0">
             <header class="bg-white shadow-sm border-b border-gray-200 py-3 md:py-4 px-4 md:px-6 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
                 <h2 id="page-title" class="text-2xl font-bold leading-7 text-gray-900 sm:truncate">Dashboard</h2>
                 <div id="header-actions"></div>
@@ -549,6 +564,19 @@
         };
 
         function getTodayString() { return new Date().toISOString().split('T')[0]; }
+        window.toggleMobileMenu = function(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if(!sidebar || !overlay) return;
+            if(open) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        };
+
         function formatDisplayDate(dateStr) {
             if(!dateStr) return '';
             if(typeof dateStr === 'object' && dateStr.seconds) {
@@ -585,7 +613,7 @@
             }
         });
 
-        window.handleLogout = async function() { if(!(await showConfirm({ title: 'Confirm Logout', message: 'Do you want to log out of the admin dashboard?', confirmText: 'Logout' }))) return; await signOut(auth); window.location.reload(); }
+        window.handleLogout = async function() { toggleMobileMenu(false); if(!(await showConfirm({ title: 'Confirm Logout', message: 'Do you want to log out of the admin dashboard?', confirmText: 'Logout' }))) return; await signOut(auth); window.location.reload(); }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -607,6 +635,7 @@
 
         // ================= TABS =================
         window.switchTab = function(tabId) {
+            toggleMobileMenu(false);
             currentTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tab-' + tabId).classList.remove('hidden');
