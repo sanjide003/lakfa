@@ -184,9 +184,11 @@
                             <button onclick="filterOrdersByStatus('Processing')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Processing</button>
                             <button onclick="filterOrdersByStatus('Shipped')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Shipped</button>
                             <button onclick="filterOrdersByStatus('Delivered')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered</button>
-                            <button onclick="filterOrdersByStatus('Return')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Return</button>
                             <button onclick="filterOrdersByStatus('All')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">All Orders</button>
                             <button onclick="filterOrdersByStatus('Recycle Bin')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Recycle Bin</button>
+                            <button onclick="filterOrdersByStatus('Return')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Return</button>
+                            <button onclick="filterOrdersByStatus('Order Cancelled')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Order Cancelled</button>
+                            <button onclick="filterOrdersByStatus('Repeat Customers')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Repeat Customers</button>
                         </nav>
                     </div>
 
@@ -310,19 +312,21 @@
                                 <option value="Shipped">Shipped</option>
                                 <option value="Delivered">Delivered</option>
                                 <option value="Return">Return</option>
+                                <option value="Order Cancelled">Order Cancelled</option>
                             </select>
                         </div>
                         <div class="sm:col-span-2 border-t pt-2 mt-2">
                             <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Customer Details</label>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="text" id="order-phone" required oninput="handleCustomerLookup()" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border" placeholder="Type phone to find repeat customers">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700">Name</label>
                             <input type="text" id="order-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Phone</label>
-                            <input type="text" id="order-phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
-                        </div>
+                        <div id="customer-suggestions" class="hidden sm:col-span-2 rounded-lg border border-red-100 bg-red-50 p-3"></div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Full Address</label>
                             <textarea id="order-address" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"></textarea>
@@ -470,6 +474,7 @@
                             <option value="Shipped">Shipped</option>
                             <option value="Delivered">Delivered</option>
                             <option value="Return">Return</option>
+                            <option value="Order Cancelled">Order Cancelled</option>
                         </select>
                     </div>
                     <div>
@@ -745,7 +750,7 @@
         }
 
         function renderDashboard() {
-            let pending = 0, processing = 0, shipped = 0, delivered = 0, returned = 0;
+            let pending = 0, processing = 0, shipped = 0, delivered = 0, returned = 0, cancelled = 0;
             const ordersByMonth = {};
             const currentMonthKey = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
@@ -755,6 +760,7 @@
                 else if (order.status === 'Shipped') shipped++;
                 else if (order.status === 'Delivered') delivered++;
                 else if (order.status === 'Return') returned++;
+                else if (order.status === 'Order Cancelled') cancelled++;
 
                 let dateStr = order.createdAt;
                 if (typeof dateStr === 'object' && dateStr.seconds) {
@@ -793,6 +799,10 @@
                 <div class="bg-orange-50 p-3 rounded-lg border border-orange-100 flex flex-col items-center justify-center">
                     <div class="text-xs text-orange-600 font-bold uppercase mb-1">Return</div>
                     <div class="text-2xl font-bold text-orange-800">${returned}</div>
+                </div>
+                <div class="bg-red-50 p-3 rounded-lg border border-red-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-red-600 font-bold uppercase mb-1">Cancelled</div>
+                    <div class="text-2xl font-bold text-red-800">${cancelled}</div>
                 </div>
             `;
 
@@ -878,6 +888,7 @@
             if(status === 'Shipped') return 'bg-purple-100 text-purple-800';
             if(status === 'Delivered') return 'bg-green-100 text-green-800';
             if(status === 'Return') return 'bg-orange-100 text-orange-800';
+            if(status === 'Order Cancelled') return 'bg-red-100 text-red-800';
             return 'bg-gray-100 text-gray-800';
         }
 
@@ -891,14 +902,38 @@
             return order.items || '';
         }
 
+        function orderPassedThroughStatus(order, status) {
+            return order.status === status || (Array.isArray(order.statusHistory) && order.statusHistory.some(entry => entry.status === status));
+        }
+
+        function getRepeatCustomers() {
+            const groups = {};
+            orders.filter(o => !o.isDeleted && o.phone).forEach(order => {
+                const key = String(order.phone).trim();
+                if(!groups[key]) groups[key] = { phone: key, name: order.name || '', address: order.address || '', pincode: order.pincode || '', orders: [] };
+                groups[key].orders.push(order);
+                const currentDate = normalizeDateInput(order.createdAt);
+                const savedDate = normalizeDateInput(groups[key].latestDate);
+                if(!savedDate || currentDate >= savedDate) {
+                    groups[key].name = order.name || groups[key].name;
+                    groups[key].address = order.address || groups[key].address;
+                    groups[key].pincode = order.pincode || groups[key].pincode;
+                    groups[key].latestDate = order.createdAt;
+                }
+            });
+            return Object.values(groups).filter(group => group.orders.length > 1).sort((a, b) => b.orders.length - a.orders.length);
+        }
+
         function getFilteredOrders() {
             const search = document.getElementById('order-search').value.toLowerCase();
             const fromDate = document.getElementById('order-date-from').value;
             const toDate = document.getElementById('order-date-to').value;
             return orders.filter(o => {
                 const isRecycle = currentOrderStatusFilter === 'Recycle Bin';
+                if(currentOrderStatusFilter === 'Repeat Customers') return false;
                 if(isRecycle ? !o.isDeleted : o.isDeleted) return false;
-                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || o.status === currentOrderStatusFilter;
+                const lifecycleTab = currentOrderStatusFilter === 'Return' || currentOrderStatusFilter === 'Order Cancelled';
+                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter);
                 const matchesSearch = ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search));
                 const orderDate = normalizeDateInput(o.createdAt);
                 const matchesFrom = !fromDate || orderDate >= fromDate;
@@ -912,6 +947,7 @@
             let html = '';
             let filtered = getFilteredOrders();
             const isRecycle = currentOrderStatusFilter === 'Recycle Bin';
+            if(currentOrderStatusFilter === 'Repeat Customers') { renderRepeatCustomers(); return; }
 
             filtered.forEach(order => {
                 const statusColor = getOrderStatusColor(order.status);
@@ -964,6 +1000,37 @@
             updateBulkActions();
         }
 
+        function renderRepeatCustomers() {
+            const list = document.getElementById('orders-list');
+            const customers = getRepeatCustomers();
+            document.getElementById('select-all-orders').checked = false;
+            document.getElementById('select-all-orders').disabled = true;
+            updateBulkActions();
+            if(customers.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">No repeat customers found</td></tr>';
+                return;
+            }
+            list.innerHTML = customers.map(customer => `
+                <tr class="hover:bg-gray-50 bg-indigo-50/30">
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${customer.orders.length}</span></td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div>
+                        <div class="text-xs text-indigo-700 font-semibold">${customer.orders.length} total orders</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${customer.name}</div>
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address}</div>
+                        <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4"><div class="text-sm text-gray-700">Repeat customer</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Repeat</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="prefillCustomerFromRepeat('${customer.phone}')" class="text-red-600 hover:text-red-800 font-semibold">New Order</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
         window.toggleOrderMenu = function(id) {
             document.querySelectorAll('[id^="order-menu-"]').forEach(menu => {
                 if(menu.id !== `order-menu-${id}`) menu.classList.add('hidden');
@@ -988,7 +1055,7 @@
         }
         function updateBulkActions() {
             const panel = document.getElementById('bulk-actions');
-            if(selectedOrders.size > 0 && currentOrderStatusFilter !== 'Recycle Bin') {
+            if(selectedOrders.size > 0 && currentOrderStatusFilter !== 'Recycle Bin' && currentOrderStatusFilter !== 'Repeat Customers') {
                 panel.classList.remove('hidden');
                 document.getElementById('selected-count').innerText = `${selectedOrders.size} Selected`;
             } else {
@@ -997,12 +1064,60 @@
         }
 
         // ================= ORDER MODAL =================
+        window.handleCustomerLookup = function() {
+            const phoneInput = document.getElementById('order-phone');
+            const panel = document.getElementById('customer-suggestions');
+            const query = phoneInput.value.trim();
+            if(query.length < 3) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+            const matches = orders
+                .filter(o => !o.isDeleted && o.phone && String(o.phone).includes(query))
+                .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))
+                .slice(0, 3);
+            if(matches.length === 0) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+            panel.innerHTML = `
+                <div class="text-sm font-bold text-red-700 mb-2">Existing customer found. Fill details?</div>
+                <div class="space-y-2">
+                    ${matches.map(order => `
+                        <div class="bg-white border border-red-100 rounded-md p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">${order.name || 'Customer'} • ${order.phone}</div>
+                                <div class="text-xs text-gray-600">${order.address || ''} ${order.pincode ? '| PIN: ' + order.pincode : ''}</div>
+                                <div class="text-xs text-red-600 font-medium">Previous order: ${formatDisplayDate(order.createdAt)}</div>
+                            </div>
+                            <button type="button" onclick="fillCustomerDetails('${order.id}')" class="px-3 py-2 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700">Fill Details</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            panel.classList.remove('hidden');
+        }
+
+        window.fillCustomerDetails = function(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(!order) return;
+            document.getElementById('order-phone').value = order.phone || '';
+            document.getElementById('order-name').value = order.name || '';
+            document.getElementById('order-address').value = order.address || '';
+            document.getElementById('order-pincode').value = order.pincode || '';
+            document.getElementById('order-location').value = order.location || '';
+            document.getElementById('customer-suggestions').classList.add('hidden');
+            showToast('Customer details filled');
+        }
+
+        window.prefillCustomerFromRepeat = function(phone) {
+            const customerOrder = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))[0];
+            openOrderModal();
+            if(customerOrder) fillCustomerDetails(customerOrder.id);
+        }
+
         window.openOrderModal = function() {
             document.getElementById('order-form').reset();
             document.getElementById('order-id').value = '';
             document.getElementById('order-modal-title').innerText = 'Add New Order';
             document.getElementById('order-date').value = getTodayString();
             document.getElementById('order-products-container').innerHTML = '';
+            document.getElementById('customer-suggestions').classList.add('hidden');
+            document.getElementById('customer-suggestions').innerHTML = '';
             addOrderProductRow();
             document.getElementById('order-modal').classList.remove('hidden');
         }
