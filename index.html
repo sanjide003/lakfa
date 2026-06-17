@@ -752,8 +752,34 @@
             `;
         }
 
+        function closePreviousTabState(nextTabId) {
+            selectedOrders.clear();
+            document.querySelectorAll('[id^="order-menu-"]').forEach(menu => menu.classList.add('hidden'));
+            Object.keys(orderUtilityTabs).forEach(tabKey => {
+                if(tabKey !== nextTabId) document.getElementById('tab-' + tabKey).innerHTML = '';
+            });
+            ['order-modal', 'product-modal', 'stock-modal', 'history-modal', 'status-modal', 'order-history-modal', 'repeat-customer-modal'].forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if(modal) modal.classList.add('hidden');
+            });
+        }
+
+        function getOrderHeaderActions() {
+            const downloadButton = currentOrderStatusFilter === 'All' ? `<button onclick="downloadAllOrdersExcel()" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 shadow-sm flex items-center">${getIconSvg('download', 'w-4 h-4 mr-1')} Download Excel</button>` : '';
+            return `<div class="flex flex-col sm:flex-row gap-2 sm:items-center"><button onclick="openOrderModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center justify-center">${getIconSvg('plus', 'w-4 h-4 mr-1')} Add New Order</button>${downloadButton}</div>`;
+        }
+
+        function updateOrderHeaderActions() {
+            if(currentTab === 'orders') document.getElementById('header-actions').innerHTML = getOrderHeaderActions();
+        }
+
         window.switchTab = function(tabId, orderFilter = null, pushHistory = true) {
             toggleMobileMenu(false);
+            closePreviousTabState(tabId);
+            if(tabId === 'orders' && !orderFilter) {
+                currentOrderStatusFilter = 'Pending';
+                orderFilter = 'Pending';
+            }
             if(orderUtilityTabs[tabId]) {
                 orderFilter = orderUtilityTabs[tabId].statusFilter;
                 currentOrderStatusFilter = orderFilter;
@@ -781,7 +807,7 @@
             } else if (tabId === 'orders') {
                 if(orderFilter) currentOrderStatusFilter = orderFilter;
                 document.getElementById('page-title').innerText = "Order Management";
-                headerActions.innerHTML = `<button onclick="openOrderModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center">${getIconSvg('plus', 'w-4 h-4 mr-1')} Add New Order</button>`;
+                headerActions.innerHTML = getOrderHeaderActions();
                 syncOrderFilterUI();
                 renderOrders();
             } else if (orderUtilityTabs[tabId]) {
@@ -974,7 +1000,8 @@
                 return: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />',
                 cancel: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />',
                 users: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m10-4.13a4 4 0 11-8 0 4 4 0 018 0z" />',
-                plus: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />'
+                plus: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />',
+                download: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />'
             };
             return `<svg class="${cls}" fill="none" viewBox="0 0 24 24" stroke="currentColor">${icons[name] || icons.status}</svg>`;
         }
@@ -998,7 +1025,9 @@
 
         window.filterOrdersByStatus = function(status) {
             currentOrderStatusFilter = status;
+            pushAppHistory('orders', status);
             syncOrderFilterUI();
+            updateOrderHeaderActions();
             renderOrders();
         }
 
@@ -1700,6 +1729,42 @@
                 companySettings = data;
                 showToast("Company Settings Updated");
             } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        // ================= EXCEL / CSV EXPORT =================
+        function csvEscape(value) {
+            const text = String(value ?? '').replace(/\r?\n|\r/g, ' ');
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        window.downloadAllOrdersExcel = function() {
+            const exportOrders = orders
+                .filter(order => !order.isDeleted)
+                .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
+            if(exportOrders.length === 0) { showToast('No orders available to download', 'error'); return; }
+            const headers = ['Order Date', 'Accepted Date', 'Last Updated Date', 'Status', 'Customer Name', 'Phone', 'Address', 'Pincode', 'Products'];
+            const rows = exportOrders.map(order => [
+                formatDisplayDate(order.createdAt),
+                formatDisplayDate(order.createdAt),
+                formatDisplayDate(order.updatedAt || order.createdAt),
+                order.status || '',
+                order.name || '',
+                order.phone || '',
+                order.address || '',
+                order.pincode || '',
+                getOrderItemsText(order) || ''
+            ]);
+            const csv = '\ufeff' + [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Lakfa_All_Orders_${getTodayString()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Excel file download started');
         }
 
         // ================= PDF PRINTING (Updated Sizes) =================
