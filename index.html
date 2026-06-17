@@ -19,6 +19,12 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .nav-btn { flex: 0 0 auto; }
+        @media (max-width: 767px) {
+            .mobile-card-row { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+            .action-button { min-height: 2.5rem; min-width: 2.5rem; }
+        }
+
     </style>
 </head>
 <body class="text-gray-800">
@@ -62,13 +68,29 @@
     </div>
 
     <!-- ================== MAIN DASHBOARD APP ================== -->
-    <div id="main-app" class="hidden h-screen flex overflow-hidden bg-gray-50">
+    <div id="main-app" class="hidden min-h-screen md:h-screen flex md:flex-row overflow-hidden bg-gray-50">
         
+        <!-- Mobile Top Bar -->
+        <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-red-600 text-white shadow flex items-center px-4">
+            <button type="button" onclick="toggleMobileMenu(true)" class="mr-3 inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Open navigation menu">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2">
+            <span class="text-lg font-bold tracking-tight truncate">Lakfa Admin</span>
+        </div>
+
+        <div id="mobile-menu-overlay" onclick="toggleMobileMenu(false)" class="hidden fixed inset-0 z-40 bg-gray-900 bg-opacity-50 md:hidden"></div>
+
         <!-- Sidebar -->
-        <div class="flex flex-col w-64 bg-white border-r border-gray-200">
-            <div class="flex items-center justify-center h-16 border-b border-gray-200 bg-red-600 text-white px-4">
-                <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2">
-                <span class="text-xl font-bold tracking-tight truncate">Lakfa Admin</span>
+        <div id="sidebar" class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-white border-r border-gray-200 shadow-xl transition-transform duration-200 ease-in-out md:relative md:z-auto md:w-64 md:translate-x-0 md:shadow-none md:h-screen shrink-0">
+            <div class="flex items-center justify-between h-16 border-b border-gray-200 bg-red-600 text-white px-4">
+                <div class="flex items-center min-w-0">
+                    <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2 shrink-0">
+                    <span class="text-xl font-bold tracking-tight truncate">Lakfa Admin</span>
+                </div>
+                <button type="button" onclick="toggleMobileMenu(false)" class="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Close navigation menu">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
             </div>
             <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-2">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md bg-red-50 text-red-700 transition-colors">
@@ -79,6 +101,12 @@
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
                     Order Management
                 </button>
+                <div class="ml-8 mt-1 mb-2 space-y-1 text-sm" aria-label="Order special views">
+                    <button onclick="switchTab('orders', 'Recycle Bin')" data-order-filter="Recycle Bin" class="side-order-filter block w-full rounded-md px-3 py-1.5 text-left text-xs font-semibold text-gray-500 hover:bg-gray-50 hover:text-red-700">Recycle Bin</button>
+                    <button onclick="switchTab('orders', 'Return')" data-order-filter="Return" class="side-order-filter block w-full rounded-md px-3 py-1.5 text-left text-xs font-semibold text-gray-500 hover:bg-gray-50 hover:text-red-700">Return</button>
+                    <button onclick="switchTab('orders', 'Order Cancelled')" data-order-filter="Order Cancelled" class="side-order-filter block w-full rounded-md px-3 py-1.5 text-left text-xs font-semibold text-gray-500 hover:bg-gray-50 hover:text-red-700">Order Cancelled</button>
+                    <button onclick="switchTab('orders', 'Repeat Customers')" data-order-filter="Repeat Customers" class="side-order-filter block w-full rounded-md px-3 py-1.5 text-left text-xs font-semibold text-gray-500 hover:bg-gray-50 hover:text-red-700">Repeat Customers</button>
+                </div>
                 <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                     Inventory & Products
@@ -88,7 +116,7 @@
                     Settings
                 </button>
             </nav>
-            <div class="p-4 border-t border-gray-200">
+            <div class="p-2 md:p-4 border-t border-gray-200">
                 <button onclick="handleLogout()" class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
                     <svg class="mr-2 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                     Logout
@@ -97,13 +125,13 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="bg-white shadow-sm border-b border-gray-200 py-4 px-6 flex justify-between items-center">
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden pt-14 md:pt-0">
+            <header class="bg-white shadow-sm border-b border-gray-200 py-3 md:py-4 px-4 md:px-6 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
                 <h2 id="page-title" class="text-2xl font-bold leading-7 text-gray-900 sm:truncate">Dashboard</h2>
                 <div id="header-actions"></div>
             </header>
 
-            <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
                 
                 <!-- 1. DASHBOARD TAB -->
                 <div id="tab-dashboard" class="tab-content fade-in">
@@ -157,7 +185,7 @@
                 <div id="tab-orders" class="tab-content hidden fade-in">
                     <!-- Status Tabs -->
                     <div class="mb-4 border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-6" aria-label="Tabs" id="order-status-tabs">
+                        <nav class="-mb-px flex space-x-4 sm:space-x-6 overflow-x-auto" aria-label="Tabs" id="order-status-tabs">
                             <button onclick="filterOrdersByStatus('Pending')" class="order-tab active border-red-500 text-red-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Pending</button>
                             <button onclick="filterOrdersByStatus('Processing')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Processing</button>
                             <button onclick="filterOrdersByStatus('Shipped')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Shipped</button>
@@ -167,10 +195,21 @@
                     </div>
 
                     <!-- Search & Actions -->
-                    <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div class="relative w-full sm:w-96">
-                            <input type="text" id="order-search" oninput="renderOrders()" placeholder="Search Name or Phone..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
-                            <svg class="absolute left-3 top-2.5 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    <div class="mb-4 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:max-w-4xl">
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search</label>
+                                <input type="text" id="order-search" oninput="renderOrders()" placeholder="Name or Phone..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
+                                <svg class="absolute left-3 bottom-2.5 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">From Date</label>
+                                <input type="date" id="order-date-from" onchange="renderOrders()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">To Date</label>
+                                <input type="date" id="order-date-to" onchange="renderOrders()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
+                            </div>
                         </div>
                         <div id="bulk-actions" class="hidden flex items-center space-x-3 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
                             <span class="text-red-700 font-medium text-sm" id="selected-count">0 Selected</span>
@@ -274,19 +313,22 @@
                                 <option value="Processing">Processing</option>
                                 <option value="Shipped">Shipped</option>
                                 <option value="Delivered">Delivered</option>
+                                <option value="Return">Return</option>
+                                <option value="Order Cancelled">Order Cancelled</option>
                             </select>
                         </div>
                         <div class="sm:col-span-2 border-t pt-2 mt-2">
                             <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Customer Details</label>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="text" id="order-phone" required oninput="handleCustomerLookup()" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border" placeholder="Type phone to find repeat customers">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700">Name</label>
                             <input type="text" id="order-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Phone</label>
-                            <input type="text" id="order-phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
-                        </div>
+                        <div id="customer-suggestions" class="hidden sm:col-span-2 rounded-lg border border-red-100 bg-red-50 p-3"></div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Full Address</label>
                             <textarea id="order-address" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"></textarea>
@@ -317,7 +359,7 @@
                     </div>
                 </form>
             </div>
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
                 <button type="button" onclick="closeModal('order-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
                 <button type="button" onclick="saveOrder()" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">Save Order</button>
             </div>
@@ -352,7 +394,7 @@
                     </div>
                 </form>
             </div>
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
                 <button onclick="closeModal('product-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
                 <button onclick="saveProduct()" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">Save Product</button>
             </div>
@@ -381,7 +423,7 @@
                     </div>
                 </form>
             </div>
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
                 <button onclick="closeModal('stock-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
                 <button onclick="submitNewStock()" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700" id="stock-submit-btn">Save Stock</button>
             </div>
@@ -433,6 +475,8 @@
                             <option value="Processing">Processing</option>
                             <option value="Shipped">Shipped</option>
                             <option value="Delivered">Delivered</option>
+                            <option value="Return">Return</option>
+                            <option value="Order Cancelled">Order Cancelled</option>
                         </select>
                     </div>
                     <div>
@@ -441,9 +485,60 @@
                     </div>
                 </form>
             </div>
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
                 <button onclick="closeModal('status-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
                 <button onclick="submitStatusUpdate()" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Update</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Order History / Route Map Modal -->
+    <div id="order-history-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Order Route Map</h2>
+                    <p id="order-history-subtitle" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+                <button onclick="closeModal('order-history-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div id="order-history-list" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Repeat Customer Order Details Modal -->
+    <div id="repeat-customer-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-indigo-50">
+                <div>
+                    <h2 class="text-lg font-bold text-indigo-900">Repeat Customer Orders</h2>
+                    <p id="repeat-customer-subtitle" class="text-xs text-indigo-700 mt-1"></p>
+                </div>
+                <button onclick="closeModal('repeat-customer-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div id="repeat-customer-orders" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 bg-gray-900 bg-opacity-60">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-5 py-4 border-b bg-red-50">
+                <h2 id="confirm-title" class="text-lg font-bold text-gray-900">Please Confirm</h2>
+            </div>
+            <div class="p-5">
+                <p id="confirm-message" class="text-sm leading-6 text-gray-700"></p>
+            </div>
+            <div class="px-5 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+                <button id="confirm-cancel" type="button" class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50">Cancel</button>
+                <button id="confirm-ok" type="button" class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">Confirm</button>
             </div>
         </div>
     </div>
@@ -498,7 +593,50 @@
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); }, 3000);
         };
 
+        window.showConfirm = function({ title = 'Please Confirm', message = 'Are you sure?', confirmText = 'Confirm', confirmClass = 'bg-red-600 hover:bg-red-700' } = {}) {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('confirm-title');
+            const msgEl = document.getElementById('confirm-message');
+            const okBtn = document.getElementById('confirm-ok');
+            const cancelBtn = document.getElementById('confirm-cancel');
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            okBtn.innerText = confirmText;
+            okBtn.className = `w-full sm:w-auto px-4 py-2 text-white rounded-md text-sm font-medium ${confirmClass}`;
+            modal.classList.remove('hidden');
+
+            return new Promise(resolve => {
+                const cleanup = (result) => {
+                    modal.classList.add('hidden');
+                    okBtn.onclick = null;
+                    cancelBtn.onclick = null;
+                    resolve(result);
+                };
+                okBtn.onclick = () => cleanup(true);
+                cancelBtn.onclick = () => cleanup(false);
+            });
+        };
+
         function getTodayString() { return new Date().toISOString().split('T')[0]; }
+        function normalizeDateInput(dateValue) {
+            if(!dateValue) return '';
+            if(typeof dateValue === 'object' && dateValue.seconds) return new Date(dateValue.seconds * 1000).toISOString().split('T')[0];
+            return String(dateValue).split('T')[0];
+        }
+        window.toggleMobileMenu = function(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if(!sidebar || !overlay) return;
+            if(open) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        };
+
         function formatDisplayDate(dateStr) {
             if(!dateStr) return '';
             if(typeof dateStr === 'object' && dateStr.seconds) {
@@ -535,7 +673,7 @@
             }
         });
 
-        window.handleLogout = async function() { await signOut(auth); window.location.reload(); }
+        window.handleLogout = async function() { toggleMobileMenu(false); if(!(await showConfirm({ title: 'Confirm Logout', message: 'Do you want to log out of the admin dashboard?', confirmText: 'Logout' }))) return; await signOut(auth); window.location.reload(); }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -556,7 +694,8 @@
         });
 
         // ================= TABS =================
-        window.switchTab = function(tabId) {
+        window.switchTab = function(tabId, orderFilter = null) {
+            toggleMobileMenu(false);
             currentTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tab-' + tabId).classList.remove('hidden');
@@ -575,8 +714,10 @@
                 headerActions.innerHTML = '';
                 renderDashboard();
             } else if (tabId === 'orders') {
-                document.getElementById('page-title').innerText = "Order Management";
+                if(orderFilter) currentOrderStatusFilter = orderFilter;
+                document.getElementById('page-title').innerText = orderFilter ? `Order Management - ${orderFilter}` : "Order Management";
                 headerActions.innerHTML = `<button onclick="openOrderModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center"><svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add New Order</button>`;
+                syncOrderFilterUI();
                 renderOrders();
             } else if (tabId === 'inventory') {
                 document.getElementById('page-title').innerText = "Inventory & Products";
@@ -630,7 +771,7 @@
         }
 
         function renderDashboard() {
-            let pending = 0, processing = 0, shipped = 0, delivered = 0;
+            let pending = 0, processing = 0, shipped = 0, delivered = 0, returned = 0, cancelled = 0;
             const ordersByMonth = {};
             const currentMonthKey = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
@@ -639,6 +780,8 @@
                 else if (order.status === 'Processing') processing++;
                 else if (order.status === 'Shipped') shipped++;
                 else if (order.status === 'Delivered') delivered++;
+                else if (order.status === 'Return') returned++;
+                else if (order.status === 'Order Cancelled') cancelled++;
 
                 let dateStr = order.createdAt;
                 if (typeof dateStr === 'object' && dateStr.seconds) {
@@ -673,6 +816,14 @@
                 <div class="bg-green-50 p-3 rounded-lg border border-green-100 flex flex-col items-center justify-center">
                     <div class="text-xs text-green-600 font-bold uppercase mb-1">Delivered</div>
                     <div class="text-2xl font-bold text-green-800">${delivered}</div>
+                </div>
+                <div class="bg-orange-50 p-3 rounded-lg border border-orange-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-orange-600 font-bold uppercase mb-1">Return</div>
+                    <div class="text-2xl font-bold text-orange-800">${returned}</div>
+                </div>
+                <div class="bg-red-50 p-3 rounded-lg border border-red-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-red-600 font-bold uppercase mb-1">Cancelled</div>
+                    <div class="text-2xl font-bold text-red-800">${cancelled}</div>
                 </div>
             `;
 
@@ -741,53 +892,123 @@
         }
 
         // ================= ORDERS MANAGEMENT =================
-        window.filterOrdersByStatus = function(status) {
-            currentOrderStatusFilter = status;
+        function syncOrderFilterUI() {
             document.querySelectorAll('.order-tab').forEach(el => {
                 el.classList.remove('border-red-500', 'text-red-600');
                 el.classList.add('border-transparent', 'text-gray-500');
+                if(el.textContent.trim() === currentOrderStatusFilter || (currentOrderStatusFilter === 'All' && el.textContent.trim() === 'All Orders')) {
+                    el.classList.remove('border-transparent', 'text-gray-500');
+                    el.classList.add('border-red-500', 'text-red-600');
+                }
             });
-            event.target.classList.remove('border-transparent', 'text-gray-500');
-            event.target.classList.add('border-red-500', 'text-red-600');
+            document.querySelectorAll('.side-order-filter').forEach(el => {
+                const active = el.dataset.orderFilter === currentOrderStatusFilter;
+                el.classList.toggle('bg-red-50', active);
+                el.classList.toggle('text-red-700', active);
+                el.classList.toggle('text-gray-500', !active);
+            });
+        }
+
+        window.filterOrdersByStatus = function(status) {
+            currentOrderStatusFilter = status;
+            syncOrderFilterUI();
             renderOrders();
+        }
+
+        function getOrderStatusColor(status) {
+            if(status === 'Pending') return 'bg-yellow-100 text-yellow-800';
+            if(status === 'Processing') return 'bg-blue-100 text-blue-800';
+            if(status === 'Shipped') return 'bg-purple-100 text-purple-800';
+            if(status === 'Delivered') return 'bg-green-100 text-green-800';
+            if(status === 'Return') return 'bg-orange-100 text-orange-800';
+            if(status === 'Order Cancelled') return 'bg-red-100 text-red-800';
+            return 'bg-gray-100 text-gray-800';
+        }
+
+        function getOrderItemsText(order) {
+            if(Array.isArray(order.itemsObj)) {
+                return order.itemsObj.map(i => {
+                    const product = products.find(prod => prod.id === i.productId);
+                    return product ? `${product.name} (${i.qty})` : `Unknown Item (${i.qty})`;
+                }).join(', ');
+            }
+            return order.items || '';
+        }
+
+        function orderPassedThroughStatus(order, status) {
+            return order.status === status || (Array.isArray(order.statusHistory) && order.statusHistory.some(entry => entry.status === status));
+        }
+
+        function getRepeatCustomers() {
+            const groups = {};
+            orders.filter(o => !o.isDeleted && o.phone).forEach(order => {
+                const key = String(order.phone).trim();
+                if(!groups[key]) groups[key] = { phone: key, name: order.name || '', address: order.address || '', pincode: order.pincode || '', orders: [] };
+                groups[key].orders.push(order);
+                const currentDate = normalizeDateInput(order.createdAt);
+                const savedDate = normalizeDateInput(groups[key].latestDate);
+                if(!savedDate || currentDate >= savedDate) {
+                    groups[key].name = order.name || groups[key].name;
+                    groups[key].address = order.address || groups[key].address;
+                    groups[key].pincode = order.pincode || groups[key].pincode;
+                    groups[key].latestDate = order.createdAt;
+                }
+            });
+            return Object.values(groups).filter(group => group.orders.length > 1).sort((a, b) => b.orders.length - a.orders.length);
+        }
+
+        function getFilteredOrders() {
+            const search = document.getElementById('order-search').value.toLowerCase();
+            const fromDate = document.getElementById('order-date-from').value;
+            const toDate = document.getElementById('order-date-to').value;
+            return orders.filter(o => {
+                const isRecycle = currentOrderStatusFilter === 'Recycle Bin';
+                if(currentOrderStatusFilter === 'Repeat Customers') return false;
+                if(isRecycle ? !o.isDeleted : o.isDeleted) return false;
+                const lifecycleTab = currentOrderStatusFilter === 'Return' || currentOrderStatusFilter === 'Order Cancelled';
+                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter);
+                const matchesSearch = ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search));
+                const orderDate = normalizeDateInput(o.createdAt);
+                const matchesFrom = !fromDate || orderDate >= fromDate;
+                const matchesTo = !toDate || orderDate <= toDate;
+                return matchesStatus && matchesSearch && matchesFrom && matchesTo;
+            });
         }
 
         window.renderOrders = function() {
             const list = document.getElementById('orders-list');
-            const search = document.getElementById('order-search').value.toLowerCase();
             let html = '';
-
-            let filtered = orders.filter(o => 
-                (currentOrderStatusFilter === 'All' || o.status === currentOrderStatusFilter) &&
-                ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search))
-            );
+            let filtered = getFilteredOrders();
+            const isRecycle = currentOrderStatusFilter === 'Recycle Bin';
+            if(currentOrderStatusFilter === 'Repeat Customers') { renderRepeatCustomers(); return; }
 
             filtered.forEach(order => {
-                let statusColor = 'bg-gray-100 text-gray-800';
-                if(order.status === 'Pending') statusColor = 'bg-yellow-100 text-yellow-800';
-                else if(order.status === 'Processing') statusColor = 'bg-blue-100 text-blue-800';
-                else if(order.status === 'Shipped') statusColor = 'bg-purple-100 text-purple-800';
-                else if(order.status === 'Delivered') statusColor = 'bg-green-100 text-green-800';
+                const statusColor = getOrderStatusColor(order.status);
+                const itemsText = getOrderItemsText(order);
+                const checkboxHtml = isRecycle ? '' : `<input type="checkbox" onchange="toggleSelectOrder('${order.id}')" ${selectedOrders.has(order.id) ? 'checked' : ''} class="order-checkbox rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">`;
+                const actionsHtml = isRecycle ? `
+                            <button onclick="restoreOrder('${order.id}')" class="text-green-600 hover:text-green-800 font-semibold mr-3">Restore</button>
+                            <button onclick="permanentlyDeleteOrder('${order.id}')" class="text-red-500 hover:text-red-700 font-semibold">Delete Forever</button>
+                ` : `
+                            <button onclick="printSingleOrder('${order.id}')" class="text-red-600 hover:text-red-800 mr-3" title="Print Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg></button>
+                            <button onclick="showOrderHistory('${order.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold mr-3 px-2 py-1 rounded border border-indigo-100 bg-indigo-50">History</button>
+                            <div class="relative inline-block text-left">
+                                <button onclick="toggleOrderMenu('${order.id}')" class="text-gray-500 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100" title="More actions"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
+                                <div id="order-menu-${order.id}" class="hidden absolute right-0 z-30 mt-2 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 border border-gray-100">
+                                    <button onclick="openStatusModal('${order.id}', '${order.status}')" class="block w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-blue-50">Update Status</button>
+                                    <button onclick="editOrder('${order.id}')" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">Edit</button>
+                                    <button onclick="deleteOrder('${order.id}')" class="block w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50">Delete</button>
+                                </div>
+                            </div>
+                `;
 
-                let itemsText = '';
-                if(Array.isArray(order.itemsObj)) {
-                    itemsText = order.itemsObj.map(i => {
-                        const p = products.find(prod => prod.id === i.productId);
-                        return p ? `${p.name} (${i.qty})` : `Unknown Item (${i.qty})`;
-                    }).join(', ');
-                } else {
-                    itemsText = order.items || '';
-                }
-
-                // Changed Update Status Icon to Truck
                 html += `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <input type="checkbox" onchange="toggleSelectOrder('${order.id}')" ${selectedOrders.has(order.id) ? 'checked' : ''} class="order-checkbox rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">
-                        </td>
+                    <tr class="hover:bg-gray-50 ${isRecycle ? 'bg-red-50/30' : ''}">
+                        <td class="px-6 py-4 whitespace-nowrap">${checkboxHtml}</td>
                         <td class="px-6 py-4">
                             <div class="text-sm font-bold text-gray-900">${formatDisplayDate(order.createdAt)}</div>
                             <div class="text-xs text-gray-500">Updated: ${formatDisplayDate(order.updatedAt || order.createdAt)}</div>
+                            ${isRecycle ? `<div class="text-xs text-red-600 font-semibold">Deleted: ${formatDisplayDate(order.deletedAt)}</div>` : ''}
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-sm font-medium text-gray-900">${order.name}</div>
@@ -800,21 +1021,54 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${order.status}</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button onclick="openStatusModal('${order.id}', '${order.status}')" class="text-blue-600 hover:text-blue-900 mr-3" title="Update Status">
-                                <svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14H6v-4a2 2 0 012-2h7v6h-1m-4 0h4m-4 0a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 11-4 0 2 2 0 014 0zm1-6h-3V6h3l3 4v4h-1"/></svg>
-                            </button>
-                            <button onclick="editOrder('${order.id}')" class="text-gray-400 hover:text-gray-700 mr-3" title="Edit Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                            <button onclick="deleteOrder('${order.id}')" class="text-red-400 hover:text-red-700" title="Delete Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
-                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">${actionsHtml}</td>
                     </tr>
                 `;
             });
             if(filtered.length === 0) html = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
             list.innerHTML = html;
 
-            document.getElementById('select-all-orders').checked = filtered.length > 0 && selectedOrders.size === filtered.length;
+            document.getElementById('select-all-orders').checked = !isRecycle && filtered.length > 0 && filtered.every(o => selectedOrders.has(o.id));
+            document.getElementById('select-all-orders').disabled = isRecycle;
             updateBulkActions();
+        }
+
+        function renderRepeatCustomers() {
+            const list = document.getElementById('orders-list');
+            const customers = getRepeatCustomers();
+            document.getElementById('select-all-orders').checked = false;
+            document.getElementById('select-all-orders').disabled = true;
+            updateBulkActions();
+            if(customers.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">No repeat customers found</td></tr>';
+                return;
+            }
+            list.innerHTML = customers.map(customer => `
+                <tr class="hover:bg-gray-50 bg-indigo-50/30">
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${customer.orders.length}</span></td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div>
+                        <div class="text-xs text-indigo-700 font-semibold">${customer.orders.length} total orders</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${customer.name}</div>
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address}</div>
+                        <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4"><div class="text-sm text-gray-700">Repeat customer</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Repeat</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.toggleOrderMenu = function(id) {
+            document.querySelectorAll('[id^="order-menu-"]').forEach(menu => {
+                if(menu.id !== `order-menu-${id}`) menu.classList.add('hidden');
+            });
+            document.getElementById(`order-menu-${id}`).classList.toggle('hidden');
         }
 
         window.toggleSelectOrder = function(id) {
@@ -824,21 +1078,17 @@
         }
         window.toggleAllOrders = function() {
             const isChecked = document.getElementById('select-all-orders').checked;
-            const search = document.getElementById('order-search').value.toLowerCase();
-            let filtered = orders.filter(o => 
-                (currentOrderStatusFilter === 'All' || o.status === currentOrderStatusFilter) &&
-                ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search))
-            );
+            let filtered = getFilteredOrders();
             if(isChecked) {
                 filtered.forEach(o => selectedOrders.add(o.id));
             } else {
-                selectedOrders.clear();
+                filtered.forEach(o => selectedOrders.delete(o.id));
             }
             renderOrders();
         }
         function updateBulkActions() {
             const panel = document.getElementById('bulk-actions');
-            if(selectedOrders.size > 0) {
+            if(selectedOrders.size > 0 && currentOrderStatusFilter !== 'Recycle Bin' && currentOrderStatusFilter !== 'Repeat Customers') {
                 panel.classList.remove('hidden');
                 document.getElementById('selected-count').innerText = `${selectedOrders.size} Selected`;
             } else {
@@ -847,12 +1097,84 @@
         }
 
         // ================= ORDER MODAL =================
+        window.handleCustomerLookup = function() {
+            const phoneInput = document.getElementById('order-phone');
+            const panel = document.getElementById('customer-suggestions');
+            const query = phoneInput.value.trim();
+            if(query.length < 3) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+            const matches = orders
+                .filter(o => !o.isDeleted && o.phone && String(o.phone).includes(query))
+                .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))
+                .slice(0, 3);
+            if(matches.length === 0) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+            panel.innerHTML = `
+                <div class="text-sm font-bold text-red-700 mb-2">Existing customer found. Fill details?</div>
+                <div class="space-y-2">
+                    ${matches.map(order => `
+                        <div class="bg-white border border-red-100 rounded-md p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">${order.name || 'Customer'} • ${order.phone}</div>
+                                <div class="text-xs text-gray-600">${order.address || ''} ${order.pincode ? '| PIN: ' + order.pincode : ''}</div>
+                                <div class="text-xs text-red-600 font-medium">Previous order: ${formatDisplayDate(order.createdAt)}</div>
+                            </div>
+                            <button type="button" onclick="fillCustomerDetails('${order.id}')" class="px-3 py-2 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700">Fill Details</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            panel.classList.remove('hidden');
+        }
+
+        window.fillCustomerDetails = function(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(!order) return;
+            document.getElementById('order-phone').value = order.phone || '';
+            document.getElementById('order-name').value = order.name || '';
+            document.getElementById('order-address').value = order.address || '';
+            document.getElementById('order-pincode').value = order.pincode || '';
+            document.getElementById('order-location').value = order.location || '';
+            document.getElementById('customer-suggestions').classList.add('hidden');
+            showToast('Customer details filled');
+        }
+
+        window.showRepeatCustomerOrders = function(phone) {
+            const customerOrders = orders
+                .filter(o => !o.isDeleted && o.phone === phone)
+                .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
+            if(customerOrders.length === 0) return;
+            const latest = customerOrders[0];
+            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${customerOrders.length} orders`;
+            document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => `
+                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                        <div>
+                            <div class="text-sm font-bold text-gray-900">${formatDisplayDate(order.createdAt)}</div>
+                            <div class="text-xs text-gray-500">Updated: ${formatDisplayDate(order.updatedAt || order.createdAt)}</div>
+                        </div>
+                        <span class="self-start sm:self-auto px-2 py-1 rounded-full text-xs font-bold ${getOrderStatusColor(order.status)}">${order.status}</span>
+                    </div>
+                    <div class="text-sm text-gray-700">
+                        <span class="font-semibold">Products:</span> ${getOrderItemsText(order) || 'No items found'}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('repeat-customer-modal').classList.remove('hidden');
+        }
+
+        window.prefillCustomerFromRepeat = function(phone) {
+            const customerOrder = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))[0];
+            openOrderModal();
+            if(customerOrder) fillCustomerDetails(customerOrder.id);
+        }
+
         window.openOrderModal = function() {
             document.getElementById('order-form').reset();
             document.getElementById('order-id').value = '';
             document.getElementById('order-modal-title').innerText = 'Add New Order';
             document.getElementById('order-date').value = getTodayString();
             document.getElementById('order-products-container').innerHTML = '';
+            document.getElementById('customer-suggestions').classList.add('hidden');
+            document.getElementById('customer-suggestions').innerHTML = '';
             addOrderProductRow();
             document.getElementById('order-modal').classList.remove('hidden');
         }
@@ -865,20 +1187,27 @@
                 options += `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name} (₹${p.price})</option>`;
             });
             const html = `
-                <div class="flex items-center space-x-2 mb-2" id="${rowId}">
-                    <select class="order-product-select flex-1 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border bg-white" required>
-                        ${options}
-                    </select>
-                    <input type="number" class="order-product-qty w-20 rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm text-center" value="${qty}" min="1" required>
-                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="text-red-500 hover:text-red-700 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <div class="grid grid-cols-1 sm:grid-cols-[1fr_6rem_2.5rem] gap-3 mb-3 bg-gray-50 border border-gray-200 rounded-lg p-3" id="${rowId}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Product</label>
+                        <select class="order-product-select w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border bg-white" required>
+                            ${options}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Qty</label>
+                        <input type="number" class="order-product-qty w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm text-center" value="${qty}" min="1" required>
+                    </div>
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="self-end h-10 w-10 inline-flex items-center justify-center rounded-md border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-700" title="Remove item"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
         }
 
-        window.editOrder = function(id) {
+        window.editOrder = async function(id) {
             const order = orders.find(o => o.id === id);
             if(!order) return;
+            if(!(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('order-id').value = order.id;
             document.getElementById('order-modal-title').innerText = 'Edit Order';
             document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); 
@@ -926,10 +1255,20 @@
 
             try {
                 if (id) {
+                    if(!(await showConfirm({ title: 'Save Order Changes?', message: 'Apply these edits to the existing order?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+                    const existingOrder = orders.find(o => o.id === id);
                     orderData.updatedAt = getTodayString();
+                    if(existingOrder && existingOrder.status !== orderData.status) {
+                        orderData.statusHistory = [
+                            ...(existingOrder.statusHistory || [{ status: existingOrder.status || 'Pending', date: normalizeDateInput(existingOrder.createdAt), note: 'Order created' }]),
+                            { status: orderData.status, date: orderData.updatedAt, note: 'Status changed while editing order' }
+                        ];
+                    }
                     await updateDoc(doc(db, "orders", id), orderData);
                     showToast('Order Updated Successfully');
                 } else {
+                    orderData.statusHistory = [{ status: orderData.status, date: dateStr, note: 'Order created' }];
+                    orderData.isDeleted = false;
                     await addDoc(collection(db, "orders"), orderData);
                     for(let item of itemsObj) {
                         const prod = products.find(p => p.id === item.productId);
@@ -945,11 +1284,50 @@
         }
 
         window.deleteOrder = async function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!(await showConfirm({ title: 'Move to Recycle Bin?', message: `Move the order${order?.name ? ' for ' + order.name : ''} to the recycle bin?`, confirmText: 'Move to Bin' }))) return;
+            try {
+                await updateDoc(doc(db, "orders", id), { isDeleted: true, deletedAt: getTodayString() });
+                selectedOrders.delete(id);
+                showToast('Order moved to recycle bin', 'error');
+            } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        window.restoreOrder = async function(id) {
+            if(!(await showConfirm({ title: 'Restore Order?', message: 'Restore this order from the recycle bin?', confirmText: 'Restore', confirmClass: 'bg-green-600 hover:bg-green-700' }))) return;
+            try {
+                await updateDoc(doc(db, "orders", id), { isDeleted: false, deletedAt: '' });
+                showToast('Order restored successfully');
+            } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        window.permanentlyDeleteOrder = async function(id) {
+            if(!(await showConfirm({ title: 'Delete Forever?', message: 'This will permanently delete the order from the recycle bin.', confirmText: 'Delete Forever' }))) return;
             try {
                 await deleteDoc(doc(db, "orders", id));
                 selectedOrders.delete(id);
-                showToast('Order Deleted', 'error');
+                showToast('Order permanently deleted', 'error');
             } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        window.showOrderHistory = function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            const statuses = order.statusHistory && order.statusHistory.length ? order.statusHistory : [{ status: order.status || 'Pending', date: normalizeDateInput(order.createdAt), note: 'Current known status' }];
+            document.getElementById('order-history-subtitle').innerText = `${order.name || 'Customer'} • ${formatDisplayDate(order.createdAt)}`;
+            document.getElementById('order-history-list').innerHTML = statuses.map((entry, index) => `
+                <div class="relative pl-8 pb-4 ${index === statuses.length - 1 ? '' : 'border-l-2 border-red-100'}">
+                    <span class="absolute -left-3 top-0 h-6 w-6 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center">${index + 1}</span>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${getOrderStatusColor(entry.status)}">${entry.status}</span>
+                            <span class="text-xs text-gray-500 font-medium">${formatDisplayDate(entry.date)}</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mt-2">${entry.note || 'Status changed'}</p>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('order-history-modal').classList.remove('hidden');
         }
 
         window.openStatusModal = function(id, currentStatus) {
@@ -963,8 +1341,14 @@
             const id = document.getElementById('status-order-id').value;
             const newStatus = document.getElementById('status-select').value;
             const date = document.getElementById('status-date').value;
+            if(!(await showConfirm({ title: 'Update Status?', message: `Change this order status to ${newStatus}?`, confirmText: 'Update Status', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             try {
-                await updateDoc(doc(db, "orders", id), { status: newStatus, updatedAt: date });
+                const order = orders.find(o => o.id === id);
+                const history = [
+                    ...((order && order.statusHistory) || (order ? [{ status: order.status || 'Pending', date: normalizeDateInput(order.createdAt), note: 'Order created' }] : [])),
+                    { status: newStatus, date: date, note: 'Status updated' }
+                ];
+                await updateDoc(doc(db, "orders", id), { status: newStatus, updatedAt: date, statusHistory: history });
                 showToast(`Status updated to ${newStatus}`);
                 closeModal('status-modal');
             } catch (error) { showToast(error.message, 'error'); }
@@ -1023,9 +1407,10 @@
             document.getElementById('product-modal').classList.remove('hidden');
         }
 
-        window.editProduct = function(id) {
+        window.editProduct = async function(id) {
             const p = products.find(x => x.id === id);
             if(!p) return;
+            if(!(await showConfirm({ title: 'Edit Product?', message: `Open ${p.name || 'this product'} for editing?`, confirmText: 'Edit Product', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('product-id').value = p.id;
             document.getElementById('product-modal-title').innerText = 'Edit Product';
             document.getElementById('product-name').value = p.name;
@@ -1046,6 +1431,7 @@
             };
             try {
                 if (id) {
+                    if(!(await showConfirm({ title: 'Save Product Changes?', message: 'Apply these edits to the existing product?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
                     await updateDoc(doc(db, "products", id), data);
                     showToast('Product Updated Successfully');
                 } else {
@@ -1059,6 +1445,8 @@
         }
 
         window.deleteProduct = async function(id) {
+            const p = products.find(x => x.id === id);
+            if(!(await showConfirm({ title: 'Delete Product?', message: `This will permanently delete ${p?.name || 'this product'} and its stock history.`, confirmText: 'Delete Product' }))) return;
             try {
                 await deleteDoc(doc(db, "products", id));
                 showToast('Product Deleted', 'error');
@@ -1066,7 +1454,8 @@
         }
 
         // ================= NEW: STOCK UPDATE & EDIT/DELETE LOGIC =================
-        window.openStockModal = function(id, name, historyIndex = -1) {
+        window.openStockModal = async function(id, name, historyIndex = -1) {
+            if(historyIndex > -1 && !(await showConfirm({ title: 'Edit Stock Entry?', message: `Open stock entry for ${name} for editing?`, confirmText: 'Edit Stock', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('stock-form').reset();
             document.getElementById('stock-product-id').value = id;
             document.getElementById('stock-history-index').value = historyIndex;
@@ -1097,6 +1486,7 @@
             try {
                 let history = [...(p.stockHistory || [])];
                 if (index > -1) {
+                    if(!(await showConfirm({ title: 'Save Stock Edit?', message: 'Apply these changes to the stock entry?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
                     // Edit existing entry
                     history[index] = { date: date, qty: qty };
                     showToast(`Stock updated successfully`);
@@ -1113,6 +1503,7 @@
         window.deleteStockHistory = async function(productId, index) {
             const p = products.find(x => x.id === productId);
             if(!p || !p.stockHistory || index < 0 || index >= p.stockHistory.length) return;
+            if(!(await showConfirm({ title: 'Delete Stock Entry?', message: `Delete this stock entry from ${p.name}?`, confirmText: 'Delete Entry' }))) return;
             try {
                 let history = [...p.stockHistory];
                 history.splice(index, 1);
@@ -1166,6 +1557,7 @@
         }
 
         window.saveSettings = async function() {
+            if(!(await showConfirm({ title: 'Save Settings?', message: 'Update company details used on shipping labels and login screen?', confirmText: 'Save Settings', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             const data = {
                 name: document.getElementById('set-company-name').value,
                 address1: document.getElementById('set-address1').value,
@@ -1180,8 +1572,17 @@
         }
 
         // ================= PDF PRINTING (Updated Sizes) =================
-        window.printSelectedOrders = function() {
+        window.printSingleOrder = async function(id) {
+            const previousSelection = new Set(selectedOrders);
+            selectedOrders = new Set([id]);
+            await printSelectedOrders();
+            selectedOrders = previousSelection;
+            renderOrders();
+        }
+
+        window.printSelectedOrders = async function() {
             if (selectedOrders.size === 0) return;
+            if(!(await showConfirm({ title: 'Print Selected Orders?', message: `Generate shipping labels for ${selectedOrders.size} selected order(s)?`, confirmText: 'Print Labels', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
             
             try {
