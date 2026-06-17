@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ml">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +15,6 @@
         .hidden { display: none !important; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Scrollbar styling */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -25,7 +24,7 @@
 <body class="text-gray-800">
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed top-4 right-4 z-[60] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform translate-x-full opacity-0 duration-300">
+    <div id="toast" class="fixed top-4 right-4 z-[100] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform translate-x-full opacity-0 duration-300">
         <span id="toast-icon" class="mr-2"></span>
         <span id="toast-message" class="text-sm font-medium"></span>
     </div>
@@ -51,7 +50,6 @@
                     <div class="relative">
                         <input type="password" id="login-password" required class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm" placeholder="••••••••">
                         <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
-                            <!-- Eye Icon -->
                             <svg id="eye-icon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </button>
                     </div>
@@ -171,11 +169,11 @@
                     <!-- Search & Actions -->
                     <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div class="relative w-full sm:w-96">
-                            <input type="text" id="order-search" oninput="renderOrders()" placeholder="പേരോ ഫോൺ നമ്പറോ തിരയുക..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
+                            <input type="text" id="order-search" oninput="renderOrders()" placeholder="Search Name or Phone..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
                             <svg class="absolute left-3 top-2.5 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </div>
                         <div id="bulk-actions" class="hidden flex items-center space-x-3 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
-                            <span class="text-red-700 font-medium text-sm" id="selected-count">0 ഓർഡറുകൾ തിരഞ്ഞെടുത്തു</span>
+                            <span class="text-red-700 font-medium text-sm" id="selected-count">0 Selected</span>
                             <button onclick="printSelectedOrders()" class="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 shadow-sm">
                                 Print Selected
                             </button>
@@ -218,24 +216,24 @@
                     <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
                         <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
                             <h3 class="text-lg leading-6 font-medium text-gray-900">Company Settings</h3>
-                            <p class="mt-1 max-w-2xl text-sm text-gray-500">Shipping ലേബലിൽ അച്ചടിക്കേണ്ട സ്ഥാപനത്തിൻ്റെ വിവരങ്ങൾ നൽകുക.</p>
+                            <p class="mt-1 max-w-2xl text-sm text-gray-500">Provide company details for shipping labels.</p>
                         </div>
                         <div class="p-6">
                             <form id="settings-form" class="space-y-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Company Name (സ്ഥാപനത്തിൻ്റെ പേര്)</label>
+                                    <label class="block text-sm font-medium text-gray-700">Company Name</label>
                                     <input type="text" id="set-company-name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Address Line 1 (ബിൽഡിംഗ്, തെരുവ്)</label>
+                                    <label class="block text-sm font-medium text-gray-700">Address Line 1 (Street, Building)</label>
                                     <input type="text" id="set-address1" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Address Line 2 (സ്ഥലം, ജില്ല, പിൻകോഡ്)</label>
+                                    <label class="block text-sm font-medium text-gray-700">Address Line 2 (City, State, Pincode)</label>
                                     <input type="text" id="set-address2" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Phone Number (ഫോൺ നമ്പർ)</label>
+                                    <label class="block text-sm font-medium text-gray-700">Phone Number</label>
                                     <input type="text" id="set-phone" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
                                 </div>
                                 <div class="pt-4 flex justify-end">
@@ -266,7 +264,7 @@
                     <input type="hidden" id="order-id">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Date (തീയതി)</label>
+                            <label class="block text-sm font-medium text-gray-700">Date</label>
                             <input type="date" id="order-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
                         <div>
@@ -282,19 +280,19 @@
                             <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Customer Details</label>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Name (പേര്)</label>
+                            <label class="block text-sm font-medium text-gray-700">Name</label>
                             <input type="text" id="order-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Phone (ഫോൺ)</label>
+                            <label class="block text-sm font-medium text-gray-700">Phone</label>
                             <input type="text" id="order-phone" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
                         <div class="sm:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Address (വിലാസം)</label>
+                            <label class="block text-sm font-medium text-gray-700">Full Address</label>
                             <textarea id="order-address" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"></textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Pincode (പിൻകോഡ്)</label>
+                            <label class="block text-sm font-medium text-gray-700">Pincode</label>
                             <input type="text" id="order-pincode" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
                         <div>
@@ -303,12 +301,11 @@
                         </div>
                         
                         <div class="sm:col-span-2 border-t pt-2 mt-2">
-                            <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Order Items (ഓട്ടോമാറ്റിക് ആയി സ്റ്റോക്ക് കുറയും)</label>
+                            <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Order Items</label>
                         </div>
                         
-                        <!-- Dynamic Product Selection -->
                         <div class="sm:col-span-2" id="order-products-container">
-                            <!-- Items added here dynamically -->
+                            <!-- Items added dynamically -->
                         </div>
                         <div class="sm:col-span-2">
                             <button type="button" onclick="addOrderProductRow()" class="mt-1 text-sm text-red-600 font-medium hover:text-red-800 flex items-center">
@@ -342,11 +339,11 @@
                         <input type="text" id="product-name" required placeholder="eg. Tuna Pickle 350g" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Price (വില ₹)</label>
+                        <label class="block text-sm font-medium text-gray-700">Price (₹)</label>
                         <input type="number" id="product-price" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700" id="initial-stock-label">Initial Stock (ആദ്യത്തെ സ്റ്റോക്ക് എണ്ണം)</label>
+                        <label class="block text-sm font-medium text-gray-700" id="initial-stock-label">Initial Stock Qty</label>
                         <input type="number" id="product-stock" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
                     </div>
                     <div>
@@ -362,37 +359,38 @@
         </div>
     </div>
 
-    <!-- Update Stock Modal -->
+    <!-- Update Stock Modal (Add or Edit Stock Row) -->
     <div id="stock-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
             <div class="px-6 py-4 border-b flex justify-between items-center bg-green-50">
-                <h2 class="text-lg font-bold text-green-800">Add New Stock</h2>
+                <h2 class="text-lg font-bold text-green-800" id="stock-modal-title">Add New Stock</h2>
                 <button onclick="closeModal('stock-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             <div class="p-6">
                 <p id="stock-product-name" class="font-medium text-gray-700 mb-4"></p>
                 <form id="stock-form" class="space-y-4">
                     <input type="hidden" id="stock-product-id">
+                    <input type="hidden" id="stock-history-index" value="-1">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">പുതിയതായി വന്ന എണ്ണം (Qty)</label>
+                        <label class="block text-sm font-medium text-gray-700">Quantity</label>
                         <input type="number" id="stock-add-qty" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-green-500 focus:border-green-500 sm:text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date (തീയതി)</label>
+                        <label class="block text-sm font-medium text-gray-700">Date</label>
                         <input type="date" id="stock-add-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-green-500 focus:border-green-500 sm:text-sm">
                     </div>
                 </form>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t flex justify-end space-x-3">
                 <button onclick="closeModal('stock-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
-                <button onclick="submitNewStock()" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700">Add Stock</button>
+                <button onclick="submitNewStock()" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700" id="stock-submit-btn">Save Stock</button>
             </div>
         </div>
     </div>
 
     <!-- Stock History Modal -->
     <div id="history-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh]">
             <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
                 <h2 class="text-lg font-bold text-gray-800">Stock History</h2>
                 <button onclick="closeModal('history-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
@@ -404,8 +402,9 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Qty</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Qty</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="history-list" class="bg-white divide-y divide-gray-200">
@@ -437,7 +436,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date (തീയതി)</label>
+                        <label class="block text-sm font-medium text-gray-700">Date</label>
                         <input type="date" id="status-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     </div>
                 </form>
@@ -455,7 +454,6 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase Config (User provided)
         const firebaseConfig = {
             apiKey: "AIzaSyCQjO9TcXCve9gI0ysdzCO1thV8SBTFjcc",
             authDomain: "lakfa-3bfb1.firebaseapp.com",
@@ -470,7 +468,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // State
         let orders = [];
         let products = [];
         let selectedOrders = new Set();
@@ -483,7 +480,7 @@
             phone: "079073 45458"
         };
 
-        // Utility: Show Toast
+        // Utility: Show Toast (English)
         window.showToast = function(message, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
@@ -497,21 +494,13 @@
                 icon.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
             }
             
-            // Trigger animation
             setTimeout(() => { toast.classList.remove('translate-x-full', 'opacity-0'); }, 10);
-            setTimeout(() => { 
-                toast.classList.add('translate-x-full', 'opacity-0'); 
-            }, 3000);
+            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); }, 3000);
         };
 
-        // Date Helper
-        function getTodayString() {
-            const today = new Date();
-            return today.toISOString().split('T')[0];
-        }
+        function getTodayString() { return new Date().toISOString().split('T')[0]; }
         function formatDisplayDate(dateStr) {
             if(!dateStr) return '';
-            // Handle firebase timestamp if exists
             if(typeof dateStr === 'object' && dateStr.seconds) {
                 dateStr = new Date(dateStr.seconds * 1000).toISOString().split('T')[0];
             }
@@ -540,17 +529,13 @@
             const pass = document.getElementById('login-password').value;
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
-                showToast("ലോഗിൻ വിജയകരം!");
+                showToast("Login Successful!");
             } catch (error) {
-                showToast("ഇമെയിലോ പാസ്‌വേർഡോ തെറ്റാണ്", "error");
-                console.error(error);
+                showToast("Invalid Email or Password", "error");
             }
         });
 
-        window.handleLogout = async function() {
-            await signOut(auth);
-            window.location.reload();
-        }
+        window.handleLogout = async function() { await signOut(auth); window.location.reload(); }
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -560,18 +545,17 @@
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('main-app').classList.add('hidden');
-                // Try fetching public settings for login screen
                 getDoc(doc(db, "settings", "config")).then(docSnap => {
                     if (docSnap.exists()) {
                         const s = docSnap.data();
                         document.getElementById('login-company-name').innerText = s.name;
                         document.getElementById('login-company-address').innerText = s.address1;
                     }
-                }).catch(e=>console.log("No public settings yet"));
+                }).catch(e=>{});
             }
         });
 
-        // ================= NAVIGATION & TABS =================
+        // ================= TABS =================
         window.switchTab = function(tabId) {
             currentTab = tabId;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -586,14 +570,13 @@
             activeBtn.classList.add('bg-red-50', 'text-red-700');
 
             const headerActions = document.getElementById('header-actions');
-            
             if(tabId === 'dashboard') {
                 document.getElementById('page-title').innerText = "Dashboard";
                 headerActions.innerHTML = '';
                 renderDashboard();
             } else if (tabId === 'orders') {
                 document.getElementById('page-title').innerText = "Order Management";
-                headerActions.innerHTML = `<button onclick="openOrderModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center"><svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> New Order</button>`;
+                headerActions.innerHTML = `<button onclick="openOrderModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center"><svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add New Order</button>`;
                 renderOrders();
             } else if (tabId === 'inventory') {
                 document.getElementById('page-title').innerText = "Inventory & Products";
@@ -608,27 +591,25 @@
 
         // ================= DATA LOADING =================
         function loadData() {
-            // Load Settings
             onSnapshot(doc(db, "settings", "config"), (docSnap) => {
                 if (docSnap.exists()) {
                     companySettings = docSnap.data();
                     if(currentTab === 'settings') populateSettingsForm();
                 }
             });
-
-            // Load Products
             onSnapshot(collection(db, "products"), (snapshot) => {
                 products = [];
                 snapshot.forEach((doc) => products.push({ id: doc.id, ...doc.data() }));
                 if(currentTab === 'inventory') renderProducts();
                 if(currentTab === 'dashboard') renderDashboard();
+                if(currentTab === 'inventory' && !document.getElementById('history-modal').classList.contains('hidden')) {
+                    const openedProductId = document.getElementById('history-modal').getAttribute('data-product-id');
+                    if(openedProductId) showHistoryModal(openedProductId);
+                }
             });
-
-            // Load Orders
             onSnapshot(collection(db, "orders"), (snapshot) => {
                 orders = [];
                 snapshot.forEach((doc) => orders.push({ id: doc.id, ...doc.data() }));
-                // Sort by creation date descending
                 orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 if(currentTab === 'orders') renderOrders();
                 if(currentTab === 'dashboard') renderDashboard();
@@ -649,7 +630,6 @@
         }
 
         function renderDashboard() {
-            // 1. Order Status Counts
             let pending = 0, processing = 0, shipped = 0, delivered = 0;
             const ordersByMonth = {};
             const currentMonthKey = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
@@ -660,7 +640,6 @@
                 else if (order.status === 'Shipped') shipped++;
                 else if (order.status === 'Delivered') delivered++;
 
-                // Parse Date safely
                 let dateStr = order.createdAt;
                 if (typeof dateStr === 'object' && dateStr.seconds) {
                     dateStr = new Date(dateStr.seconds * 1000).toISOString().split('T')[0];
@@ -671,18 +650,13 @@
                 const monthKey = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
                 const dayStr = formatDisplayDate(dateStr);
 
-                if (!ordersByMonth[monthKey]) {
-                    ordersByMonth[monthKey] = { total: 0, days: {} };
-                }
+                if (!ordersByMonth[monthKey]) { ordersByMonth[monthKey] = { total: 0, days: {} }; }
                 ordersByMonth[monthKey].total++;
                 
-                if (!ordersByMonth[monthKey].days[dayStr]) {
-                    ordersByMonth[monthKey].days[dayStr] = 0;
-                }
+                if (!ordersByMonth[monthKey].days[dayStr]) { ordersByMonth[monthKey].days[dayStr] = 0; }
                 ordersByMonth[monthKey].days[dayStr]++;
             });
 
-            // Render Status
             document.getElementById('dashboard-status-counts').innerHTML = `
                 <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100 flex flex-col items-center justify-center">
                     <div class="text-xs text-yellow-600 font-bold uppercase mb-1">Pending</div>
@@ -702,20 +676,16 @@
                 </div>
             `;
 
-            // Render Accordion
             const sortedMonths = Object.keys(ordersByMonth).sort((a, b) => new Date(b) - new Date(a));
             let accordionHTML = '';
             
             sortedMonths.forEach((month, index) => {
                 const data = ordersByMonth[month];
-                // Open current month, or the very first one if current is empty
                 const isCurrent = month === currentMonthKey || (index === 0 && !ordersByMonth[currentMonthKey]); 
                 const monthId = month.replace(/\s+/g, '-');
-                
                 let daysHTML = '';
-                // Sort days descending
                 const sortedDays = Object.keys(data.days).sort((a, b) => {
-                    const da = a.split('-').reverse().join('-'); // dd-mm-yyyy to yyyy-mm-dd
+                    const da = a.split('-').reverse().join('-');
                     const db = b.split('-').reverse().join('-');
                     return new Date(db) - new Date(da);
                 });
@@ -744,13 +714,9 @@
                     </div>
                 `;
             });
-
-            if(sortedMonths.length === 0) {
-                accordionHTML = '<div class="text-gray-500 text-sm text-center py-4">No orders found.</div>';
-            }
+            if(sortedMonths.length === 0) accordionHTML = '<div class="text-gray-500 text-sm text-center py-4">No orders found.</div>';
             document.getElementById('dashboard-orders-accordion').innerHTML = accordionHTML;
 
-            // Render Current Stock Status
             let stockHTML = '';
             products.forEach(product => {
                 const added = Array.isArray(product.stockHistory) ? product.stockHistory.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
@@ -803,7 +769,6 @@
                 else if(order.status === 'Shipped') statusColor = 'bg-purple-100 text-purple-800';
                 else if(order.status === 'Delivered') statusColor = 'bg-green-100 text-green-800';
 
-                // Format Items
                 let itemsText = '';
                 if(Array.isArray(order.itemsObj)) {
                     itemsText = order.itemsObj.map(i => {
@@ -814,6 +779,7 @@
                     itemsText = order.items || '';
                 }
 
+                // Changed Update Status Icon to Truck
                 html += `
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -836,15 +802,15 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button onclick="openStatusModal('${order.id}', '${order.status}')" class="text-blue-600 hover:text-blue-900 mr-3" title="Update Status">
-                                <svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                <svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14H6v-4a2 2 0 012-2h7v6h-1m-4 0h4m-4 0a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 11-4 0 2 2 0 014 0zm1-6h-3V6h3l3 4v4h-1"/></svg>
                             </button>
-                            <button onclick="editOrder('${order.id}')" class="text-gray-400 hover:text-gray-700 mr-3"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
-                            <button onclick="deleteOrder('${order.id}')" class="text-red-400 hover:text-red-700"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            <button onclick="editOrder('${order.id}')" class="text-gray-400 hover:text-gray-700 mr-3" title="Edit Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                            <button onclick="deleteOrder('${order.id}')" class="text-red-400 hover:text-red-700" title="Delete Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                         </td>
                     </tr>
                 `;
             });
-            if(filtered.length === 0) html = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">ഓർഡറുകൾ ലഭ്യമല്ല</td></tr>';
+            if(filtered.length === 0) html = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
             list.innerHTML = html;
 
             document.getElementById('select-all-orders').checked = filtered.length > 0 && selectedOrders.size === filtered.length;
@@ -874,17 +840,17 @@
             const panel = document.getElementById('bulk-actions');
             if(selectedOrders.size > 0) {
                 panel.classList.remove('hidden');
-                document.getElementById('selected-count').innerText = `${selectedOrders.size} ഓർഡറുകൾ തിരഞ്ഞെടുത്തു`;
+                document.getElementById('selected-count').innerText = `${selectedOrders.size} Selected`;
             } else {
                 panel.classList.add('hidden');
             }
         }
 
-        // ================= ORDER MODAL & LOGIC =================
+        // ================= ORDER MODAL =================
         window.openOrderModal = function() {
             document.getElementById('order-form').reset();
             document.getElementById('order-id').value = '';
-            document.getElementById('order-modal-title').innerText = 'പുതിയ ഓർഡർ ചേർക്കുക';
+            document.getElementById('order-modal-title').innerText = 'Add New Order';
             document.getElementById('order-date').value = getTodayString();
             document.getElementById('order-products-container').innerHTML = '';
             addOrderProductRow();
@@ -914,8 +880,8 @@
             const order = orders.find(o => o.id === id);
             if(!order) return;
             document.getElementById('order-id').value = order.id;
-            document.getElementById('order-modal-title').innerText = 'ഓർഡർ എഡിറ്റ് ചെയ്യുക';
-            document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); // to YYYY-MM-DD
+            document.getElementById('order-modal-title').innerText = 'Edit Order';
+            document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); 
             document.getElementById('order-status').value = order.status;
             document.getElementById('order-name').value = order.name;
             document.getElementById('order-phone').value = order.phone;
@@ -926,9 +892,7 @@
             document.getElementById('order-products-container').innerHTML = '';
             if(order.itemsObj && order.itemsObj.length > 0) {
                 order.itemsObj.forEach(item => addOrderProductRow(item.productId, item.qty));
-            } else {
-                addOrderProductRow(); // default empty row
-            }
+            } else { addOrderProductRow(); }
             document.getElementById('order-modal').classList.remove('hidden');
         }
 
@@ -936,7 +900,6 @@
             const id = document.getElementById('order-id').value;
             const dateStr = document.getElementById('order-date').value;
             
-            // Collect Items
             const selects = document.querySelectorAll('.order-product-select');
             const qtys = document.querySelectorAll('.order-product-qty');
             let itemsObj = [];
@@ -944,20 +907,14 @@
             
             selects.forEach((select, index) => {
                 if(select.value) {
-                    itemsObj.push({
-                        productId: select.value,
-                        qty: parseInt(qtys[index].value) || 1
-                    });
+                    itemsObj.push({ productId: select.value, qty: parseInt(qtys[index].value) || 1 });
                 } else { isValid = false; }
             });
 
-            if(!isValid || itemsObj.length === 0) {
-                showToast("ദയവായി സാധനങ്ങൾ തിരഞ്ഞെടുക്കുക", "error"); return;
-            }
+            if(!isValid || itemsObj.length === 0) { showToast("Please select items", "error"); return; }
 
             const orderData = {
-                createdAt: dateStr,
-                updatedAt: dateStr,
+                createdAt: dateStr, updatedAt: dateStr,
                 status: document.getElementById('order-status').value,
                 name: document.getElementById('order-name').value,
                 phone: document.getElementById('order-phone').value,
@@ -969,15 +926,11 @@
 
             try {
                 if (id) {
-                    // Update Order (Does not adjust stock on edit yet to avoid complexity, usually needs calculation of diff)
                     orderData.updatedAt = getTodayString();
                     await updateDoc(doc(db, "orders", id), orderData);
-                    showToast('ഓർഡർ അപ്ഡേറ്റ് ചെയ്തു');
+                    showToast('Order Updated Successfully');
                 } else {
-                    // New Order - Deduct Stock automatically
                     await addDoc(collection(db, "orders"), orderData);
-                    
-                    // Deduct stock logic
                     for(let item of itemsObj) {
                         const prod = products.find(p => p.id === item.productId);
                         if(prod) {
@@ -985,23 +938,20 @@
                             await updateDoc(doc(db, "products", item.productId), { ordered: newOrdered });
                         }
                     }
-                    showToast('പുതിയ ഓർഡർ ചേർത്തു');
+                    showToast('Order Added Successfully');
                 }
                 closeModal('order-modal');
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
+            } catch (error) { showToast(error.message, 'error'); }
         }
 
         window.deleteOrder = async function(id) {
             try {
                 await deleteDoc(doc(db, "orders", id));
                 selectedOrders.delete(id);
-                showToast('ഓർഡർ ഡിലീറ്റ് ചെയ്തു', 'error');
+                showToast('Order Deleted', 'error');
             } catch (e) { showToast(e.message, 'error'); }
         }
 
-        // ================= STATUS UPDATE =================
         window.openStatusModal = function(id, currentStatus) {
             document.getElementById('status-order-id').value = id;
             document.getElementById('status-select').value = currentStatus;
@@ -1014,18 +964,13 @@
             const newStatus = document.getElementById('status-select').value;
             const date = document.getElementById('status-date').value;
             try {
-                await updateDoc(doc(db, "orders", id), {
-                    status: newStatus,
-                    updatedAt: date
-                });
-                showToast(`സ്റ്റാറ്റസ് ${newStatus} ആയി മാറ്റി`);
+                await updateDoc(doc(db, "orders", id), { status: newStatus, updatedAt: date });
+                showToast(`Status updated to ${newStatus}`);
                 closeModal('status-modal');
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
+            } catch (error) { showToast(error.message, 'error'); }
         }
 
-        // ================= INVENTORY MANAGEMENT =================
+        // ================= INVENTORY & PRODUCTS =================
         window.renderProducts = function() {
             const list = document.getElementById('products-list');
             let html = '';
@@ -1050,40 +995,29 @@
                         </div>
                         
                         <div class="p-6 flex-1 flex flex-col justify-center">
-                            <!-- Clickable Stats Block -->
                             <div class="grid grid-cols-3 gap-2 text-center cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors border border-transparent hover:border-gray-200" onclick="showHistoryModal('${p.id}')" title="Click to view Stock History">
-                                <div>
-                                    <div class="text-xs text-gray-500 font-medium">Added</div>
-                                    <div class="text-lg font-bold text-gray-800">${totalAdded}</div>
-                                </div>
-                                <div class="border-l border-r border-gray-100">
-                                    <div class="text-xs text-gray-500 font-medium">Ordered</div>
-                                    <div class="text-lg font-bold text-red-500">${ordered}</div>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500 font-medium">Balance</div>
-                                    <div class="text-lg font-bold ${balance < 5 ? 'text-red-600' : 'text-green-600'}">${balance}</div>
-                                </div>
+                                <div><div class="text-xs text-gray-500 font-medium">Added</div><div class="text-lg font-bold text-gray-800">${totalAdded}</div></div>
+                                <div class="border-l border-r border-gray-100"><div class="text-xs text-gray-500 font-medium">Ordered</div><div class="text-lg font-bold text-red-500">${ordered}</div></div>
+                                <div><div class="text-xs text-gray-500 font-medium">Balance</div><div class="text-lg font-bold ${balance < 5 ? 'text-red-600' : 'text-green-600'}">${balance}</div></div>
                             </div>
                         </div>
                         
                         <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-center">
                             <button onclick="openStockModal('${p.id}', '${p.name}')" class="text-green-600 text-sm font-bold flex items-center justify-center w-full hover:text-green-800">
-                                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                                Add Stock
+                                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg> Add Stock
                             </button>
                         </div>
                     </div>
                 `;
             });
-            if(products.length === 0) html = '<div class="col-span-full p-10 text-center text-gray-500">പ്രോഡക്റ്റുകൾ ലഭ്യമല്ല</div>';
+            if(products.length === 0) html = '<div class="col-span-full p-10 text-center text-gray-500">No products available</div>';
             list.innerHTML = html;
         }
 
         window.openProductModal = function() {
             document.getElementById('product-form').reset();
             document.getElementById('product-id').value = '';
-            document.getElementById('product-modal-title').innerText = 'പുതിയ പ്രോഡക്റ്റ്';
+            document.getElementById('product-modal-title').innerText = 'Add Product';
             document.getElementById('product-date').value = getTodayString();
             document.getElementById('product-stock').disabled = false;
             document.getElementById('product-modal').classList.remove('hidden');
@@ -1093,7 +1027,7 @@
             const p = products.find(x => x.id === id);
             if(!p) return;
             document.getElementById('product-id').value = p.id;
-            document.getElementById('product-modal-title').innerText = 'പ്രോഡക്റ്റ് എഡിറ്റ് ചെയ്യുക';
+            document.getElementById('product-modal-title').innerText = 'Edit Product';
             document.getElementById('product-name').value = p.name;
             document.getElementById('product-price').value = p.price;
             document.getElementById('product-stock').value = p.initialStock || 0;
@@ -1113,12 +1047,12 @@
             try {
                 if (id) {
                     await updateDoc(doc(db, "products", id), data);
-                    showToast('പ്രോഡക്റ്റ് അപ്ഡേറ്റ് ചെയ്തു');
+                    showToast('Product Updated Successfully');
                 } else {
                     data.ordered = 0;
                     data.stockHistory = [];
                     await addDoc(collection(db, "products"), data);
-                    showToast('പുതിയ പ്രോഡക്റ്റ് ചേർത്തു');
+                    showToast('New Product Added');
                 }
                 closeModal('product-modal');
             } catch (error) { showToast(error.message, 'error'); }
@@ -1127,53 +1061,94 @@
         window.deleteProduct = async function(id) {
             try {
                 await deleteDoc(doc(db, "products", id));
-                showToast('പ്രോഡക്റ്റ് ഡിലീറ്റ് ചെയ്തു', 'error');
+                showToast('Product Deleted', 'error');
             } catch (e) { showToast(e.message, 'error'); }
         }
 
-        window.openStockModal = function(id, name) {
+        // ================= NEW: STOCK UPDATE & EDIT/DELETE LOGIC =================
+        window.openStockModal = function(id, name, historyIndex = -1) {
             document.getElementById('stock-form').reset();
             document.getElementById('stock-product-id').value = id;
+            document.getElementById('stock-history-index').value = historyIndex;
             document.getElementById('stock-product-name').innerText = `Item: ${name}`;
-            document.getElementById('stock-add-date').value = getTodayString();
+            
+            if (historyIndex > -1) {
+                const p = products.find(x => x.id === id);
+                const item = p.stockHistory[historyIndex];
+                document.getElementById('stock-modal-title').innerText = "Edit Stock Entry";
+                document.getElementById('stock-add-qty').value = item.qty;
+                document.getElementById('stock-add-date').value = item.date;
+                document.getElementById('stock-submit-btn').innerText = "Update Stock";
+            } else {
+                document.getElementById('stock-modal-title').innerText = "Add New Stock";
+                document.getElementById('stock-add-date').value = getTodayString();
+                document.getElementById('stock-submit-btn').innerText = "Save Stock";
+            }
             document.getElementById('stock-modal').classList.remove('hidden');
         }
 
         window.submitNewStock = async function() {
             const id = document.getElementById('stock-product-id').value;
+            const index = parseInt(document.getElementById('stock-history-index').value);
             const qty = parseFloat(document.getElementById('stock-add-qty').value) || 0;
             const date = document.getElementById('stock-add-date').value;
             const p = products.find(x => x.id === id);
             
             try {
-                let history = p.stockHistory || [];
-                history.push({ date: date, qty: qty });
+                let history = [...(p.stockHistory || [])];
+                if (index > -1) {
+                    // Edit existing entry
+                    history[index] = { date: date, qty: qty };
+                    showToast(`Stock updated successfully`);
+                } else {
+                    // Add new entry
+                    history.push({ date: date, qty: qty });
+                    showToast(`${qty} stock added successfully`);
+                }
                 await updateDoc(doc(db, "products", id), { stockHistory: history });
-                showToast(`${qty} പുതിയ സ്റ്റോക്ക് ചേർത്തു`);
                 closeModal('stock-modal');
             } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.deleteStockHistory = async function(productId, index) {
+            const p = products.find(x => x.id === productId);
+            if(!p || !p.stockHistory || index < 0 || index >= p.stockHistory.length) return;
+            try {
+                let history = [...p.stockHistory];
+                history.splice(index, 1);
+                await updateDoc(doc(db, "products", productId), { stockHistory: history });
+                showToast('Stock entry deleted', 'error');
+            } catch (e) { showToast(e.message, 'error'); }
         }
 
         // ================= STOCK HISTORY MODAL =================
         window.showHistoryModal = function(id) {
             const p = products.find(x => x.id === id);
             if(!p) return;
+            document.getElementById('history-modal').setAttribute('data-product-id', id);
             document.getElementById('history-product-name').innerText = p.name;
             const list = document.getElementById('history-list');
             let html = `
                 <tr class="bg-gray-50">
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${formatDisplayDate(p.createdAt)}</td>
-                    <td class="px-4 py-2 text-sm text-gray-900">Initial Stock Added</td>
-                    <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-bold text-gray-900">+${p.initialStock || 0}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${formatDisplayDate(p.createdAt)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">Initial Setup Stock</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap text-sm font-bold text-gray-900">+${p.initialStock || 0}</td>
+                    <td class="px-4 py-3 text-right text-sm">
+                        <button onclick="editProduct('${p.id}')" class="text-gray-400 hover:text-blue-600 text-xs font-medium">Edit Initial</button>
+                    </td>
                 </tr>
             `;
             if(p.stockHistory && p.stockHistory.length > 0) {
-                p.stockHistory.forEach(h => {
+                p.stockHistory.forEach((h, index) => {
                     html += `
-                        <tr>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${formatDisplayDate(h.date)}</td>
-                            <td class="px-4 py-2 text-sm text-gray-900"><span class="text-green-600 font-medium">New Stock Arrived</span></td>
-                            <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-bold text-green-600">+${h.qty}</td>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${formatDisplayDate(h.date)}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900"><span class="text-green-600 font-medium">New Stock Arrived</span></td>
+                            <td class="px-4 py-3 text-center whitespace-nowrap text-sm font-bold text-green-600">+${h.qty}</td>
+                            <td class="px-4 py-3 text-right text-sm whitespace-nowrap space-x-2">
+                                <button onclick="openStockModal('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${index})" class="text-blue-500 hover:text-blue-700 bg-white p-1 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                                <button onclick="deleteStockHistory('${p.id}', ${index})" class="text-red-400 hover:text-red-700 bg-white p-1 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -1200,13 +1175,11 @@
             try {
                 await setDoc(doc(db, "settings", "config"), data);
                 companySettings = data;
-                showToast("കമ്പനി വിവരങ്ങൾ അപ്ഡേറ്റ് ചെയ്തു");
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
+                showToast("Company Settings Updated");
+            } catch (error) { showToast(error.message, 'error'); }
         }
 
-        // ================= PDF PRINTING =================
+        // ================= PDF PRINTING (Updated Sizes) =================
         window.printSelectedOrders = function() {
             if (selectedOrders.size === 0) return;
             const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
@@ -1236,51 +1209,59 @@
                         doc.setLineDashPattern([], 0); doc.setDrawColor(0);
                     }
 
-                    // Draw Label Border Margin
+                    // Label Border Margin
                     doc.setLineWidth(0.3);
                     doc.rect(startX, startY, boxW, boxH);
 
-                    // FROM Section
-                    doc.setFontSize(10);
+                    // --- FROM SECTION ---
+                    doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
                     doc.text("From:", startX + 5, startY + 10);
                     
+                    // Name: Bold & Larger
+                    doc.setFontSize(14);
+                    doc.text(companySettings.name, startX + 5, startY + 18);
+                    
+                    // Address: Normal & Medium Size
+                    doc.setFontSize(12);
                     doc.setFont("helvetica", "normal");
-                    doc.setFontSize(10);
                     doc.text([
-                        companySettings.name,
                         companySettings.address1,
                         companySettings.address2,
-                        `Ph: ${companySettings.phone}`
-                    ], startX + 5, startY + 16);
+                    ], startX + 5, startY + 24);
+                    
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`Ph: ${companySettings.phone}`, startX + 5, startY + 36);
 
                     // Divider Line
                     doc.setDrawColor(150);
-                    doc.line(startX + 5, startY + 38, startX + boxW - 5, startY + 38);
+                    doc.line(startX + 5, startY + 42, startX + boxW - 5, startY + 42);
                     doc.setDrawColor(0);
 
-                    // TO Section
+                    // --- TO SECTION ---
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
-                    doc.text("To:", startX + 5, startY + 48);
+                    doc.text("To:", startX + 5, startY + 52);
                     
-                    doc.setFontSize(16); // Big font for name
+                    // Name: Bold & Larger (Same as From)
+                    doc.setFontSize(14);
                     const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
-                    doc.text(splitName, startX + 5, startY + 56);
+                    doc.text(splitName, startX + 5, startY + 60);
                     
                     // Calculate Y based on name length
-                    let nextY = startY + 56 + (splitName.length * 6);
+                    let nextY = startY + 60 + (splitName.length * 6);
                     
-                    doc.setFont("helvetica", "normal");
+                    // Address: Normal & Medium Size (Same as From)
                     doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
                     const addrText = `${order.address || ""}\nPIN: ${order.pincode || ""}`;
                     const splitAddress = doc.splitTextToSize(addrText, boxW - 10);
                     doc.text(splitAddress, startX + 5, nextY);
                     
-                    nextY = nextY + (splitAddress.length * 6) + 5;
+                    nextY = nextY + (splitAddress.length * 6) + 3;
                     
-                    // Bold Phone Number at bottom
-                    doc.setFontSize(14);
+                    // Bold Phone Number
+                    doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
                     doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
                 });
@@ -1289,15 +1270,17 @@
                 selectedOrders.clear();
                 document.getElementById('select-all-orders').checked = false;
                 renderOrders();
-                showToast('PDF ഡൗൺലോഡ് ആരംഭിച്ചു');
+                showToast('PDF Download Started');
             } catch (err) {
                 console.error(err);
-                showToast('PDF തയ്യാറാക്കുന്നതിൽ പിശക്: ' + err.message, 'error');
+                showToast('PDF Error: ' + err.message, 'error');
             }
         }
 
-        // Utils
-        window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); }
+        window.closeModal = function(id) { 
+            document.getElementById(id).classList.add('hidden'); 
+            if(id === 'history-modal') document.getElementById('history-modal').removeAttribute('data-product-id');
+        }
     </script>
 </body>
 </html>
