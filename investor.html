@@ -117,15 +117,15 @@
                     <svg class="mr-3 h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m10-4.13a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                     Repeat Customers
                 </button>
-                <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-purple-700 bg-purple-50 border border-purple-100 hover:bg-purple-100 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                     Inventory & Products
                 </button>
-                <button onclick="switchTab('capital')" id="nav-capital" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <button onclick="switchTab('capital')" id="nav-capital" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 10v2m8-6a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
                     Investors & Capital
                 </button>
-                <button onclick="switchTab('payment-requests')" id="nav-payment-requests" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <button onclick="switchTab('payment-requests')" id="nav-payment-requests" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                     Payment Requests
                 </button>
@@ -416,6 +416,14 @@
             </button>
             <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2">
             <span class="text-lg font-bold tracking-tight truncate">Investor Portal</span>
+            <button type="button" onclick="toggleInvestorNotifications()" class="relative ml-auto inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-emerald-700" aria-label="Open investor notifications">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 01-6 0m6 0H9" /></svg>
+                <span id="investor-notification-count" class="hidden absolute -right-1 -top-1 min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[10px] font-bold text-white">0</span>
+            </button>
+        </div>
+        <div id="investor-notification-panel" class="hidden fixed right-3 top-16 z-50 w-[calc(100%-1.5rem)] max-w-sm overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl md:hidden">
+            <div class="border-b bg-emerald-50 px-4 py-3"><div class="font-bold text-emerald-950">Notifications</div><div class="text-xs text-emerald-700">Manager communication and payment updates</div></div>
+            <div id="investor-notification-list" class="max-h-96 divide-y divide-gray-100 overflow-y-auto"></div>
         </div>
         <div id="investor-mobile-menu-overlay" onclick="toggleInvestorMobileMenu(false)" class="hidden fixed inset-0 z-40 bg-gray-900 bg-opacity-50 md:hidden"></div>
 
@@ -2044,7 +2052,9 @@
                 const targetInvestor = request.targetType === 'all' ? 'All Investors' : (getInvestorByUid(request.targetUid).name || request.targetName || 'Selected Investor');
                 const paidBy = request.claimedByName || getInvestorByUid(request.claimedBy).name || request.claimedByEmail || '';
                 const statusClass = request.status === 'claimed' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-orange-100 text-orange-800 border-orange-200';
-                return `<div class="p-4"><div class="flex flex-col sm:flex-row sm:justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(request.purpose || 'Payment Request')}</div><div class="text-xs text-gray-500 mt-1">To: ${escapeHtml(targetInvestor)} • ${formatDisplayDate(request.createdAt)}</div><div class="mt-1 text-lg font-bold text-blue-700">${formatMoney(request.amount)}</div>${paidBy ? `<div class="text-xs text-green-700 mt-1">Paid by: ${escapeHtml(paidBy)}</div>` : ''}</div><span class="self-start rounded-full border px-3 py-1 text-xs font-bold ${statusClass}">${request.status === 'claimed' ? 'Submitted for Approval' : 'Waiting for Investor'}</span></div></div>`;
+                const canModify = request.status === 'active';
+                const actions = canModify ? `<div class="mt-3 flex flex-wrap gap-2"><button onclick="editInvestorPaymentRequest('${request.id}')" class="rounded border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100">Edit</button><button onclick="deleteInvestorPaymentRequest('${request.id}')" class="rounded border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700 hover:bg-red-100">Delete</button></div>` : '';
+                return `<div class="p-4"><div class="flex flex-col sm:flex-row sm:justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(request.purpose || 'Payment Request')}</div><div class="text-xs text-gray-500 mt-1">To: ${escapeHtml(targetInvestor)} • ${formatDisplayDate(request.createdAt)}</div><div class="mt-1 text-lg font-bold text-blue-700">${formatMoney(request.amount)}</div>${paidBy ? `<div class="text-xs text-green-700 mt-1">Paid by: ${escapeHtml(paidBy)}</div>` : ''}${actions}</div><span class="self-start rounded-full border px-3 py-1 text-xs font-bold ${statusClass}">${request.status === 'claimed' ? 'Submitted for Approval' : 'Waiting for Investor'}</span></div></div>`;
             }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No payment requests sent yet.</div>';
         }
 
@@ -2073,6 +2083,42 @@
             } catch (error) { showToast(error.message, 'error'); }
         }
 
+
+
+        window.editInvestorPaymentRequest = async function(requestId) {
+            const request = investorPaymentRequests.find(item => item.id === requestId);
+            if(!request || request.status !== 'active') { showToast('Only waiting or rejected payment requests can be edited', 'error'); return; }
+            const currentTarget = request.targetType === 'all' ? 'all' : request.targetUid;
+            const newTargetUid = (window.prompt('Investor UID മാറ്റുക. All Investors ആക്കാൻ all എന്ന് നൽകുക.', currentTarget) || '').trim();
+            if(!newTargetUid) return;
+            const purpose = (window.prompt('Purpose', request.purpose || '') || '').trim();
+            if(!purpose) return;
+            const amount = Number(window.prompt('Amount (₹)', Number(request.amount) || 0)) || 0;
+            if(amount <= 0) { showToast('Valid amount is required', 'error'); return; }
+            const targetInvestor = newTargetUid === 'all' ? null : getInvestorByUid(newTargetUid);
+            if(newTargetUid !== 'all' && !targetInvestor.id) { showToast('Valid investor UID or all is required', 'error'); return; }
+            if(!(await showConfirm({ title: 'Update Payment Request?', message: 'Investor, purpose, amount update ചെയ്യണോ?', confirmText: 'Update', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            try {
+                await updateDoc(doc(db, 'investorPaymentRequests', requestId), {
+                    targetType: newTargetUid === 'all' ? 'all' : 'single',
+                    targetUid: newTargetUid === 'all' ? '' : newTargetUid,
+                    targetName: targetInvestor?.name || '',
+                    purpose,
+                    amount,
+                    updatedAt: getTodayString(),
+                    updatedBy: authUser?.uid || ''
+                });
+                showToast('Payment request updated');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.deleteInvestorPaymentRequest = async function(requestId) {
+            const request = investorPaymentRequests.find(item => item.id === requestId);
+            if(!request || request.status !== 'active') { showToast('Only waiting or rejected payment requests can be deleted', 'error'); return; }
+            if(!(await showConfirm({ title: 'Delete Payment Request?', message: 'This payment request will be removed for investors.', confirmText: 'Delete' }))) return;
+            try { await deleteDoc(doc(db, 'investorPaymentRequests', requestId)); showToast('Payment request deleted'); }
+            catch (error) { showToast(error.message, 'error'); }
+        }
 
         window.showInvestorExpenseHistory = function(uid) {
             const investor = getInvestorByUid(uid);
@@ -2139,8 +2185,19 @@
 
         window.rejectInvestorExpense = async function(expenseId) {
             if(!(await showConfirm({ title: 'Reject Expense?', message: 'Reject this investor expense request?', confirmText: 'Reject' }))) return;
+            const expense = investorExpenses.find(item => item.id === expenseId) || {};
             try {
                 await updateDoc(doc(db, 'investorExpenses', expenseId), { status: 'rejected', rejectedAt: getTodayString(), approvedBy: authUser?.uid || '' });
+                if(expense.managerRequestId) {
+                    await updateDoc(doc(db, 'investorPaymentRequests', expense.managerRequestId), {
+                        status: 'active',
+                        claimedBy: '',
+                        claimedByName: '',
+                        claimedByEmail: '',
+                        lastRejectedAt: getTodayString(),
+                        lastRejectedExpenseId: expenseId
+                    });
+                }
                 showToast('Expense rejected', 'error');
             } catch (error) { showToast(error.message, 'error'); }
         }
@@ -2152,10 +2209,22 @@
             if(open) {
                 sidebar.classList.remove('-translate-x-full');
                 overlay.classList.remove('hidden');
+                document.getElementById('investor-notification-panel')?.classList.add('hidden');
             } else {
                 sidebar.classList.add('-translate-x-full');
                 overlay.classList.add('hidden');
             }
+        }
+
+        window.toggleInvestorNotifications = function() {
+            const panel = document.getElementById('investor-notification-panel');
+            if(panel) panel.classList.toggle('hidden');
+            toggleInvestorMobileMenu(false);
+        }
+
+        window.openInvestorNotification = function(tabId) {
+            document.getElementById('investor-notification-panel')?.classList.add('hidden');
+            switchInvestorTab(tabId);
         }
 
         window.switchInvestorTab = function(tabId) {
@@ -2387,6 +2456,38 @@
             if(el) el.classList.toggle('hidden');
         }
 
+
+        function getInvestorNotifications(ownExpenses) {
+            const paymentNotifications = getVisibleManagerPaymentRequests().map(request => ({
+                tab: 'contribution',
+                title: request.purpose || 'Payment Request',
+                subtitle: `${request.targetType === 'all' ? 'All investors' : 'Sent to you'} • ${formatMoney(request.amount)}`,
+                tone: 'blue'
+            }));
+            const responseNotifications = ownExpenses
+                .filter(expense => expense.requestedByManager && ['pending', 'approved', 'rejected'].includes(expense.status))
+                .map(expense => ({
+                    tab: 'requests',
+                    title: expense.purpose || 'Manager request update',
+                    subtitle: `${getInvestorStatusText(expense.status)} • ${formatMoney(expense.amount)}`,
+                    tone: expense.status === 'approved' ? 'green' : (expense.status === 'rejected' ? 'red' : 'orange')
+                }));
+            return [...paymentNotifications, ...responseNotifications].slice(0, 10);
+        }
+
+        function renderInvestorNotifications(ownExpenses) {
+            const notifications = getInvestorNotifications(ownExpenses);
+            const countEl = document.getElementById('investor-notification-count');
+            const listEl = document.getElementById('investor-notification-list');
+            if(countEl) {
+                countEl.innerText = notifications.length;
+                countEl.classList.toggle('hidden', notifications.length === 0);
+            }
+            if(listEl) {
+                listEl.innerHTML = notifications.map(item => `<button onclick="openInvestorNotification('${item.tab}')" class="block w-full px-4 py-3 text-left hover:bg-gray-50"><div class="text-sm font-bold text-gray-900">${escapeHtml(item.title)}</div><div class="mt-1 text-xs text-gray-500">${escapeHtml(item.subtitle)}</div></button>`).join('') || '<div class="px-4 py-8 text-center text-sm text-gray-500">No notifications now.</div>';
+            }
+        }
+
         function renderInvestorPortal() {
             if(!authUser || !document.getElementById('investor-total-capital')) return;
             const profile = getInvestorByUid(authUser.uid);
@@ -2394,6 +2495,7 @@
             const approvedExpenses = ownExpenses.filter(expense => expense.status === 'approved');
             const pendingExpenses = ownExpenses.filter(expense => expense.status === 'pending');
             const rejectedExpenses = ownExpenses.filter(expense => expense.status === 'rejected');
+            renderInvestorNotifications(ownExpenses);
             const approved = getApprovedExpenseTotal(authUser.uid);
             const initial = Number(profile.initialInvestment) || 0;
             const companyCapital = investors.reduce((sum, investor) => sum + (Number(investor.initialInvestment) || 0), 0) + getApprovedExpenseTotal();
