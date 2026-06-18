@@ -424,6 +424,10 @@
                     <svg class="mr-3 h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" /></svg>
                     Requests
                 </button>
+                <button onclick="switchInvestorTab('expenditure')" id="investor-nav-expenditure" class="investor-nav-btn w-full min-h-12 flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2 2 4-4M7 4h10a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 012-2z" /></svg>
+                    Expenditure Tracking
+                </button>
             </nav>
             <div class="p-2 md:p-4 border-t border-gray-200 space-y-2">
                 <button onclick="switchInvestorTab('profile')" id="investor-nav-profile" class="investor-nav-btn w-full flex justify-center items-center px-4 py-2 border border-emerald-200 shadow-sm text-sm font-medium rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100">Profile</button>
@@ -443,13 +447,12 @@
             <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
                 <section id="investor-tab-dashboard" class="investor-tab-content fade-in">
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-                        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-emerald-50">Your Total</div><div id="investor-total-capital" class="mt-2 text-3xl font-bold text-white">₹0</div><p class="mt-2 text-sm text-emerald-50">Base investment + approved contributions.</p></div>
-                        <div class="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-indigo-50">Total</div><div id="investor-company-capital" class="mt-2 text-3xl font-bold text-white">₹0</div><p class="mt-2 text-sm text-indigo-50">All investors and approved contributions.</p></div>
-                        <div class="bg-gradient-to-br from-orange-400 to-amber-500 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-orange-50">Pending Requests</div><div id="investor-pending-count" class="mt-2 text-3xl font-bold text-white">0</div><p class="mt-2 text-sm text-orange-50">Waiting for manager approval.</p></div>
-                        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-green-50">Approved Requests</div><div id="investor-approved-count" class="mt-2 text-3xl font-bold text-white">0</div><p class="mt-2 text-sm text-green-50">Accepted and added to capital.</p></div>
+                        <div class="rounded-xl shadow-sm p-6 border border-emerald-100 bg-emerald-50 text-emerald-900"><div class="text-xs font-bold uppercase text-emerald-600">Your Total</div><div id="investor-total-capital" class="mt-2 text-3xl font-bold text-emerald-950">₹0</div><p class="mt-2 text-sm text-emerald-700">Base investment + approved contributions.</p></div>
+                        <div class="rounded-xl shadow-sm p-6 border border-blue-100 bg-blue-50 text-blue-900"><div class="text-xs font-bold uppercase text-blue-600">Total</div><div id="investor-company-capital" class="mt-2 text-3xl font-bold text-blue-950">₹0</div><p class="mt-2 text-sm text-blue-700">All investors and approved contributions.</p></div>
+                        <div class="rounded-xl shadow-sm p-6 border border-amber-100 bg-amber-50 text-amber-900"><div class="text-xs font-bold uppercase text-amber-600">Pending Requests</div><div id="investor-pending-count" class="mt-2 text-3xl font-bold text-amber-950">0</div><p class="mt-2 text-sm text-amber-700">Waiting for manager approval.</p></div>
+                        <div class="rounded-xl shadow-sm p-6 border border-green-100 bg-green-50 text-green-900"><div class="text-xs font-bold uppercase text-green-600">Approved Requests</div><div id="investor-approved-count" class="mt-2 text-3xl font-bold text-green-950">0</div><p class="mt-2 text-sm text-green-700">Accepted and added to capital.</p></div>
                     </div>
-                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><h2 class="font-bold text-gray-900 mb-4">Investment Summary</h2><div id="investor-capital-breakdown" class="space-y-3"></div></div>
+                    <div class="grid grid-cols-1 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><h2 class="font-bold text-gray-900 mb-4">Latest Requests</h2><div id="investor-latest-requests" class="space-y-3"></div></div>
                     </div>
                 </section>
@@ -483,14 +486,21 @@
                 </section>
 
                 <section id="investor-tab-company" class="investor-tab-content hidden fade-in">
-                    <div class="rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 p-5 mb-6 text-white shadow-sm">
+                    <div class="rounded-2xl bg-blue-50 border border-blue-100 p-5 mb-6 text-blue-950 shadow-sm">
                         <h2 class="text-xl font-bold">Product Status</h2>
-                        <p class="text-sm text-blue-50 mt-1">Stock, order status, and order history with date filtering.</p>
+                        <p class="text-sm text-blue-700 mt-1">Stock, order status, and order history with date filtering.</p>
                     </div>
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-                        <div class="bg-gradient-to-br from-sky-50 to-blue-100 rounded-2xl shadow-sm border border-blue-100 p-4 sm:p-6"><div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4"><h2 class="font-bold text-blue-950">Order Status Overview</h2><div class="flex flex-col sm:flex-row gap-2 text-xs"><input id="investor-company-from" type="date" onchange="renderInvestorPortal()" class="min-h-11 rounded-lg border border-blue-200 p-2 bg-white"><input id="investor-company-to" type="date" onchange="renderInvestorPortal()" class="min-h-11 rounded-lg border border-blue-200 p-2 bg-white"></div></div><div id="investor-company-status" class="grid grid-cols-2 gap-3"></div></div>
-                        <div class="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-2xl shadow-sm border border-emerald-100 p-4 sm:p-6"><h2 class="font-bold text-emerald-950 mb-4">Current Stock Status</h2><div id="investor-company-stock" class="overflow-x-auto"></div></div>
-                        <div class="bg-gradient-to-br from-indigo-50 to-purple-100 rounded-2xl shadow-sm border border-indigo-100 p-4 sm:p-6 xl:col-span-2"><h2 class="font-bold text-indigo-950 mb-4">Total Order History</h2><div id="investor-company-order-history" class="space-y-3 mb-6"></div><h2 class="font-bold text-indigo-950 mb-4">Investor Expenditure Tracking</h2><div id="investor-expenditure-tracking" class="overflow-x-auto rounded-xl border border-indigo-100 bg-white"></div></div>
+                        <div class="bg-blue-50 rounded-2xl shadow-sm border border-blue-100 p-4 sm:p-6"><div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between mb-4"><h2 class="font-bold text-blue-950">Order Status Overview</h2><div class="flex flex-row gap-2 text-xs overflow-x-auto"><label class="shrink-0 text-blue-800 font-semibold">From (DD/MM/YYYY)<input id="investor-company-from" type="date" onchange="renderInvestorPortal()" class="mt-1 min-h-11 w-36 rounded-lg border border-blue-200 p-2 bg-white text-gray-700"></label><label class="shrink-0 text-blue-800 font-semibold">To (DD/MM/YYYY)<input id="investor-company-to" type="date" onchange="renderInvestorPortal()" class="mt-1 min-h-11 w-36 rounded-lg border border-blue-200 p-2 bg-white text-gray-700"></label></div></div><div id="investor-company-status" class="grid grid-cols-2 gap-3"></div></div>
+                        <div class="bg-emerald-50 rounded-2xl shadow-sm border border-emerald-100 p-4 sm:p-6"><h2 class="font-bold text-emerald-950 mb-4">Current Stock Status</h2><div id="investor-company-stock" class="overflow-x-auto"></div></div>
+                        <div class="bg-indigo-50 rounded-2xl shadow-sm border border-indigo-100 p-4 sm:p-6 xl:col-span-2"><h2 class="font-bold text-indigo-950 mb-4">Total Order History</h2><div id="investor-company-order-history" class="space-y-3"></div></div>
+                    </div>
+                </section>
+
+                <section id="investor-tab-expenditure" class="investor-tab-content hidden fade-in">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b bg-slate-50"><h2 class="font-bold text-slate-900">Investor Expenditure Tracking</h2><p class="text-sm text-slate-600 mt-1">Investor-wise expenditure totals and approval status.</p></div>
+                        <div id="investor-expenditure-tracking" class="overflow-x-auto"></div>
                     </div>
                 </section>
 
@@ -2075,7 +2085,7 @@
                 active.classList.remove('text-gray-600');
                 active.classList.add('bg-emerald-50', 'text-emerald-700');
             }
-            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests', company: 'Product Status', profile: 'Profile' };
+            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests', company: 'Product Status', expenditure: 'Investor Expenditure Tracking', profile: 'Profile' };
             document.getElementById('investor-page-title').innerText = titles[tabId] || 'Investor Portal';
             renderInvestorPortal();
         }
@@ -2182,8 +2192,16 @@
             const filteredOrders = activeOrders.filter(order => isWithinDateRange(order.createdAt, fromValue, toValue));
             const statusCounts = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return', 'Order Cancelled'].map(status => ({ status, count: filteredOrders.filter(order => order.status === status).length }));
             document.getElementById('investor-company-status').innerHTML = statusCounts.map((item, index) => {
-                const colors = ['from-yellow-400 to-orange-500', 'from-blue-500 to-sky-600', 'from-purple-500 to-indigo-600', 'from-green-500 to-emerald-600', 'from-orange-500 to-red-500', 'from-red-500 to-rose-600'];
-                return `<div class="rounded-xl bg-gradient-to-br ${colors[index]} p-4 text-white shadow-sm min-h-24 flex flex-col justify-center"><div class="text-xs font-bold uppercase text-white/80">${item.status}</div><div class="mt-1 text-3xl font-bold">${item.count}</div></div>`;
+                const styles = [
+                    { bg: 'bg-amber-50 border-amber-100 text-amber-800', icon: '⏳' },
+                    { bg: 'bg-sky-50 border-sky-100 text-sky-800', icon: '⚙️' },
+                    { bg: 'bg-violet-50 border-violet-100 text-violet-800', icon: '🚚' },
+                    { bg: 'bg-green-50 border-green-100 text-green-800', icon: '✅' },
+                    { bg: 'bg-orange-50 border-orange-100 text-orange-800', icon: '↩️' },
+                    { bg: 'bg-rose-50 border-rose-100 text-rose-800', icon: '✖️' }
+                ];
+                const style = styles[index];
+                return `<div class="rounded-xl ${style.bg} border p-4 shadow-sm min-h-24 flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl shadow-sm">${style.icon}</div><div><div class="text-xs font-bold uppercase opacity-80">${item.status}</div><div class="mt-1 text-3xl font-bold">${item.count}</div></div></div>`;
             }).join('');
             const stockRows = products.map(product => {
                 const added = Array.isArray(product.stockHistory) ? product.stockHistory.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
@@ -2245,25 +2263,9 @@
             document.getElementById('investor-requests-pending').innerText = pendingExpenses.length;
             document.getElementById('investor-requests-approved').innerText = approvedExpenses.length;
             document.getElementById('investor-requests-rejected').innerText = rejectedExpenses.length;
-            document.getElementById('investor-capital-breakdown').innerHTML = investors
-                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
-                .map(investor => {
-                    const investorTotal = (Number(investor.initialInvestment) || 0) + getApprovedExpenseTotal(investor.id);
-                    return `<div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm font-semibold text-gray-700">${escapeHtml(investor.name || 'Investor')}</span><span class="font-bold text-gray-900">${formatMoney(investorTotal)}</span></div>`;
-                }).join('') || '<div class="text-sm text-gray-500 text-center py-6">No investment summary available.</div>';
+
             const filteredExpenses = currentInvestorRequestFilter === 'all' ? ownExpenses : ownExpenses.filter(expense => expense.status === currentInvestorRequestFilter);
-            const expensesByMonth = {};
-            ownExpenses.forEach(expense => {
-                const month = getMonthKey(expense.createdAt);
-                if(!expensesByMonth[month]) expensesByMonth[month] = [];
-                expensesByMonth[month].push(expense);
-            });
-            const expenseMonths = Object.keys(expensesByMonth).sort((a, b) => new Date(b) - new Date(a));
-            document.getElementById('investor-latest-requests').innerHTML = expenseMonths.map((month, index) => {
-                const id = `investor-requests-${month.replace(/\s+/g, '-')}`;
-                const list = expensesByMonth[month].map(renderInvestorRequestCard).join('');
-                return `<div class="border rounded-lg overflow-hidden"><button onclick="toggleInvestorAccordion('${id}')" class="w-full flex justify-between bg-gray-50 p-3"><span class="font-bold text-gray-800">${month}</span><span class="text-xs font-bold text-emerald-700">${expensesByMonth[month].length} Requests</span></button><div id="${id}" class="${index === 0 ? '' : 'hidden'} p-2 space-y-2 bg-white">${list}</div></div>`;
-            }).join('') || '<div class="text-sm text-gray-500 text-center py-6">No requests yet.</div>';
+            document.getElementById('investor-latest-requests').innerHTML = ownExpenses.slice(0, 5).map(renderInvestorRequestCard).join('') || '<div class="text-sm text-gray-500 text-center py-6">No requests yet.</div>';
             document.getElementById('investor-expense-list').innerHTML = renderInvestorRequestsTable(filteredExpenses);
             document.getElementById('investor-profile-details').innerHTML = `
                 <div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm text-gray-600">Name</span><span class="font-bold text-gray-900">${escapeHtml(displayName)}</span></div>
