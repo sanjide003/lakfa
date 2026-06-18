@@ -316,7 +316,12 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Login Password</label>
-                                        <input id="investor-password" type="password" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Required only when UID is empty">
+                                        <div class="relative mt-1">
+                                            <input id="investor-password" type="password" class="w-full rounded-md border border-gray-300 p-2 pr-10 text-sm" placeholder="Required only when UID is empty">
+                                            <button type="button" onclick="toggleInvestorPassword()" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-700" title="Show password">
+                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="sm:col-span-2 flex justify-end">
                                         <button type="button" onclick="saveInvestorProfile()" class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Save Investor</button>
@@ -335,7 +340,7 @@
                         <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Investor Capital Ledger</h3></div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Investor</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Initial</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Approved Expenses</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total Capital</th></tr></thead>
+                                <thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Investor</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Login</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Base Investment</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Approved Expenses</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total Capital</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">History</th></tr></thead>
                                 <tbody id="manager-investor-list" class="divide-y divide-gray-100"></tbody>
                             </table>
                         </div>
@@ -1141,7 +1146,8 @@
                 cancel: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />',
                 users: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m10-4.13a4 4 0 11-8 0 4 4 0 018 0z" />',
                 plus: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />',
-                download: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />'
+                download: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />',
+                eye: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />'
             };
             return `<svg class="${cls}" fill="none" viewBox="0 0 24 24" stroke="currentColor">${icons[name] || icons.status}</svg>`;
         }
@@ -1857,6 +1863,10 @@
             return `₹${(Number(amount) || 0).toLocaleString('en-IN')}`;
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+        }
+
         function getApprovedExpenseTotal(uid = null) {
             return investorExpenses
                 .filter(expense => expense.status === 'approved' && (!uid || expense.uid === uid))
@@ -1880,16 +1890,20 @@
                 .map(investor => {
                     const approved = getApprovedExpenseTotal(investor.id);
                     const initial = Number(investor.initialInvestment) || 0;
+                    const history = Array.isArray(investor.capitalHistory) ? investor.capitalHistory : [];
+                    const password = escapeHtml(investor.loginPassword || 'Not saved');
                     return `
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${investor.name || 'Investor'}</div><div class="text-xs text-gray-500">${investor.email || ''}<br>UID: ${investor.id}</div></td>
+                        <tr class="hover:bg-gray-50 align-top">
+                            <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${investor.name || 'Investor'}</div><div class="text-xs text-gray-500">UID: ${investor.id}</div></td>
+                            <td class="px-6 py-4"><div class="text-sm font-semibold text-gray-900">${investor.email || ''}</div><div class="mt-2 flex items-center gap-2"><input id="investor-pass-${investor.id}" type="password" value="${password}" readonly class="w-36 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-700"><button onclick="toggleInvestorRowPassword('${investor.id}')" class="rounded border border-gray-200 bg-white p-1 text-gray-500 hover:text-gray-800" title="Show password">${getIconSvg('eye', 'w-4 h-4')}</button></div></td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-gray-700">${formatMoney(initial)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-emerald-700">${formatMoney(approved)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-indigo-700">${formatMoney(initial + approved)}</td>
+                            <td class="px-6 py-4 text-xs text-gray-600">${history.length ? history.map(item => `<div class="mb-1"><span class="font-bold">${formatMoney(item.amount)}</span> • ${formatDisplayDate(item.date)} • ${item.note || 'Investment updated'}</div>`).join('') : 'No history'}</td>
                         </tr>
                     `;
                 }).join('');
-            document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
+            document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
 
             document.getElementById('manager-expense-list').innerHTML = pending.map(expense => {
                 const investor = getInvestorByUid(expense.uid);
@@ -1909,6 +1923,16 @@
             }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No pending expenses.</div>';
         }
 
+        window.toggleInvestorPassword = function() {
+            const input = document.getElementById('investor-password');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        window.toggleInvestorRowPassword = function(uid) {
+            const input = document.getElementById(`investor-pass-${uid}`);
+            if(input) input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
         window.saveInvestorProfile = async function() {
             let uid = document.getElementById('investor-uid').value.trim();
             const name = document.getElementById('investor-name').value.trim();
@@ -1918,13 +1942,21 @@
             if(!name || !email) { showToast('Investor name and email are required', 'error'); return; }
             if(!uid && password.length < 6) { showToast('Password must be at least 6 characters for new investor login', 'error'); return; }
             try {
+                let loginPassword = password;
                 if(!uid) {
                     const credential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
                     uid = credential.user.uid;
                     await signOut(secondaryAuth);
                 }
+                const existingInvestor = investors.find(investor => investor.id === uid) || {};
+                if(!loginPassword) loginPassword = existingInvestor.loginPassword || '';
+                const oldInvestment = Number(existingInvestor.initialInvestment) || 0;
+                const oldHistory = Array.isArray(existingInvestor.capitalHistory) ? existingInvestor.capitalHistory : [];
+                const capitalHistory = initialInvestment !== oldInvestment
+                    ? [...oldHistory, { amount: initialInvestment, date: getTodayString(), note: oldHistory.length ? 'Base investment updated by manager' : 'Initial investment added by manager' }]
+                    : oldHistory;
                 await setDoc(doc(db, 'users', uid), { role: 'investor', name, email }, { merge: true });
-                await setDoc(doc(db, 'investors', uid), { name, email, initialInvestment, updatedAt: getTodayString() }, { merge: true });
+                await setDoc(doc(db, 'investors', uid), { name, email, initialInvestment, loginPassword, capitalHistory, updatedAt: getTodayString() }, { merge: true });
                 document.getElementById('investor-form').reset();
                 showToast('Investor login, access, and capital saved');
             } catch (error) { showToast(error.message, 'error'); }
