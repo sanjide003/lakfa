@@ -294,7 +294,7 @@
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="px-6 py-4 border-b bg-gray-50">
                                 <h3 class="font-bold text-gray-900">Create / Update Investor Access</h3>
-                                <p class="text-sm text-gray-500 mt-1">Manager can create investor email/password access or update an existing investor by UID.</p>
+                                <p class="text-sm text-gray-500 mt-1">Name, email, password എന്നിവ നൽകി Save Investor അമർത്തുമ്പോൾ login account, role, company investor record എന്നിവ എല്ലാം automatic ആയി create ചെയ്യും.</p>
                             </div>
                             <div class="p-6">
                                 <form id="investor-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1924,10 +1924,29 @@
                 const capitalHistory = initialInvestment !== oldInvestment
                     ? [...oldHistory, { amount: initialInvestment, date: getTodayString(), note: oldHistory.length ? 'Base investment updated by manager' : 'Initial investment added by manager' }]
                     : oldHistory;
-                await setDoc(doc(db, 'users', uid), { role: 'investor', name, email }, { merge: true });
-                await setDoc(doc(db, 'investors', uid), { name, email, initialInvestment, loginPassword, capitalHistory, updatedAt: getTodayString() }, { merge: true });
+                const investorUserData = {
+                    role: 'investor',
+                    name,
+                    email,
+                    companyStatus: 'active',
+                    updatedAt: getTodayString(),
+                    createdBy: authUser?.uid || ''
+                };
+                const investorCompanyData = {
+                    name,
+                    email,
+                    initialInvestment,
+                    loginPassword,
+                    capitalHistory,
+                    companyStatus: 'active',
+                    authUid: uid,
+                    updatedAt: getTodayString(),
+                    createdBy: authUser?.uid || ''
+                };
+                await setDoc(doc(db, 'users', uid), investorUserData, { merge: true });
+                await setDoc(doc(db, 'investors', uid), investorCompanyData, { merge: true });
                 document.getElementById('investor-form').reset();
-                showToast('Investor login, access, and capital saved');
+                showToast('Investor added to company automatically');
             } catch (error) { showToast(error.message, 'error'); }
         }
 
