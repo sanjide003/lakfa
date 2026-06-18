@@ -27,7 +27,7 @@
 
     <script type="module">
         import { auth, db } from "./firebase-config.js";
-        import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         window.showToast = function(message, type = 'success') {
@@ -45,8 +45,12 @@
 
         async function redirectByRole(user) {
             const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
-            const role = userSnap && userSnap.exists() ? (userSnap.data().role || 'manager') : 'manager';
-            window.location.href = role === 'investor' ? 'investor.html' : 'manager.html';
+            const role = userSnap && userSnap.exists() ? userSnap.data().role : null;
+            if(role === 'manager') { window.location.href = 'manager.html'; return true; }
+            if(role === 'investor') { window.location.href = 'investor.html'; return true; }
+            await signOut(auth);
+            showToast('Invalid Email or Password', 'error');
+            return false;
         }
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -56,7 +60,11 @@
             btn.innerText = 'Checking...';
             try {
                 const credential = await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
-                await redirectByRole(credential.user);
+                const redirected = await redirectByRole(credential.user);
+                if(!redirected) {
+                    btn.disabled = false;
+                    btn.innerText = 'Login';
+                }
             } catch (error) {
                 btn.disabled = false;
                 btn.innerText = 'Login';

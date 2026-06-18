@@ -806,8 +806,9 @@
             authUser = user;
             if (!user) { window.location.href = 'index.html'; return; }
             const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
-            currentUserRole = userSnap && userSnap.exists() ? (userSnap.data().role || 'manager') : 'manager';
+            currentUserRole = userSnap && userSnap.exists() ? userSnap.data().role : null;
             if(currentUserRole === 'investor') { window.location.href = 'investor.html'; return; }
+            if(currentUserRole !== 'manager') { await signOut(auth); window.location.href = 'index.html'; return; }
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('investor-app').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
