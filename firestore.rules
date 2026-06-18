@@ -35,20 +35,22 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      allow read, create, update, delete: if isManager();
+      allow read: if isManager() || isInvestor();
+      allow create, update, delete: if isManager();
     }
 
     match /products/{productId} {
-      allow read, create, update, delete: if isManager();
+      allow read: if isManager() || isInvestor();
+      allow create, update, delete: if isManager();
     }
 
     match /investors/{investorId} {
-      allow read: if isManager() || (isInvestor() && request.auth.uid == investorId);
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if isManager();
     }
 
     match /investorExpenses/{expenseId} {
-      allow read: if isManager() || (isInvestor() && resource.data.uid == request.auth.uid);
+      allow read: if isManager() || isInvestor();
       allow create: if isInvestor()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.status == 'pending'

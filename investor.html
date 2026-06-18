@@ -420,8 +420,13 @@
                     <svg class="mr-3 h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" /></svg>
                     Requests
                 </button>
+                <button onclick="switchInvestorTab('company')" id="investor-nav-company" class="investor-nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 7v10a2 2 0 002 2h10a2 2 0 002-2V7M9 11h6" /></svg>
+                    Company Overview
+                </button>
             </nav>
-            <div class="p-2 md:p-4 border-t border-gray-200">
+            <div class="p-2 md:p-4 border-t border-gray-200 space-y-2">
+                <button onclick="switchInvestorTab('profile')" id="investor-nav-profile" class="investor-nav-btn w-full flex justify-center items-center px-4 py-2 border border-emerald-200 shadow-sm text-sm font-medium rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100">Profile</button>
                 <button onclick="handleLogout()" class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Logout</button>
             </div>
         </aside>
@@ -430,6 +435,7 @@
             <header class="bg-white shadow-sm border-b border-gray-200 py-3 md:py-4 px-4 md:px-6 flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
                 <div>
                     <h1 id="investor-page-title" class="text-2xl font-bold leading-7 text-gray-900 sm:truncate">Dashboard</h1>
+                    <p id="investor-name-subtitle" class="text-sm font-semibold text-emerald-700 mt-1">Loading investor...</p>
                     <p id="investor-welcome" class="text-sm text-gray-500 mt-1">Capital and expense dashboard</p>
                 </div>
             </header>
@@ -467,8 +473,30 @@
                     </div>
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div class="px-6 py-4 border-b bg-gray-50"><h2 class="font-bold text-gray-900">All Requests</h2><p class="text-sm text-gray-500 mt-1">Accepted, rejected, pending എല്ലാം ഇവിടെ കാണാം.</p></div>
+                        <div class="px-6 py-3 border-b bg-white flex flex-wrap gap-2">
+                            <button onclick="setInvestorRequestFilter('all')" id="investor-filter-all" class="investor-filter-btn rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white">All</button>
+                            <button onclick="setInvestorRequestFilter('pending')" id="investor-filter-pending" class="investor-filter-btn rounded-full bg-gray-100 px-4 py-2 text-xs font-bold text-gray-600">Pending</button>
+                            <button onclick="setInvestorRequestFilter('approved')" id="investor-filter-approved" class="investor-filter-btn rounded-full bg-gray-100 px-4 py-2 text-xs font-bold text-gray-600">Accepted</button>
+                        </div>
                         <div id="investor-expense-list" class="divide-y divide-gray-100"></div>
                     </div>
+                </section>
+
+                <section id="investor-tab-company" class="investor-tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Total Orders</div><div id="investor-company-orders" class="mt-2 text-3xl font-bold text-blue-700">0</div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Products Tracked</div><div id="investor-company-products" class="mt-2 text-3xl font-bold text-indigo-700">0</div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Company Capital</div><div id="investor-company-overview-capital" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div></div>
+                    </div>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><h2 class="font-bold text-gray-900 mb-4">Order Status Overview</h2><div id="investor-company-status" class="grid grid-cols-2 gap-3"></div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><h2 class="font-bold text-gray-900 mb-4">Current Stock Status</h2><div id="investor-company-stock" class="space-y-3"></div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 xl:col-span-2"><h2 class="font-bold text-gray-900 mb-4">Investor Expenditure Tracking</h2><div id="investor-expenditure-tracking" class="overflow-x-auto"></div></div>
+                    </div>
+                </section>
+
+                <section id="investor-tab-profile" class="investor-tab-content hidden fade-in max-w-2xl">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><h2 class="text-xl font-bold text-gray-900 mb-4">Profile</h2><div id="investor-profile-details" class="space-y-3"></div></div>
                 </section>
             </main>
         </div>
@@ -743,6 +771,7 @@
         let selectedOrders = new Set();
         let currentTab = 'dashboard';
         let currentOrderStatusFilter = 'Pending';
+        let currentInvestorRequestFilter = 'all';
         const orderUtilityTabs = {
             recycle: { title: 'Recycle Bin', statusFilter: 'Recycle Bin', icon: 'trash', color: 'red' },
             returns: { title: 'Return', statusFilter: 'Return', icon: 'return', color: 'orange' },
@@ -2030,8 +2059,23 @@
                 active.classList.remove('text-gray-600');
                 active.classList.add('bg-emerald-50', 'text-emerald-700');
             }
-            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests' };
+            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests', company: 'Company Overview', profile: 'Profile' };
             document.getElementById('investor-page-title').innerText = titles[tabId] || 'Investor Portal';
+            renderInvestorPortal();
+        }
+
+        window.setInvestorRequestFilter = function(filter) {
+            currentInvestorRequestFilter = filter;
+            document.querySelectorAll('.investor-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+            const active = document.getElementById(`investor-filter-${filter}`);
+            if(active) {
+                active.classList.remove('bg-gray-100', 'text-gray-600');
+                active.classList.add('bg-emerald-600', 'text-white');
+            }
+            renderInvestorPortal();
         }
 
         function getInvestorStatusBadge(status) {
@@ -2062,6 +2106,20 @@
         }
 
         function loadInvestorPortal() {
+            onSnapshot(collection(db, "settings"), (snapshot) => {
+                snapshot.forEach((doc) => { if(doc.id === 'config') companySettings = { ...companySettings, ...doc.data() }; });
+                renderInvestorPortal();
+            });
+            onSnapshot(collection(db, "products"), (snapshot) => {
+                products = [];
+                snapshot.forEach((doc) => products.push({ id: doc.id, ...doc.data() }));
+                renderInvestorPortal();
+            });
+            onSnapshot(collection(db, "orders"), (snapshot) => {
+                orders = [];
+                snapshot.forEach((doc) => orders.push({ id: doc.id, ...doc.data() }));
+                renderInvestorPortal();
+            });
             onSnapshot(collection(db, "investors"), (snapshot) => {
                 investors = [];
                 snapshot.forEach((doc) => investors.push({ id: doc.id, ...doc.data() }));
@@ -2075,6 +2133,29 @@
             });
         }
 
+        function renderCompanyOverview(companyCapital) {
+            const activeOrders = orders.filter(order => order.status !== 'Recycle Bin');
+            const statusCounts = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return', 'Order Cancelled'].map(status => ({ status, count: activeOrders.filter(order => order.status === status).length }));
+            document.getElementById('investor-company-orders').innerText = activeOrders.length;
+            document.getElementById('investor-company-products').innerText = products.length;
+            document.getElementById('investor-company-overview-capital').innerText = formatMoney(companyCapital);
+            document.getElementById('investor-company-status').innerHTML = statusCounts.map(item => `<div class="rounded-lg bg-gray-50 p-3"><div class="text-xs font-bold uppercase text-gray-500">${item.status}</div><div class="mt-1 text-2xl font-bold text-gray-900">${item.count}</div></div>`).join('');
+            document.getElementById('investor-company-stock').innerHTML = products.map(product => {
+                const added = Array.isArray(product.stockHistory) ? product.stockHistory.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
+                const balance = (Number(product.initialStock) || 0) + added - (Number(product.ordered) || 0);
+                return `<div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm font-semibold text-gray-700">${escapeHtml(product.name || 'Product')}</span><span class="font-bold text-indigo-700">${balance.toLocaleString('en-IN')}</span></div>`;
+            }).join('') || '<div class="text-sm text-gray-500 text-center py-6">No stock data available.</div>';
+            const rows = investors.map(investor => {
+                const expenses = investorExpenses.filter(expense => expense.uid === investor.id);
+                const spent = expenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+                const approved = expenses.filter(expense => expense.status === 'approved').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+                const pending = expenses.filter(expense => expense.status === 'pending').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+                const rejected = expenses.filter(expense => expense.status === 'rejected').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+                return `<tr class="border-t"><td class="px-4 py-3 font-bold text-gray-900">${escapeHtml(investor.name || 'Investor')}</td><td class="px-4 py-3 text-gray-600">${escapeHtml(investor.email || '')}</td><td class="px-4 py-3 text-right font-bold">${formatMoney(spent)}</td><td class="px-4 py-3 text-right text-green-700 font-bold">${formatMoney(approved)}</td><td class="px-4 py-3 text-right text-orange-700 font-bold">${formatMoney(pending)}</td><td class="px-4 py-3 text-right text-red-700 font-bold">${formatMoney(rejected)}</td></tr>`;
+            }).join('');
+            document.getElementById('investor-expenditure-tracking').innerHTML = `<table class="min-w-full text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Investor</th><th class="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Email</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Total Spent</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Accepted</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Pending</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Rejected</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No investor expenditure data yet.</td></tr>'}</tbody></table>`;
+        }
+
         function renderInvestorPortal() {
             if(!authUser || !document.getElementById('investor-total-capital')) return;
             const profile = getInvestorByUid(authUser.uid);
@@ -2085,7 +2166,9 @@
             const approved = getApprovedExpenseTotal(authUser.uid);
             const initial = Number(profile.initialInvestment) || 0;
             const companyCapital = investors.reduce((sum, investor) => sum + (Number(investor.initialInvestment) || 0), 0) + getApprovedExpenseTotal();
-            document.getElementById('investor-welcome').innerText = `${profile.name || authUser.email || 'Investor'} • ${authUser.email || ''}`;
+            const displayName = profile.name || authUser.displayName || authUser.email || 'Investor';
+            document.getElementById('investor-name-subtitle').innerText = displayName;
+            document.getElementById('investor-welcome').innerText = `${displayName} • ${authUser.email || profile.email || ''}`;
             document.getElementById('investor-total-capital').innerText = formatMoney(initial + approved);
             document.getElementById('investor-pending-count').innerText = pendingExpenses.length;
             document.getElementById('investor-approved-count').innerText = approvedExpenses.length;
@@ -2099,8 +2182,15 @@
                 <div class="flex justify-between rounded-lg bg-indigo-50 p-3"><span class="text-sm text-indigo-700">Your Total Investment</span><span class="font-bold text-indigo-900">${formatMoney(initial + approved)}</span></div>
                 <div class="flex justify-between rounded-lg bg-emerald-50 p-3"><span class="text-sm text-emerald-700">Company Total Capital</span><span class="font-bold text-emerald-900">${formatMoney(companyCapital)}</span></div>
             `;
+            const filteredExpenses = currentInvestorRequestFilter === 'all' ? ownExpenses : ownExpenses.filter(expense => expense.status === currentInvestorRequestFilter);
             document.getElementById('investor-latest-requests').innerHTML = ownExpenses.slice(0, 4).map(renderInvestorRequestCard).join('') || '<div class="text-sm text-gray-500 text-center py-6">No requests yet.</div>';
-            document.getElementById('investor-expense-list').innerHTML = ownExpenses.map(renderInvestorRequestCard).join('') || '<div class="p-8 text-center text-sm text-gray-500">No expense requests yet.</div>';
+            document.getElementById('investor-expense-list').innerHTML = filteredExpenses.map(renderInvestorRequestCard).join('') || '<div class="p-8 text-center text-sm text-gray-500">No matching expense requests yet.</div>';
+            document.getElementById('investor-profile-details').innerHTML = `
+                <div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm text-gray-600">Name</span><span class="font-bold text-gray-900">${escapeHtml(displayName)}</span></div>
+                <div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm text-gray-600">Email</span><span class="font-bold text-gray-900">${escapeHtml(authUser.email || profile.email || '')}</span></div>
+                <div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm text-gray-600">Investor UID</span><span class="font-mono text-xs text-gray-700">${escapeHtml(authUser.uid)}</span></div>
+            `;
+            renderCompanyOverview(companyCapital);
         }
 
         window.submitInvestorExpense = async function() {
