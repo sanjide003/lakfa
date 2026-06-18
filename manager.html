@@ -912,13 +912,19 @@
             document.getElementById('tab-' + tabId).classList.remove('hidden');
             
             document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-red-50', 'text-red-700');
+                el.classList.remove('bg-red-50', 'text-red-700', 'ring-2', 'ring-red-200', 'shadow-sm');
                 el.classList.add('text-gray-600');
+                el.style.backgroundColor = '';
+                el.style.color = '';
+                el.style.borderColor = '';
             });
             const activeBtn = document.getElementById('nav-' + tabId);
             if(activeBtn) {
                 activeBtn.classList.remove('text-gray-600');
-                activeBtn.classList.add('bg-red-50', 'text-red-700');
+                activeBtn.classList.add('bg-red-50', 'text-red-700', 'ring-2', 'ring-red-200', 'shadow-sm');
+                activeBtn.style.backgroundColor = '#fee2e2';
+                activeBtn.style.color = '#b91c1c';
+                activeBtn.style.borderColor = '#fecaca';
             }
 
             const headerActions = document.getElementById('header-actions');

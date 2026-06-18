@@ -1022,13 +1022,19 @@
             document.getElementById('tab-' + tabId).classList.remove('hidden');
             
             document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-red-50', 'text-red-700');
+                el.classList.remove('bg-red-50', 'text-red-700', 'ring-2', 'ring-red-200', 'shadow-sm');
                 el.classList.add('text-gray-600');
+                el.style.backgroundColor = '';
+                el.style.color = '';
+                el.style.borderColor = '';
             });
             const activeBtn = document.getElementById('nav-' + tabId);
             if(activeBtn) {
                 activeBtn.classList.remove('text-gray-600');
-                activeBtn.classList.add('bg-red-50', 'text-red-700');
+                activeBtn.classList.add('bg-red-50', 'text-red-700', 'ring-2', 'ring-red-200', 'shadow-sm');
+                activeBtn.style.backgroundColor = '#fee2e2';
+                activeBtn.style.color = '#b91c1c';
+                activeBtn.style.borderColor = '#fecaca';
             }
 
             const headerActions = document.getElementById('header-actions');
@@ -2457,26 +2463,16 @@
         }
 
 
-        function getInvestorNotifications(ownExpenses) {
-            const paymentNotifications = getVisibleManagerPaymentRequests().map(request => ({
+        function getInvestorNotifications() {
+            return getVisibleManagerPaymentRequests().map(request => ({
                 tab: 'contribution',
                 title: request.purpose || 'Payment Request',
-                subtitle: `${request.targetType === 'all' ? 'All investors' : 'Sent to you'} • ${formatMoney(request.amount)}`,
-                tone: 'blue'
-            }));
-            const responseNotifications = ownExpenses
-                .filter(expense => expense.requestedByManager && ['pending', 'approved', 'rejected'].includes(expense.status))
-                .map(expense => ({
-                    tab: 'requests',
-                    title: expense.purpose || 'Manager request update',
-                    subtitle: `${getInvestorStatusText(expense.status)} • ${formatMoney(expense.amount)}`,
-                    tone: expense.status === 'approved' ? 'green' : (expense.status === 'rejected' ? 'red' : 'orange')
-                }));
-            return [...paymentNotifications, ...responseNotifications].slice(0, 10);
+                subtitle: `${request.targetType === 'all' ? 'All investors' : 'Sent to you'} • ${formatMoney(request.amount)}`
+            })).slice(0, 10);
         }
 
-        function renderInvestorNotifications(ownExpenses) {
-            const notifications = getInvestorNotifications(ownExpenses);
+        function renderInvestorNotifications() {
+            const notifications = getInvestorNotifications();
             const countEl = document.getElementById('investor-notification-count');
             const listEl = document.getElementById('investor-notification-list');
             if(countEl) {
@@ -2495,7 +2491,7 @@
             const approvedExpenses = ownExpenses.filter(expense => expense.status === 'approved');
             const pendingExpenses = ownExpenses.filter(expense => expense.status === 'pending');
             const rejectedExpenses = ownExpenses.filter(expense => expense.status === 'rejected');
-            renderInvestorNotifications(ownExpenses);
+            renderInvestorNotifications();
             const approved = getApprovedExpenseTotal(authUser.uid);
             const initial = Number(profile.initialInvestment) || 0;
             const companyCapital = investors.reduce((sum, investor) => sum + (Number(investor.initialInvestment) || 0), 0) + getApprovedExpenseTotal();
