@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lakfa Foods - Admin Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF for Printing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .nav-btn { flex: 0 0 auto; }
+        @media (max-width: 767px) {
+            .mobile-card-row { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+            .action-button { min-height: 2.5rem; min-width: 2.5rem; }
+        }
+
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 z-[100] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform translate-x-full opacity-0 duration-300">
+        <span id="toast-icon" class="mr-2"></span>
+        <span id="toast-message" class="text-sm font-medium"></span>
+    </div>
+
+    <!-- ================== LOGIN SCREEN ================== -->
+    <div id="login-screen" class="fixed inset-0 bg-gray-100 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-100 text-center">
+            
+            <!-- Company Logo & Address -->
+            <div class="mb-8 flex flex-col items-center">
+                <img src="assets/logo.png" alt="Lakfa Foods Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\' fill=\'%23dc2626\' viewBox=\'0 0 24 24\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg>'" class="w-24 h-24 object-contain mb-4 bg-gray-50 rounded-full p-2 border border-gray-100 shadow-sm">
+                <h1 class="text-2xl font-bold text-red-600 tracking-tight" id="login-company-name">Lakfa Foods</h1>
+                <p class="text-sm text-gray-500 mt-1" id="login-company-address">Admin Dashboard Login</p>
+            </div>
+
+            <form id="login-form" class="space-y-5 text-left">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm" placeholder="admin@lakfa.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <div class="relative">
+                        <input type="password" id="login-password" required class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm" placeholder="••••••••">
+                        <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                            <svg id="eye-icon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                    Secure Login
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================== MAIN DASHBOARD APP ================== -->
+    <div id="main-app" class="hidden min-h-screen md:h-screen flex md:flex-row overflow-hidden bg-gray-50">
+        
+        <!-- Mobile Top Bar -->
+        <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-red-600 text-white shadow flex items-center px-4">
+            <button type="button" onclick="toggleMobileMenu(true)" class="mr-3 inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Open navigation menu">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2">
+            <span class="text-lg font-bold tracking-tight truncate">Lakfa Admin</span>
+        </div>
+
+        <div id="mobile-menu-overlay" onclick="toggleMobileMenu(false)" class="hidden fixed inset-0 z-40 bg-gray-900 bg-opacity-50 md:hidden"></div>
+
+        <!-- Sidebar -->
+        <div id="sidebar" class="fixed inset-y-0 left-0 z-50 flex w-72 -translate-x-full flex-col bg-white border-r border-gray-200 shadow-xl transition-transform duration-200 ease-in-out md:relative md:z-auto md:w-64 md:translate-x-0 md:shadow-none md:h-screen shrink-0">
+            <div class="flex items-center justify-between h-16 border-b border-gray-200 bg-red-600 text-white px-4">
+                <div class="flex items-center min-w-0">
+                    <img src="assets/logo.png" alt="Logo" onerror="this.style.display='none'" class="w-8 h-8 object-contain bg-white rounded-full p-0.5 mr-2 shrink-0">
+                    <span class="text-xl font-bold tracking-tight truncate">Lakfa Admin</span>
+                </div>
+                <button type="button" onclick="toggleMobileMenu(false)" class="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Close navigation menu">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-2">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md bg-red-50 text-red-700 transition-colors">
+                    <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    Dashboard
+                </button>
+                <button onclick="switchTab('orders')" id="nav-orders" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+                    Order Management
+                </button>
+                <button onclick="switchTab('recycle')" id="nav-recycle" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    Recycle Bin
+                </button>
+                <button onclick="switchTab('returns')" id="nav-returns" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                    Return
+                </button>
+                <button onclick="switchTab('cancelled')" id="nav-cancelled" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Order Cancelled
+                </button>
+                <button onclick="switchTab('repeat')" id="nav-repeat" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m10-4.13a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    Repeat Customers
+                </button>
+                <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                    Inventory & Products
+                </button>
+                <button onclick="switchTab('capital')" id="nav-capital" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 10v2m8-6a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
+                    Investors & Capital
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    Settings
+                </button>
+            </nav>
+            <div class="p-2 md:p-4 border-t border-gray-200">
+                <button onclick="handleLogout()" class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                    <svg class="mr-2 h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden pt-14 md:pt-0">
+            <header class="bg-white shadow-sm border-b border-gray-200 py-3 md:py-4 px-4 md:px-6 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
+                <h2 id="page-title" class="text-2xl font-bold leading-7 text-gray-900 sm:truncate">Dashboard</h2>
+                <div id="header-actions"></div>
+            </header>
+
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+                
+                <!-- 1. DASHBOARD TAB -->
+                <div id="tab-dashboard" class="tab-content fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <!-- Order Status Overview -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                Order Status Overview
+                            </h3>
+                            <div class="grid grid-cols-2 gap-4" id="dashboard-status-counts">
+                                <!-- Loaded via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Orders by Month Accordion -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:col-span-2 flex flex-col max-h-[400px]">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                Total Orders History
+                            </h3>
+                            <div id="dashboard-orders-accordion" class="flex-1 overflow-y-auto space-y-3 pr-2">
+                                <!-- Loaded via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- All Products Stock -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                            Current Stock Status
+                        </h3>
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Product Name</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Balance Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-stock-list" class="bg-white divide-y divide-gray-200">
+                                    <!-- Loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ORDERS TAB -->
+                <div id="tab-orders" class="tab-content hidden fade-in">
+                    <!-- Status Tabs -->
+                    <div class="mb-4 border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-4 sm:space-x-6 overflow-x-auto" aria-label="Tabs" id="order-status-tabs">
+                            <button onclick="filterOrdersByStatus('Pending')" class="order-tab active border-red-500 text-red-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Pending</button>
+                            <button onclick="filterOrdersByStatus('Processing')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Processing</button>
+                            <button onclick="filterOrdersByStatus('Shipped')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Shipped</button>
+                            <button onclick="filterOrdersByStatus('Delivered')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered</button>
+                            <button onclick="filterOrdersByStatus('All')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">All Orders</button>
+                        </nav>
+                    </div>
+
+                    <!-- Search & Actions -->
+                    <div class="mb-4 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:max-w-4xl">
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Search</label>
+                                <input type="text" id="order-search" oninput="renderOrders()" placeholder="Name or Phone..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
+                                <svg class="absolute left-3 bottom-2.5 text-gray-400 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">From Date</label>
+                                <input type="date" id="order-date-from" onchange="renderOrders()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">To Date</label>
+                                <input type="date" id="order-date-to" onchange="renderOrders()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 shadow-sm text-sm">
+                            </div>
+                        </div>
+                        <div id="bulk-actions" class="hidden flex items-center space-x-3 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
+                            <span class="text-red-700 font-medium text-sm" id="selected-count">0 Selected</span>
+                            <button onclick="printSelectedOrders()" class="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 shadow-sm">
+                                Print Selected
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Orders Table -->
+                    <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                                            <input type="checkbox" id="select-all-orders" onchange="toggleAllOrders()" class="rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Details</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address & Contact</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-list" class="bg-white divide-y divide-gray-200">
+                                    <!-- Loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. ORDER UTILITY TABS -->
+                <div id="tab-recycle" class="tab-content hidden fade-in"></div>
+                <div id="tab-returns" class="tab-content hidden fade-in"></div>
+                <div id="tab-cancelled" class="tab-content hidden fade-in"></div>
+                <div id="tab-repeat" class="tab-content hidden fade-in"></div>
+
+                <!-- 3. INVENTORY TAB -->
+                <div id="tab-inventory" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="products-list">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+
+                <!-- 4. INVESTORS & CAPITAL TAB -->
+                <div id="tab-capital" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="text-xs font-bold uppercase text-gray-500">Company Capital</div>
+                            <div id="capital-total" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div>
+                            <p class="mt-2 text-sm text-gray-500">Approved investor capital + approved expense contributions.</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="text-xs font-bold uppercase text-gray-500">Pending Expenses</div>
+                            <div id="capital-pending-count" class="mt-2 text-3xl font-bold text-orange-600">0</div>
+                            <p class="mt-2 text-sm text-gray-500">Waiting for manager approval.</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="text-xs font-bold uppercase text-gray-500">Investors</div>
+                            <div id="capital-investor-count" class="mt-2 text-3xl font-bold text-indigo-700">0</div>
+                            <p class="mt-2 text-sm text-gray-500">Accounts controlled by manager.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50">
+                                <h3 class="font-bold text-gray-900">Create / Update Investor Access</h3>
+                                <p class="text-sm text-gray-500 mt-1">Manager can create investor email/password access or update an existing investor by UID.</p>
+                            </div>
+                            <div class="p-6">
+                                <form id="investor-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700">Investor UID (optional for new login)</label>
+                                        <input id="investor-uid" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Leave empty to create from email/password">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Name</label>
+                                        <input id="investor-name" required class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                                        <input id="investor-email" type="email" required class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Initial Investment (₹)</label>
+                                        <input id="investor-capital" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Login Password</label>
+                                        <div class="relative mt-1">
+                                            <input id="investor-password" type="password" class="w-full rounded-md border border-gray-300 p-2 pr-10 text-sm" placeholder="Required only when UID is empty">
+                                            <button type="button" onclick="toggleInvestorPassword()" class="absolute inset-y-0 right-0 px-3 text-gray-400 hover:text-gray-700" title="Show password">
+                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="sm:col-span-2 flex justify-end">
+                                        <button type="button" onclick="saveInvestorProfile()" class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Save Investor</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Expense Approval Queue</h3></div>
+                            <div id="manager-expense-list" class="divide-y divide-gray-100 max-h-[420px] overflow-y-auto"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Investor Capital Ledger</h3></div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Investor</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Login</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Base Investment</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Approved Expenses</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total Capital</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">History</th></tr></thead>
+                                <tbody id="manager-investor-list" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. SETTINGS TAB -->
+                <div id="tab-settings" class="tab-content hidden fade-in max-w-3xl mx-auto">
+                    <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Company Settings</h3>
+                            <p class="mt-1 max-w-2xl text-sm text-gray-500">Provide company details for shipping labels.</p>
+                        </div>
+                        <div class="p-6">
+                            <form id="settings-form" class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Company Name</label>
+                                    <input type="text" id="set-company-name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Address Line 1 (Street, Building)</label>
+                                    <input type="text" id="set-address1" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Address Line 2 (City, State, Pincode)</label>
+                                    <input type="text" id="set-address2" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                    <input type="text" id="set-phone" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                </div>
+                                <div class="pt-4 flex justify-end">
+                                    <button type="button" onclick="saveSettings()" class="bg-red-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                        Save Settings
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ================== INVESTOR PORTAL ================== -->
+    <div id="investor-app" class="hidden min-h-screen bg-gray-50">
+        <header class="bg-white border-b shadow-sm px-4 md:px-8 py-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Investor Portal</h1>
+                <p id="investor-welcome" class="text-sm text-gray-500 mt-1">Capital and expense dashboard</p>
+            </div>
+            <button onclick="handleLogout()" class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Logout</button>
+        </header>
+        <main class="p-4 md:p-8 max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Your Approved Capital</div><div id="investor-total-capital" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div></div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Pending Requests</div><div id="investor-pending-count" class="mt-2 text-3xl font-bold text-orange-600">0</div></div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Company Capital</div><div id="investor-company-capital" class="mt-2 text-3xl font-bold text-indigo-700">₹0</div></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50"><h2 class="font-bold text-gray-900">Submit Expense / Contribution</h2><p class="text-sm text-gray-500 mt-1">This is added to capital only after manager approval.</p></div>
+                    <div class="p-6 space-y-4">
+                        <div><label class="block text-sm font-medium text-gray-700">Purpose</label><input id="investor-expense-purpose" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Packaging machine repair"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Amount (₹)</label><input id="investor-expense-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                        <button onclick="submitInvestorExpense()" class="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Submit for Approval</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50"><h2 class="font-bold text-gray-900">Your Requests</h2></div>
+                    <div id="investor-expense-list" class="divide-y divide-gray-100 max-h-[460px] overflow-y-auto"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================== MODALS (POPUPS) ================== -->
+
+    <!-- Add/Edit Order Modal -->
+    <div id="order-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h2 id="order-modal-title" class="text-xl font-bold text-gray-800">New Order</h2>
+                <button onclick="closeModal('order-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <form id="order-form" class="space-y-4">
+                    <input type="hidden" id="order-id">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date</label>
+                            <input type="date" id="order-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Status</label>
+                            <select id="order-status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border bg-white">
+                                <option value="Pending">Pending</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Return">Return</option>
+                                <option value="Order Cancelled">Order Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-2 border-t pt-2 mt-2">
+                            <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Customer Details</label>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Phone</label>
+                            <input type="text" id="order-phone" required oninput="handleCustomerLookup()" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border" placeholder="Type phone to find repeat customers">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" id="order-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
+                        </div>
+                        <div id="customer-suggestions" class="hidden sm:col-span-2 rounded-lg border border-red-100 bg-red-50 p-3"></div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Full Address</label>
+                            <textarea id="order-address" rows="2" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Pincode</label>
+                            <input type="text" id="order-pincode" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Location Link (Optional)</label>
+                            <input type="url" id="order-location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
+                        </div>
+                        
+                        <div class="sm:col-span-2 border-t pt-2 mt-2">
+                            <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Order Items</label>
+                        </div>
+                        
+                        <div class="sm:col-span-2" id="order-products-container">
+                            <!-- Items added dynamically -->
+                        </div>
+                        <div class="sm:col-span-2">
+                            <button type="button" onclick="addOrderProductRow()" class="mt-1 text-sm text-red-600 font-medium hover:text-red-800 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                Add Item
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
+                <button type="button" onclick="closeModal('order-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
+                <button type="button" onclick="saveOrder()" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">Save Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Setup Modal (Add/Edit Product) -->
+    <div id="product-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <h2 id="product-modal-title" class="text-xl font-bold">Add Product</h2>
+                <button onclick="closeModal('product-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6">
+                <form id="product-form" class="space-y-4">
+                    <input type="hidden" id="product-id">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Product Name</label>
+                        <input type="text" id="product-name" required placeholder="eg. Tuna Pickle 350g" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Price (₹)</label>
+                        <input type="number" id="product-price" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700" id="initial-stock-label">Initial Stock Qty</label>
+                        <input type="number" id="product-stock" min="0" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date</label>
+                        <input type="date" id="product-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                </form>
+            </div>
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
+                <button onclick="closeModal('product-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
+                <button onclick="saveProduct()" class="px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700">Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Stock Modal (Add or Edit Stock Row) -->
+    <div id="stock-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-green-50">
+                <h2 class="text-lg font-bold text-green-800" id="stock-modal-title">Add New Stock</h2>
+                <button onclick="closeModal('stock-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6">
+                <p id="stock-product-name" class="font-medium text-gray-700 mb-4"></p>
+                <form id="stock-form" class="space-y-4">
+                    <input type="hidden" id="stock-product-id">
+                    <input type="hidden" id="stock-history-index" value="-1">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                        <input type="number" id="stock-add-qty" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date</label>
+                        <input type="date" id="stock-add-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                    </div>
+                </form>
+            </div>
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
+                <button onclick="closeModal('stock-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
+                <button onclick="submitNewStock()" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700" id="stock-submit-btn">Save Stock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock History Modal -->
+    <div id="history-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <h2 class="text-lg font-bold text-gray-800">Stock History</h2>
+                <button onclick="closeModal('history-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <h3 id="history-product-name" class="font-bold text-lg mb-4 text-red-600"></h3>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Qty</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-list" class="bg-white divide-y divide-gray-200">
+                            <!-- Loaded via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Order Status Modal -->
+    <div id="status-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-blue-50">
+                <h2 class="text-lg font-bold text-blue-800">Update Status</h2>
+                <button onclick="closeModal('status-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6">
+                <form id="status-form" class="space-y-4">
+                    <input type="hidden" id="status-order-id">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">New Status</label>
+                        <select id="status-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white">
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Return">Return</option>
+                            <option value="Order Cancelled">Order Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date</label>
+                        <input type="date" id="status-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                </form>
+            </div>
+            <div class="px-4 sm:px-6 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:space-x-3">
+                <button onclick="closeModal('status-modal')" class="px-4 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50">Cancel</button>
+                <button onclick="submitStatusUpdate()" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700">Update</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Order History / Route Map Modal -->
+    <div id="order-history-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Order Route Map</h2>
+                    <p id="order-history-subtitle" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+                <button onclick="closeModal('order-history-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div id="order-history-list" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Repeat Customer Order Details Modal -->
+    <div id="repeat-customer-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-indigo-50">
+                <div>
+                    <h2 class="text-lg font-bold text-indigo-900">Repeat Customer Orders</h2>
+                    <p id="repeat-customer-subtitle" class="text-xs text-indigo-700 mt-1"></p>
+                </div>
+                <button onclick="closeModal('repeat-customer-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div id="repeat-customer-orders" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 bg-gray-900 bg-opacity-60">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="px-5 py-4 border-b bg-red-50">
+                <h2 id="confirm-title" class="text-lg font-bold text-gray-900">Please Confirm</h2>
+            </div>
+            <div class="p-5">
+                <p id="confirm-message" class="text-sm leading-6 text-gray-700"></p>
+            </div>
+            <div class="px-5 py-4 bg-gray-50 border-t flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+                <button id="confirm-cancel" type="button" class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50">Cancel</button>
+                <button id="confirm-ok" type="button" class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================== JAVASCRIPT ================== -->
+    <script type="module">
+        import { auth, secondaryAuth, db } from "./firebase-config.js";
+        import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        let orders = [];
+        let products = [];
+        let investors = [];
+        let investorExpenses = [];
+        let authUser = null;
+        let currentUserRole = 'manager';
+        let selectedOrders = new Set();
+        let currentTab = 'dashboard';
+        let currentOrderStatusFilter = 'Pending';
+        const orderUtilityTabs = {
+            recycle: { title: 'Recycle Bin', statusFilter: 'Recycle Bin', icon: 'trash', color: 'red' },
+            returns: { title: 'Return', statusFilter: 'Return', icon: 'return', color: 'orange' },
+            cancelled: { title: 'Order Cancelled', statusFilter: 'Order Cancelled', icon: 'cancel', color: 'red' },
+            repeat: { title: 'Repeat Customers', statusFilter: 'Repeat Customers', icon: 'users', color: 'indigo' }
+        };
+        let companySettings = {
+            name: "Lakfa Foods",
+            address1: "Sp. Godown, Rottipeedika",
+            address2: "Pullisherikund, PO, Pallikal, Kerala 673634",
+            phone: "079073 45458"
+        };
+
+        // Utility: Show Toast (English)
+        window.showToast = function(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-message').innerText = message;
+            
+            if(type === 'error') {
+                toast.className = "fixed top-4 right-4 z-[100] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform duration-300 bg-red-600";
+                icon.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
+            } else {
+                toast.className = "fixed top-4 right-4 z-[100] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform duration-300 bg-green-600";
+                icon.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+            }
+            
+            setTimeout(() => { toast.classList.remove('translate-x-full', 'opacity-0'); }, 10);
+            setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); }, 3000);
+        };
+
+        window.showConfirm = function({ title = 'Please Confirm', message = 'Are you sure?', confirmText = 'Confirm', confirmClass = 'bg-red-600 hover:bg-red-700' } = {}) {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('confirm-title');
+            const msgEl = document.getElementById('confirm-message');
+            const okBtn = document.getElementById('confirm-ok');
+            const cancelBtn = document.getElementById('confirm-cancel');
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            okBtn.innerText = confirmText;
+            okBtn.className = `w-full sm:w-auto px-4 py-2 text-white rounded-md text-sm font-medium ${confirmClass}`;
+            modal.classList.remove('hidden');
+
+            return new Promise(resolve => {
+                const cleanup = (result) => {
+                    modal.classList.add('hidden');
+                    okBtn.onclick = null;
+                    cancelBtn.onclick = null;
+                    resolve(result);
+                };
+                okBtn.onclick = () => cleanup(true);
+                cancelBtn.onclick = () => cleanup(false);
+            });
+        };
+
+        function getTodayString() { return new Date().toISOString().split('T')[0]; }
+        function normalizeDateInput(dateValue) {
+            if(!dateValue) return '';
+            if(typeof dateValue === 'object' && dateValue.seconds) return new Date(dateValue.seconds * 1000).toISOString().split('T')[0];
+            return String(dateValue).split('T')[0];
+        }
+        window.toggleMobileMenu = function(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            if(!sidebar || !overlay) return;
+            if(open) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        };
+
+        function formatDisplayDate(dateStr) {
+            if(!dateStr) return '';
+            if(typeof dateStr === 'object' && dateStr.seconds) {
+                dateStr = new Date(dateStr.seconds * 1000).toISOString().split('T')[0];
+            }
+            try {
+                const [year, month, day] = dateStr.split('-');
+                return `${day}-${month}-${year}`;
+            } catch (e) { return dateStr; }
+        }
+
+        history.replaceState({ tabId: 'dashboard' }, '', location.pathname + location.search + '#dashboard');
+
+        // ================= AUTHENTICATION =================
+        window.togglePassword = function() {
+            const input = document.getElementById('login-password');
+            const icon = document.getElementById('eye-icon');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />`;
+            } else {
+                input.type = "password";
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                showToast("Login Successful!");
+            } catch (error) {
+                showToast("Invalid Email or Password", "error");
+            }
+        });
+
+        window.handleLogout = async function() { toggleMobileMenu(false); if(!(await showConfirm({ title: 'Confirm Logout', message: 'Do you want to log out of the admin dashboard?', confirmText: 'Logout' }))) return; await signOut(auth); window.location.href = 'index.html'; }
+
+        onAuthStateChanged(auth, async (user) => {
+            authUser = user;
+            if (!user) { window.location.href = 'index.html'; return; }
+            const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
+            currentUserRole = userSnap && userSnap.exists() ? (userSnap.data().role || 'manager') : 'manager';
+            if(currentUserRole !== 'investor') { window.location.href = 'manager.html'; return; }
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+            document.getElementById('investor-app').classList.remove('hidden');
+            loadInvestorPortal();
+        });
+
+        // ================= TABS =================
+        function pushAppHistory(tabId, orderFilter = null) {
+            const state = { tabId, orderFilter };
+            const hash = orderFilter ? `${tabId}-${String(orderFilter).toLowerCase().replace(/\s+/g, '-')}` : tabId;
+            if(!history.state || history.state.tabId !== tabId || history.state.orderFilter !== orderFilter) {
+                history.pushState(state, '', `#${hash}`);
+            }
+        }
+
+        window.addEventListener('popstate', (event) => {
+            const state = event.state || { tabId: 'dashboard' };
+            switchTab(state.tabId || 'dashboard', state.orderFilter || null, false);
+        });
+
+        function renderUtilityTabShell(tabId) {
+            const config = orderUtilityTabs[tabId];
+            const target = document.getElementById('tab-' + tabId);
+            const isRepeat = tabId === 'repeat';
+            target.innerHTML = `
+                <div class="rounded-2xl border border-${config.color}-100 bg-${config.color}-50 p-4 md:p-5 mb-5">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white text-${config.color}-600 shadow-sm">${getIconSvg(config.icon, 'w-6 h-6')}</span>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">${config.title}</h3>
+                                <p class="text-sm text-gray-600">${isRepeat ? 'Customers are ranked by total order count. Open a customer to view their full order list.' : 'This is a separate workspace with its own filtered order interface.'}</p>
+                            </div>
+                        </div>
+                        ${isRepeat ? `<button onclick="openOrderModal()" class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">${getIconSvg('plus', 'w-4 h-4 mr-2')} Add Order</button>` : ''}
+                    </div>
+                </div>
+                <div id="${tabId}-content-host"></div>
+            `;
+        }
+
+        function closePreviousTabState(nextTabId) {
+            selectedOrders.clear();
+            document.querySelectorAll('[id^="order-menu-"]').forEach(menu => menu.classList.add('hidden'));
+            Object.keys(orderUtilityTabs).forEach(tabKey => {
+                if(tabKey !== nextTabId) document.getElementById('tab-' + tabKey).innerHTML = '';
+            });
+            ['order-modal', 'product-modal', 'stock-modal', 'history-modal', 'status-modal', 'order-history-modal', 'repeat-customer-modal'].forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if(modal) modal.classList.add('hidden');
+            });
+        }
+
+        function getOrderHeaderActions() {
+            const downloadButton = currentOrderStatusFilter === 'All' ? `<button onclick="downloadAllOrdersExcel()" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 shadow-sm flex items-center">${getIconSvg('download', 'w-4 h-4 mr-1')} Download Excel</button>` : '';
+            return `<div class="flex flex-col sm:flex-row gap-2 sm:items-center"><button onclick="openOrderModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center justify-center">${getIconSvg('plus', 'w-4 h-4 mr-1')} Add New Order</button>${downloadButton}</div>`;
+        }
+
+        function updateOrderHeaderActions() {
+            if(currentTab === 'orders') document.getElementById('header-actions').innerHTML = getOrderHeaderActions();
+        }
+
+        window.switchTab = function(tabId, orderFilter = null, pushHistory = true) {
+            toggleMobileMenu(false);
+            closePreviousTabState(tabId);
+            if(tabId === 'orders' && !orderFilter) {
+                currentOrderStatusFilter = 'Pending';
+                orderFilter = 'Pending';
+            }
+            if(orderUtilityTabs[tabId]) {
+                orderFilter = orderUtilityTabs[tabId].statusFilter;
+                currentOrderStatusFilter = orderFilter;
+            }
+            currentTab = tabId;
+            if(pushHistory) pushAppHistory(tabId, orderFilter);
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-red-50', 'text-red-700');
+                el.classList.add('text-gray-600');
+            });
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-gray-600');
+                activeBtn.classList.add('bg-red-50', 'text-red-700');
+            }
+
+            const headerActions = document.getElementById('header-actions');
+            if(tabId === 'dashboard') {
+                document.getElementById('page-title').innerText = "Dashboard";
+                headerActions.innerHTML = '';
+                renderDashboard();
+            } else if (tabId === 'orders') {
+                if(orderFilter) currentOrderStatusFilter = orderFilter;
+                document.getElementById('page-title').innerText = "Order Management";
+                headerActions.innerHTML = getOrderHeaderActions();
+                syncOrderFilterUI();
+                renderOrders();
+            } else if (orderUtilityTabs[tabId]) {
+                const config = orderUtilityTabs[tabId];
+                document.getElementById('page-title').innerText = config.title;
+                headerActions.innerHTML = tabId === 'repeat' ? '' : `<button onclick="openOrderModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center">${getIconSvg('plus', 'w-4 h-4 mr-1')} Add New Order</button>`;
+                renderUtilityTabShell(tabId);
+                renderOrders(`${tabId}-content-host`);
+            } else if (tabId === 'inventory') {
+                document.getElementById('page-title').innerText = "Inventory & Products";
+                headerActions.innerHTML = `<button onclick="openProductModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center">${getIconSvg('plus', 'w-4 h-4 mr-1')} Add Product</button>`;
+                renderProducts();
+            } else if (tabId === 'capital') {
+                document.getElementById('page-title').innerText = "Investors & Capital";
+                headerActions.innerHTML = '';
+                renderCapitalDashboard();
+            } else if (tabId === 'settings') {
+                document.getElementById('page-title').innerText = "Settings";
+                headerActions.innerHTML = '';
+                populateSettingsForm();
+            }
+        }
+
+        // ================= DATA LOADING =================
+        function loadData() {
+            onSnapshot(doc(db, "settings", "config"), (docSnap) => {
+                if (docSnap.exists()) {
+                    companySettings = docSnap.data();
+                    if(currentTab === 'settings') populateSettingsForm();
+                }
+            });
+            onSnapshot(collection(db, "products"), (snapshot) => {
+                products = [];
+                snapshot.forEach((doc) => products.push({ id: doc.id, ...doc.data() }));
+                if(currentTab === 'inventory') renderProducts();
+                if(currentTab === 'dashboard') renderDashboard();
+                if(currentTab === 'inventory' && !document.getElementById('history-modal').classList.contains('hidden')) {
+                    const openedProductId = document.getElementById('history-modal').getAttribute('data-product-id');
+                    if(openedProductId) showHistoryModal(openedProductId);
+                }
+            });
+            onSnapshot(collection(db, "orders"), (snapshot) => {
+                orders = [];
+                snapshot.forEach((doc) => orders.push({ id: doc.id, ...doc.data() }));
+                orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                if(currentTab === 'orders') renderOrders();
+                if(orderUtilityTabs[currentTab]) renderOrders(`${currentTab}-content-host`);
+                if(currentTab === 'dashboard') renderDashboard();
+            });
+            onSnapshot(collection(db, "investors"), (snapshot) => {
+                investors = [];
+                snapshot.forEach((doc) => investors.push({ id: doc.id, ...doc.data() }));
+                if(currentTab === 'capital') renderCapitalDashboard();
+            });
+            onSnapshot(collection(db, "investorExpenses"), (snapshot) => {
+                investorExpenses = [];
+                snapshot.forEach((doc) => investorExpenses.push({ id: doc.id, ...doc.data() }));
+                investorExpenses.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
+                if(currentTab === 'capital') renderCapitalDashboard();
+            });
+        }
+
+        // ================= DASHBOARD RENDER =================
+        window.toggleMonthAccordion = function(monthId) {
+            const el = document.getElementById(`month-days-${monthId}`);
+            const icon = document.getElementById(`month-icon-${monthId}`);
+            if(el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function renderDashboard() {
+            let pending = 0, processing = 0, shipped = 0, delivered = 0, returned = 0, cancelled = 0;
+            const ordersByMonth = {};
+            const currentMonthKey = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+            orders.forEach(order => {
+                if (order.status === 'Pending') pending++;
+                else if (order.status === 'Processing') processing++;
+                else if (order.status === 'Shipped') shipped++;
+                else if (order.status === 'Delivered') delivered++;
+                else if (order.status === 'Return') returned++;
+                else if (order.status === 'Order Cancelled') cancelled++;
+
+                let dateStr = order.createdAt;
+                if (typeof dateStr === 'object' && dateStr.seconds) {
+                    dateStr = new Date(dateStr.seconds * 1000).toISOString().split('T')[0];
+                }
+                const dateObj = new Date(dateStr);
+                if (isNaN(dateObj)) return;
+
+                const monthKey = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                const dayStr = formatDisplayDate(dateStr);
+
+                if (!ordersByMonth[monthKey]) { ordersByMonth[monthKey] = { total: 0, days: {} }; }
+                ordersByMonth[monthKey].total++;
+                
+                if (!ordersByMonth[monthKey].days[dayStr]) { ordersByMonth[monthKey].days[dayStr] = 0; }
+                ordersByMonth[monthKey].days[dayStr]++;
+            });
+
+            document.getElementById('dashboard-status-counts').innerHTML = `
+                <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-yellow-600 font-bold uppercase mb-1">Pending</div>
+                    <div class="text-2xl font-bold text-yellow-800">${pending}</div>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-blue-600 font-bold uppercase mb-1">Processing</div>
+                    <div class="text-2xl font-bold text-blue-800">${processing}</div>
+                </div>
+                <div class="bg-purple-50 p-3 rounded-lg border border-purple-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-purple-600 font-bold uppercase mb-1">Shipped</div>
+                    <div class="text-2xl font-bold text-purple-800">${shipped}</div>
+                </div>
+                <div class="bg-green-50 p-3 rounded-lg border border-green-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-green-600 font-bold uppercase mb-1">Delivered</div>
+                    <div class="text-2xl font-bold text-green-800">${delivered}</div>
+                </div>
+                <div class="bg-orange-50 p-3 rounded-lg border border-orange-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-orange-600 font-bold uppercase mb-1">Return</div>
+                    <div class="text-2xl font-bold text-orange-800">${returned}</div>
+                </div>
+                <div class="bg-red-50 p-3 rounded-lg border border-red-100 flex flex-col items-center justify-center">
+                    <div class="text-xs text-red-600 font-bold uppercase mb-1">Cancelled</div>
+                    <div class="text-2xl font-bold text-red-800">${cancelled}</div>
+                </div>
+            `;
+
+            const sortedMonths = Object.keys(ordersByMonth).sort((a, b) => new Date(b) - new Date(a));
+            let accordionHTML = '';
+            
+            sortedMonths.forEach((month, index) => {
+                const data = ordersByMonth[month];
+                const isCurrent = month === currentMonthKey || (index === 0 && !ordersByMonth[currentMonthKey]); 
+                const monthId = month.replace(/\s+/g, '-');
+                let daysHTML = '';
+                const sortedDays = Object.keys(data.days).sort((a, b) => {
+                    const da = a.split('-').reverse().join('-');
+                    const db = b.split('-').reverse().join('-');
+                    return new Date(db) - new Date(da);
+                });
+
+                sortedDays.forEach(dayStr => {
+                    daysHTML += `
+                        <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0 pl-4 hover:bg-gray-50">
+                            <span class="text-sm text-gray-600 font-medium">${dayStr}</span>
+                            <span class="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">${data.days[dayStr]} Orders</span>
+                        </div>
+                    `;
+                });
+
+                accordionHTML += `
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button onclick="toggleMonthAccordion('${monthId}')" class="w-full flex justify-between items-center p-3 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none">
+                            <span class="font-bold text-gray-800">${month}</span>
+                            <div class="flex items-center">
+                                <span class="mr-3 text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-md border border-red-100">Total: ${data.total}</span>
+                                <svg id="month-icon-${monthId}" class="w-5 h-5 text-gray-500 transition-transform duration-200 ${isCurrent ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </button>
+                        <div id="month-days-${monthId}" class="${isCurrent ? '' : 'hidden'} bg-white px-2 py-1">
+                            ${daysHTML}
+                        </div>
+                    </div>
+                `;
+            });
+            if(sortedMonths.length === 0) accordionHTML = '<div class="text-gray-500 text-sm text-center py-4">No orders found.</div>';
+            document.getElementById('dashboard-orders-accordion').innerHTML = accordionHTML;
+
+            let stockHTML = '';
+            products.forEach(product => {
+                const added = Array.isArray(product.stockHistory) ? product.stockHistory.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
+                const ordered = product.ordered || 0;
+                const balance = (Number(product.initialStock) || 0) + added - ordered;
+                const isLow = balance < 5;
+                
+                stockHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900 flex justify-between items-center">
+                            ${product.name}
+                            ${isLow ? '<span class="px-2 py-0.5 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">Low Stock</span>' : ''}
+                        </td>
+                        <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-bold ${isLow ? 'text-red-600' : 'text-gray-900'}">
+                            ${balance}
+                        </td>
+                    </tr>
+                `;
+            });
+            if(products.length === 0) stockHTML = '<tr><td colspan="2" class="px-6 py-4 text-center text-sm text-gray-500">No products added yet.</td></tr>';
+            document.getElementById('dashboard-stock-list').innerHTML = stockHTML;
+        }
+
+        // ================= ORDERS MANAGEMENT =================
+        function getIconSvg(name, cls = 'w-5 h-5') {
+            const icons = {
+                history: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-3-6.708M21 3v6h-6" />',
+                edit: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 10-3.536-3.536L4 16.928V20z" />',
+                trash: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M4 7h16" />',
+                status: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />',
+                restore: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v1M3 10l5 5m-5-5l5-5" />',
+                return: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />',
+                cancel: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />',
+                users: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m10-4.13a4 4 0 11-8 0 4 4 0 018 0z" />',
+                plus: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />',
+                download: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />',
+                eye: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />'
+            };
+            return `<svg class="${cls}" fill="none" viewBox="0 0 24 24" stroke="currentColor">${icons[name] || icons.status}</svg>`;
+        }
+
+        function syncOrderFilterUI() {
+            document.querySelectorAll('.order-tab').forEach(el => {
+                el.classList.remove('border-red-500', 'text-red-600');
+                el.classList.add('border-transparent', 'text-gray-500');
+                if(el.textContent.trim() === currentOrderStatusFilter || (currentOrderStatusFilter === 'All' && el.textContent.trim() === 'All Orders')) {
+                    el.classList.remove('border-transparent', 'text-gray-500');
+                    el.classList.add('border-red-500', 'text-red-600');
+                }
+            });
+            document.querySelectorAll('.side-order-filter').forEach(el => {
+                const active = el.dataset.orderFilter === currentOrderStatusFilter;
+                el.classList.toggle('bg-red-50', active);
+                el.classList.toggle('text-red-700', active);
+                el.classList.toggle('text-gray-500', !active);
+            });
+        }
+
+        window.filterOrdersByStatus = function(status) {
+            currentOrderStatusFilter = status;
+            pushAppHistory('orders', status);
+            syncOrderFilterUI();
+            updateOrderHeaderActions();
+            renderOrders();
+        }
+
+        function getOrderStatusColor(status) {
+            if(status === 'Pending') return 'bg-yellow-100 text-yellow-800';
+            if(status === 'Processing') return 'bg-blue-100 text-blue-800';
+            if(status === 'Shipped') return 'bg-purple-100 text-purple-800';
+            if(status === 'Delivered') return 'bg-green-100 text-green-800';
+            if(status === 'Return') return 'bg-orange-100 text-orange-800';
+            if(status === 'Order Cancelled') return 'bg-red-100 text-red-800';
+            return 'bg-gray-100 text-gray-800';
+        }
+
+        function getOrderItemsText(order) {
+            if(Array.isArray(order.itemsObj)) {
+                return order.itemsObj.map(i => {
+                    const product = products.find(prod => prod.id === i.productId);
+                    return product ? `${product.name} (${i.qty})` : `Unknown Item (${i.qty})`;
+                }).join(', ');
+            }
+            return order.items || '';
+        }
+
+        function orderPassedThroughStatus(order, status) {
+            return order.status === status || (Array.isArray(order.statusHistory) && order.statusHistory.some(entry => entry.status === status));
+        }
+
+        function getRepeatCustomers() {
+            const groups = {};
+            orders.filter(o => !o.isDeleted && o.phone).forEach(order => {
+                const key = String(order.phone).trim();
+                if(!groups[key]) groups[key] = { phone: key, name: order.name || '', address: order.address || '', pincode: order.pincode || '', orders: [] };
+                groups[key].orders.push(order);
+                const currentDate = normalizeDateInput(order.createdAt);
+                const savedDate = normalizeDateInput(groups[key].latestDate);
+                if(!savedDate || currentDate >= savedDate) {
+                    groups[key].name = order.name || groups[key].name;
+                    groups[key].address = order.address || groups[key].address;
+                    groups[key].pincode = order.pincode || groups[key].pincode;
+                    groups[key].latestDate = order.createdAt;
+                }
+            });
+            return Object.values(groups).sort((a, b) => b.orders.length - a.orders.length || String(a.name).localeCompare(String(b.name)));
+        }
+
+        function getFilteredOrders() {
+            const search = document.getElementById('order-search').value.toLowerCase();
+            const fromDate = document.getElementById('order-date-from').value;
+            const toDate = document.getElementById('order-date-to').value;
+            return orders.filter(o => {
+                const isRecycle = currentOrderStatusFilter === 'Recycle Bin';
+                if(currentOrderStatusFilter === 'Repeat Customers') return false;
+                if(isRecycle ? !o.isDeleted : o.isDeleted) return false;
+                const lifecycleTab = currentOrderStatusFilter === 'Return' || currentOrderStatusFilter === 'Order Cancelled';
+                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter);
+                const matchesSearch = ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search));
+                const orderDate = normalizeDateInput(o.createdAt);
+                const matchesFrom = !fromDate || orderDate >= fromDate;
+                const matchesTo = !toDate || orderDate <= toDate;
+                return matchesStatus && matchesSearch && matchesFrom && matchesTo;
+            });
+        }
+
+        window.renderOrders = function(hostId = null) {
+            if(hostId) { renderUtilityOrders(hostId); return; }
+            const list = document.getElementById('orders-list');
+            let html = '';
+            let filtered = getFilteredOrders();
+            const isRecycle = currentOrderStatusFilter === 'Recycle Bin';
+            if(currentOrderStatusFilter === 'Repeat Customers') { renderRepeatCustomers(); return; }
+
+            filtered.forEach(order => {
+                const statusColor = getOrderStatusColor(order.status);
+                const itemsText = getOrderItemsText(order);
+                const checkboxHtml = isRecycle ? '' : `<input type="checkbox" onchange="toggleSelectOrder('${order.id}')" ${selectedOrders.has(order.id) ? 'checked' : ''} class="order-checkbox rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">`;
+                const actionsHtml = isRecycle ? `
+                            <div class="inline-flex flex-col sm:flex-row gap-2 justify-end">
+                                <button onclick="restoreOrder('${order.id}')" class="inline-flex items-center justify-center rounded-md border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-bold text-green-700 hover:bg-green-100">${getIconSvg('restore', 'w-4 h-4 mr-1')} Restore</button>
+                                <button onclick="permanentlyDeleteOrder('${order.id}')" class="inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-4 h-4 mr-1')} Delete Forever</button>
+                            </div>
+                ` : `
+                            <button onclick="printSingleOrder('${order.id}')" class="text-red-600 hover:text-red-800 mr-3" title="Print Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg></button>
+                            <button onclick="showOrderHistory('${order.id}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-xs font-bold mr-3 px-2 py-1 rounded border border-indigo-100 bg-indigo-50">${getIconSvg('history', 'w-4 h-4 mr-1')} History</button>
+                            <div class="relative inline-block text-left">
+                                <button onclick="toggleOrderMenu('${order.id}', this)" class="text-gray-500 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100" title="More actions"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
+                                <div id="order-menu-${order.id}" class="hidden absolute right-0 z-30 mt-2 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 border border-gray-100">
+                                    <button onclick="openStatusModal('${order.id}', '${order.status}')" class="block w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-blue-50">${getIconSvg('status','inline w-4 h-4 mr-2')}Update Status</button>
+                                    <button onclick="editOrder('${order.id}')" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">${getIconSvg('edit','inline w-4 h-4 mr-2')}Edit</button>
+                                    <button onclick="deleteOrder('${order.id}')" class="block w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50">${getIconSvg('trash','inline w-4 h-4 mr-2')}Delete</button>
+                                </div>
+                            </div>
+                `;
+
+                html += `
+                    <tr class="hover:bg-gray-50 ${isRecycle ? 'bg-red-50/30' : ''}">
+                        <td class="px-6 py-4 whitespace-nowrap">${checkboxHtml}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-bold text-gray-900">${formatDisplayDate(order.createdAt)}</div>
+                            <div class="text-xs text-gray-500">Accepted: ${formatDisplayDate(order.createdAt)} • Last update: ${formatDisplayDate(order.updatedAt || order.createdAt)}</div>
+                            ${isRecycle ? `<div class="text-xs text-red-600 font-semibold">Deleted: ${formatDisplayDate(order.deletedAt)}</div>` : ''}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">${order.name}</div>
+                            <div class="text-sm text-gray-500 max-w-xs truncate">${order.address}</div>
+                            <div class="text-xs text-gray-600 font-bold">Ph: ${order.phone} | PIN: ${order.pincode}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900 max-w-xs truncate" title="${itemsText}">${itemsText}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${order.status}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">${actionsHtml}</td>
+                    </tr>
+                `;
+            });
+            if(filtered.length === 0) html = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
+            list.innerHTML = html;
+
+            document.getElementById('select-all-orders').checked = !isRecycle && filtered.length > 0 && filtered.every(o => selectedOrders.has(o.id));
+            document.getElementById('select-all-orders').disabled = isRecycle;
+            updateBulkActions();
+        }
+
+        function buildOrdersTableHtml() {
+            return document.querySelector('#tab-orders .bg-white.shadow-sm.rounded-lg.border.border-gray-200.overflow-hidden').outerHTML
+                .replace('id="orders-list"', 'id="utility-orders-list"')
+                .replace('id="select-all-orders"', 'id="utility-select-all-orders" disabled');
+        }
+
+        function renderUtilityOrders(hostId) {
+            const host = document.getElementById(hostId);
+            if(!host) return;
+            if(currentOrderStatusFilter === 'Repeat Customers') {
+                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
+                renderRepeatCustomers('utility-repeat-list');
+                return;
+            }
+            host.innerHTML = buildOrdersTableHtml();
+            const originalList = document.getElementById('orders-list');
+            const originalSelect = document.getElementById('select-all-orders');
+            const utilityList = document.getElementById('utility-orders-list');
+            const utilitySelect = document.getElementById('utility-select-all-orders');
+            renderOrders();
+            utilityList.innerHTML = originalList.innerHTML;
+            utilitySelect.checked = originalSelect.checked;
+            utilitySelect.disabled = true;
+        }
+
+        function renderRepeatCustomers(targetId = 'orders-list') {
+            const list = document.getElementById(targetId);
+            const customers = getRepeatCustomers();
+            const selectAll = document.getElementById('select-all-orders');
+            if(selectAll) {
+                selectAll.checked = false;
+                selectAll.disabled = true;
+            }
+            updateBulkActions();
+            const isUtilityList = targetId === 'utility-repeat-list';
+            if(customers.length === 0) {
+                list.innerHTML = `<tr><td colspan="${isUtilityList ? 5 : 6}" class="px-6 py-10 text-center text-gray-500">No customers found</td></tr>`;
+                return;
+            }
+            list.innerHTML = customers.map((customer, index) => isUtilityList ? `
+                <tr class="hover:bg-gray-50 bg-indigo-50/30">
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${index + 1}</span></td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${customer.name || 'Customer'}</div>
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address || '-'}</div>
+                        <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${customer.orders.length} Orders</span></td>
+                    <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open</button>
+                    </td>
+                </tr>
+            ` : `
+                <tr class="hover:bg-gray-50 bg-indigo-50/30">
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${customer.orders.length}</span></td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div>
+                        <div class="text-xs text-indigo-700 font-semibold">${customer.orders.length} total orders</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${customer.name}</div>
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address}</div>
+                        <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
+                    </td>
+                    <td class="px-6 py-4"><div class="text-sm text-gray-700">Customer order history</div></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Repeat</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.toggleOrderMenu = function(id, trigger = null) {
+            const currentMenu = trigger ? trigger.nextElementSibling : document.getElementById(`order-menu-${id}`);
+            if(!currentMenu) return;
+            document.querySelectorAll('[id^="order-menu-"]').forEach(menu => {
+                if(menu !== currentMenu) menu.classList.add('hidden');
+            });
+            currentMenu.classList.toggle('hidden');
+        }
+
+        window.toggleSelectOrder = function(id) {
+            if(selectedOrders.has(id)) selectedOrders.delete(id);
+            else selectedOrders.add(id);
+            updateBulkActions();
+        }
+        window.toggleAllOrders = function() {
+            const isChecked = document.getElementById('select-all-orders').checked;
+            let filtered = getFilteredOrders();
+            if(isChecked) {
+                filtered.forEach(o => selectedOrders.add(o.id));
+            } else {
+                filtered.forEach(o => selectedOrders.delete(o.id));
+            }
+            renderOrders();
+        }
+        function updateBulkActions() {
+            const panel = document.getElementById('bulk-actions');
+            if(selectedOrders.size > 0 && currentOrderStatusFilter !== 'Recycle Bin' && currentOrderStatusFilter !== 'Repeat Customers') {
+                panel.classList.remove('hidden');
+                document.getElementById('selected-count').innerText = `${selectedOrders.size} Selected`;
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        // ================= ORDER MODAL =================
+        window.handleCustomerLookup = function() {
+            const phoneInput = document.getElementById('order-phone');
+            const panel = document.getElementById('customer-suggestions');
+            const query = phoneInput.value.trim();
+            if(query.length < 3) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+            const matches = orders
+                .filter(o => !o.isDeleted && o.phone && String(o.phone).includes(query))
+                .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))
+                .slice(0, 3);
+            if(matches.length === 0) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+            panel.innerHTML = `
+                <div class="text-sm font-bold text-red-700 mb-2">Existing customer found. Fill details?</div>
+                <div class="space-y-2">
+                    ${matches.map(order => `
+                        <div class="bg-white border border-red-100 rounded-md p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <div class="text-sm font-semibold text-gray-900">${order.name || 'Customer'} • ${order.phone}</div>
+                                <div class="text-xs text-gray-600">${order.address || ''} ${order.pincode ? '| PIN: ' + order.pincode : ''}</div>
+                                <div class="text-xs text-red-600 font-medium">Previous order: ${formatDisplayDate(order.createdAt)}</div>
+                            </div>
+                            <button type="button" onclick="fillCustomerDetails('${order.id}')" class="px-3 py-2 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700">Fill Details</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            panel.classList.remove('hidden');
+        }
+
+        window.fillCustomerDetails = function(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(!order) return;
+            document.getElementById('order-phone').value = order.phone || '';
+            document.getElementById('order-name').value = order.name || '';
+            document.getElementById('order-address').value = order.address || '';
+            document.getElementById('order-pincode').value = order.pincode || '';
+            document.getElementById('order-location').value = order.location || '';
+            document.getElementById('customer-suggestions').classList.add('hidden');
+            showToast('Customer details filled');
+        }
+
+        window.showRepeatCustomerOrders = function(phone) {
+            const customerOrders = orders
+                .filter(o => !o.isDeleted && o.phone === phone)
+                .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
+            if(customerOrders.length === 0) return;
+            const latest = customerOrders[0];
+            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${customerOrders.length} orders`;
+            document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => `
+                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                        <div>
+                            <div class="text-sm font-bold text-gray-900">${formatDisplayDate(order.createdAt)}</div>
+                            <div class="text-xs text-gray-500">Accepted: ${formatDisplayDate(order.createdAt)} • Last update: ${formatDisplayDate(order.updatedAt || order.createdAt)}</div>
+                        </div>
+                        <span class="self-start sm:self-auto px-2 py-1 rounded-full text-xs font-bold ${getOrderStatusColor(order.status)}">${order.status}</span>
+                    </div>
+                    <div class="text-sm text-gray-700">
+                        <span class="font-semibold">Products:</span> ${getOrderItemsText(order) || 'No items found'}
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('repeat-customer-modal').classList.remove('hidden');
+        }
+
+        window.prefillCustomerFromRepeat = function(phone) {
+            const customerOrder = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))[0];
+            openOrderModal();
+            if(customerOrder) fillCustomerDetails(customerOrder.id);
+        }
+
+        window.openOrderModal = function() {
+            document.getElementById('order-form').reset();
+            document.getElementById('order-id').value = '';
+            document.getElementById('order-modal-title').innerText = 'Add New Order';
+            document.getElementById('order-date').value = getTodayString();
+            document.getElementById('order-products-container').innerHTML = '';
+            document.getElementById('customer-suggestions').classList.add('hidden');
+            document.getElementById('customer-suggestions').innerHTML = '';
+            addOrderProductRow();
+            document.getElementById('order-modal').classList.remove('hidden');
+        }
+
+        window.addOrderProductRow = function(productId = '', qty = 1) {
+            const container = document.getElementById('order-products-container');
+            const rowId = 'item-' + Date.now() + Math.random();
+            let options = '<option value="">-- Select Product --</option>';
+            products.forEach(p => {
+                options += `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name} (₹${p.price})</option>`;
+            });
+            const html = `
+                <div class="grid grid-cols-1 sm:grid-cols-[1fr_6rem_2.5rem] gap-3 mb-3 bg-gray-50 border border-gray-200 rounded-lg p-3" id="${rowId}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Product</label>
+                        <select class="order-product-select w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border bg-white" required>
+                            ${options}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Qty</label>
+                        <input type="number" class="order-product-qty w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm text-center" value="${qty}" min="1" required>
+                    </div>
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="self-end h-10 w-10 inline-flex items-center justify-center rounded-md border border-red-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-700" title="Remove item"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        window.editOrder = async function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            if(!(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            document.getElementById('order-id').value = order.id;
+            document.getElementById('order-modal-title').innerText = 'Edit Order';
+            document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); 
+            document.getElementById('order-status').value = order.status;
+            document.getElementById('order-name').value = order.name;
+            document.getElementById('order-phone').value = order.phone;
+            document.getElementById('order-address').value = order.address;
+            document.getElementById('order-pincode').value = order.pincode;
+            document.getElementById('order-location').value = order.location || '';
+            
+            document.getElementById('order-products-container').innerHTML = '';
+            if(order.itemsObj && order.itemsObj.length > 0) {
+                order.itemsObj.forEach(item => addOrderProductRow(item.productId, item.qty));
+            } else { addOrderProductRow(); }
+            document.getElementById('order-modal').classList.remove('hidden');
+        }
+
+        window.saveOrder = async function() {
+            const id = document.getElementById('order-id').value;
+            const dateStr = document.getElementById('order-date').value;
+            
+            const selects = document.querySelectorAll('.order-product-select');
+            const qtys = document.querySelectorAll('.order-product-qty');
+            let itemsObj = [];
+            let isValid = true;
+            
+            selects.forEach((select, index) => {
+                if(select.value) {
+                    itemsObj.push({ productId: select.value, qty: parseInt(qtys[index].value) || 1 });
+                } else { isValid = false; }
+            });
+
+            if(!isValid || itemsObj.length === 0) { showToast("Please select items", "error"); return; }
+
+            const orderData = {
+                createdAt: dateStr, updatedAt: dateStr,
+                status: document.getElementById('order-status').value,
+                name: document.getElementById('order-name').value,
+                phone: document.getElementById('order-phone').value,
+                address: document.getElementById('order-address').value,
+                pincode: document.getElementById('order-pincode').value,
+                location: document.getElementById('order-location').value,
+                itemsObj: itemsObj
+            };
+
+            try {
+                if (id) {
+                    if(!(await showConfirm({ title: 'Save Order Changes?', message: 'Apply these edits to the existing order?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+                    const existingOrder = orders.find(o => o.id === id);
+                    orderData.updatedAt = getTodayString();
+                    if(existingOrder && existingOrder.status !== orderData.status) {
+                        orderData.statusHistory = [
+                            ...(existingOrder.statusHistory || [{ status: existingOrder.status || 'Pending', date: normalizeDateInput(existingOrder.createdAt), note: 'Order created' }]),
+                            { status: orderData.status, date: orderData.updatedAt, note: 'Status changed while editing order' }
+                        ];
+                    }
+                    await updateDoc(doc(db, "orders", id), orderData);
+                    showToast('Order Updated Successfully');
+                } else {
+                    orderData.statusHistory = [{ status: orderData.status, date: dateStr, note: 'Order created' }];
+                    orderData.isDeleted = false;
+                    await addDoc(collection(db, "orders"), orderData);
+                    for(let item of itemsObj) {
+                        const prod = products.find(p => p.id === item.productId);
+                        if(prod) {
+                            const newOrdered = (prod.ordered || 0) + item.qty;
+                            await updateDoc(doc(db, "products", item.productId), { ordered: newOrdered });
+                        }
+                    }
+                    showToast('Order Added Successfully');
+                }
+                closeModal('order-modal');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.deleteOrder = async function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!(await showConfirm({ title: 'Move to Recycle Bin?', message: `Move the order${order?.name ? ' for ' + order.name : ''} to the recycle bin?`, confirmText: 'Move to Bin' }))) return;
+            try {
+                await updateDoc(doc(db, "orders", id), { isDeleted: true, deletedAt: getTodayString() });
+                selectedOrders.delete(id);
+                showToast('Order moved to recycle bin', 'error');
+            } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        window.restoreOrder = async function(id) {
+            if(!(await showConfirm({ title: 'Restore Order?', message: 'Restore this order from the recycle bin?', confirmText: 'Restore', confirmClass: 'bg-green-600 hover:bg-green-700' }))) return;
+            try {
+                await updateDoc(doc(db, "orders", id), { isDeleted: false, deletedAt: '' });
+                showToast('Order restored successfully');
+            } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        window.permanentlyDeleteOrder = async function(id) {
+            if(!(await showConfirm({ title: 'Delete Forever?', message: 'This will permanently delete the order from the recycle bin.', confirmText: 'Delete Forever' }))) return;
+            try {
+                await deleteDoc(doc(db, "orders", id));
+                selectedOrders.delete(id);
+                showToast('Order permanently deleted', 'error');
+            } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        window.showOrderHistory = function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            const statuses = order.statusHistory && order.statusHistory.length ? order.statusHistory : [{ status: order.status || 'Pending', date: normalizeDateInput(order.createdAt), note: 'Current known status' }];
+            document.getElementById('order-history-subtitle').innerText = `${order.name || 'Customer'} • ${formatDisplayDate(order.createdAt)}`;
+            document.getElementById('order-history-list').innerHTML = statuses.map((entry, index) => `
+                <div class="relative pl-8 pb-4 ${index === statuses.length - 1 ? '' : 'border-l-2 border-red-100'}">
+                    <span class="absolute -left-3 top-0 h-6 w-6 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center">${index + 1}</span>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${getOrderStatusColor(entry.status)}">${entry.status}</span>
+                            <span class="text-xs text-gray-500 font-medium">${formatDisplayDate(entry.date)}</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mt-2">${entry.note || 'Status changed'}</p>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('order-history-modal').classList.remove('hidden');
+        }
+
+        window.openStatusModal = function(id, currentStatus) {
+            document.getElementById('status-order-id').value = id;
+            document.getElementById('status-select').value = currentStatus;
+            document.getElementById('status-date').value = getTodayString();
+            document.getElementById('status-modal').classList.remove('hidden');
+        }
+
+        window.submitStatusUpdate = async function() {
+            const id = document.getElementById('status-order-id').value;
+            const newStatus = document.getElementById('status-select').value;
+            const date = document.getElementById('status-date').value;
+            if(!(await showConfirm({ title: 'Update Status?', message: `Change this order status to ${newStatus}?`, confirmText: 'Update Status', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            try {
+                const order = orders.find(o => o.id === id);
+                const history = [
+                    ...((order && order.statusHistory) || (order ? [{ status: order.status || 'Pending', date: normalizeDateInput(order.createdAt), note: 'Order created' }] : [])),
+                    { status: newStatus, date: date, note: 'Status updated' }
+                ];
+                await updateDoc(doc(db, "orders", id), { status: newStatus, updatedAt: date, statusHistory: history });
+                showToast(`Status updated to ${newStatus}`);
+                closeModal('status-modal');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        // ================= INVENTORY & PRODUCTS =================
+        window.renderProducts = function() {
+            const list = document.getElementById('products-list');
+            let html = '';
+            products.forEach(p => {
+                const added = Array.isArray(p.stockHistory) ? p.stockHistory.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
+                const initial = Number(p.initialStock) || 0;
+                const ordered = Number(p.ordered) || 0;
+                const totalAdded = initial + added;
+                const balance = totalAdded - ordered;
+
+                html += `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-start bg-gray-50">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">${p.name}</h3>
+                                <p class="text-red-600 font-bold mt-1">₹${p.price}</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="editProduct('${p.id}')" class="text-gray-400 hover:text-gray-700 bg-white p-1.5 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                                <button onclick="deleteProduct('${p.id}')" class="text-red-400 hover:text-red-700 bg-white p-1.5 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 flex-1 flex flex-col justify-center">
+                            <div class="grid grid-cols-3 gap-2 text-center cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors border border-transparent hover:border-gray-200" onclick="showHistoryModal('${p.id}')" title="Click to view Stock History">
+                                <div><div class="text-xs text-gray-500 font-medium">Added</div><div class="text-lg font-bold text-gray-800">${totalAdded}</div></div>
+                                <div class="border-l border-r border-gray-100"><div class="text-xs text-gray-500 font-medium">Ordered</div><div class="text-lg font-bold text-red-500">${ordered}</div></div>
+                                <div><div class="text-xs text-gray-500 font-medium">Balance</div><div class="text-lg font-bold ${balance < 5 ? 'text-red-600' : 'text-green-600'}">${balance}</div></div>
+                            </div>
+                        </div>
+                        
+                        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-center">
+                            <button onclick="openStockModal('${p.id}', '${p.name}')" class="text-green-600 text-sm font-bold flex items-center justify-center w-full hover:text-green-800">
+                                <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg> Add Stock
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            if(products.length === 0) html = '<div class="col-span-full p-10 text-center text-gray-500">No products available</div>';
+            list.innerHTML = html;
+        }
+
+        window.openProductModal = function() {
+            document.getElementById('product-form').reset();
+            document.getElementById('product-id').value = '';
+            document.getElementById('product-modal-title').innerText = 'Add Product';
+            document.getElementById('product-date').value = getTodayString();
+            document.getElementById('product-stock').disabled = false;
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        window.editProduct = async function(id) {
+            const p = products.find(x => x.id === id);
+            if(!p) return;
+            if(!(await showConfirm({ title: 'Edit Product?', message: `Open ${p.name || 'this product'} for editing?`, confirmText: 'Edit Product', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            document.getElementById('product-id').value = p.id;
+            document.getElementById('product-modal-title').innerText = 'Edit Product';
+            document.getElementById('product-name').value = p.name;
+            document.getElementById('product-price').value = p.price;
+            document.getElementById('product-stock').value = p.initialStock || 0;
+            document.getElementById('product-stock').disabled = false;
+            document.getElementById('product-date').value = formatDisplayDate(p.createdAt).split('-').reverse().join('-');
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        window.saveProduct = async function() {
+            const id = document.getElementById('product-id').value;
+            const data = {
+                name: document.getElementById('product-name').value,
+                price: parseFloat(document.getElementById('product-price').value) || 0,
+                initialStock: parseFloat(document.getElementById('product-stock').value) || 0,
+                createdAt: document.getElementById('product-date').value
+            };
+            try {
+                if (id) {
+                    if(!(await showConfirm({ title: 'Save Product Changes?', message: 'Apply these edits to the existing product?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+                    await updateDoc(doc(db, "products", id), data);
+                    showToast('Product Updated Successfully');
+                } else {
+                    data.ordered = 0;
+                    data.stockHistory = [];
+                    await addDoc(collection(db, "products"), data);
+                    showToast('New Product Added');
+                }
+                closeModal('product-modal');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.deleteProduct = async function(id) {
+            const p = products.find(x => x.id === id);
+            if(!(await showConfirm({ title: 'Delete Product?', message: `This will permanently delete ${p?.name || 'this product'} and its stock history.`, confirmText: 'Delete Product' }))) return;
+            try {
+                await deleteDoc(doc(db, "products", id));
+                showToast('Product Deleted', 'error');
+            } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        // ================= NEW: STOCK UPDATE & EDIT/DELETE LOGIC =================
+        window.openStockModal = async function(id, name, historyIndex = -1) {
+            if(historyIndex > -1 && !(await showConfirm({ title: 'Edit Stock Entry?', message: `Open stock entry for ${name} for editing?`, confirmText: 'Edit Stock', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            document.getElementById('stock-form').reset();
+            document.getElementById('stock-product-id').value = id;
+            document.getElementById('stock-history-index').value = historyIndex;
+            document.getElementById('stock-product-name').innerText = `Item: ${name}`;
+            
+            if (historyIndex > -1) {
+                const p = products.find(x => x.id === id);
+                const item = p.stockHistory[historyIndex];
+                document.getElementById('stock-modal-title').innerText = "Edit Stock Entry";
+                document.getElementById('stock-add-qty').value = item.qty;
+                document.getElementById('stock-add-date').value = item.date;
+                document.getElementById('stock-submit-btn').innerText = "Update Stock";
+            } else {
+                document.getElementById('stock-modal-title').innerText = "Add New Stock";
+                document.getElementById('stock-add-date').value = getTodayString();
+                document.getElementById('stock-submit-btn').innerText = "Save Stock";
+            }
+            document.getElementById('stock-modal').classList.remove('hidden');
+        }
+
+        window.submitNewStock = async function() {
+            const id = document.getElementById('stock-product-id').value;
+            const index = parseInt(document.getElementById('stock-history-index').value);
+            const qty = parseFloat(document.getElementById('stock-add-qty').value) || 0;
+            const date = document.getElementById('stock-add-date').value;
+            const p = products.find(x => x.id === id);
+            
+            try {
+                let history = [...(p.stockHistory || [])];
+                if (index > -1) {
+                    if(!(await showConfirm({ title: 'Save Stock Edit?', message: 'Apply these changes to the stock entry?', confirmText: 'Save Changes', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+                    // Edit existing entry
+                    history[index] = { date: date, qty: qty };
+                    showToast(`Stock updated successfully`);
+                } else {
+                    // Add new entry
+                    history.push({ date: date, qty: qty });
+                    showToast(`${qty} stock added successfully`);
+                }
+                await updateDoc(doc(db, "products", id), { stockHistory: history });
+                closeModal('stock-modal');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.deleteStockHistory = async function(productId, index) {
+            const p = products.find(x => x.id === productId);
+            if(!p || !p.stockHistory || index < 0 || index >= p.stockHistory.length) return;
+            if(!(await showConfirm({ title: 'Delete Stock Entry?', message: `Delete this stock entry from ${p.name}?`, confirmText: 'Delete Entry' }))) return;
+            try {
+                let history = [...p.stockHistory];
+                history.splice(index, 1);
+                await updateDoc(doc(db, "products", productId), { stockHistory: history });
+                showToast('Stock entry deleted', 'error');
+            } catch (e) { showToast(e.message, 'error'); }
+        }
+
+        // ================= STOCK HISTORY MODAL =================
+        window.showHistoryModal = function(id) {
+            const p = products.find(x => x.id === id);
+            if(!p) return;
+            document.getElementById('history-modal').setAttribute('data-product-id', id);
+            document.getElementById('history-product-name').innerText = p.name;
+            const list = document.getElementById('history-list');
+            let html = `
+                <tr class="bg-gray-50">
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${formatDisplayDate(p.createdAt)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">Initial Setup Stock</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap text-sm font-bold text-gray-900">+${p.initialStock || 0}</td>
+                    <td class="px-4 py-3 text-right text-sm">
+                        <button onclick="editProduct('${p.id}')" class="text-gray-400 hover:text-blue-600 text-xs font-medium">Edit Initial</button>
+                    </td>
+                </tr>
+            `;
+            if(p.stockHistory && p.stockHistory.length > 0) {
+                p.stockHistory.forEach((h, index) => {
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${formatDisplayDate(h.date)}</td>
+                            <td class="px-4 py-3 text-sm text-gray-900"><span class="text-green-600 font-medium">New Stock Arrived</span></td>
+                            <td class="px-4 py-3 text-center whitespace-nowrap text-sm font-bold text-green-600">+${h.qty}</td>
+                            <td class="px-4 py-3 text-right text-sm whitespace-nowrap space-x-2">
+                                <button onclick="openStockModal('${p.id}', '${p.name.replace(/'/g, "\\'")}', ${index})" class="text-blue-500 hover:text-blue-700 bg-white p-1 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
+                                <button onclick="deleteStockHistory('${p.id}', ${index})" class="text-red-400 hover:text-red-700 bg-white p-1 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            list.innerHTML = html;
+            document.getElementById('history-modal').classList.remove('hidden');
+        }
+
+        // ================= INVESTORS & CAPITAL =================
+        function formatMoney(amount) {
+            return `₹${(Number(amount) || 0).toLocaleString('en-IN')}`;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+        }
+
+        function getApprovedExpenseTotal(uid = null) {
+            return investorExpenses
+                .filter(expense => expense.status === 'approved' && (!uid || expense.uid === uid))
+                .reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+        }
+
+        function getInvestorByUid(uid) {
+            return investors.find(investor => investor.id === uid) || {};
+        }
+
+        function renderCapitalDashboard() {
+            const pending = investorExpenses.filter(expense => expense.status === 'pending');
+            const baseCapital = investors.reduce((sum, investor) => sum + (Number(investor.initialInvestment) || 0), 0);
+            const approvedExpenses = getApprovedExpenseTotal();
+            document.getElementById('capital-total').innerText = formatMoney(baseCapital + approvedExpenses);
+            document.getElementById('capital-pending-count').innerText = pending.length;
+            document.getElementById('capital-investor-count').innerText = investors.length;
+
+            const investorRows = investors
+                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+                .map(investor => {
+                    const approved = getApprovedExpenseTotal(investor.id);
+                    const initial = Number(investor.initialInvestment) || 0;
+                    const history = Array.isArray(investor.capitalHistory) ? investor.capitalHistory : [];
+                    const password = escapeHtml(investor.loginPassword || 'Not saved');
+                    return `
+                        <tr class="hover:bg-gray-50 align-top">
+                            <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${investor.name || 'Investor'}</div><div class="text-xs text-gray-500">UID: ${investor.id}</div></td>
+                            <td class="px-6 py-4"><div class="text-sm font-semibold text-gray-900">${investor.email || ''}</div><div class="mt-2 flex items-center gap-2"><input id="investor-pass-${investor.id}" type="password" value="${password}" readonly class="w-36 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-700"><button onclick="toggleInvestorRowPassword('${investor.id}')" class="rounded border border-gray-200 bg-white p-1 text-gray-500 hover:text-gray-800" title="Show password">${getIconSvg('eye', 'w-4 h-4')}</button></div></td>
+                            <td class="px-6 py-4 text-right text-sm font-bold text-gray-700">${formatMoney(initial)}</td>
+                            <td class="px-6 py-4 text-right text-sm font-bold text-emerald-700">${formatMoney(approved)}</td>
+                            <td class="px-6 py-4 text-right text-sm font-bold text-indigo-700">${formatMoney(initial + approved)}</td>
+                            <td class="px-6 py-4 text-xs text-gray-600">${history.length ? history.map(item => `<div class="mb-1"><span class="font-bold">${formatMoney(item.amount)}</span> • ${formatDisplayDate(item.date)} • ${item.note || 'Investment updated'}</div>`).join('') : 'No history'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
+
+            document.getElementById('manager-expense-list').innerHTML = pending.map(expense => {
+                const investor = getInvestorByUid(expense.uid);
+                return `
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-bold text-gray-900">${expense.purpose || 'Expense'}</div>
+                            <div class="text-xs text-gray-500">${investor.name || expense.investorName || 'Investor'} • ${formatDisplayDate(expense.createdAt)}</div>
+                            <div class="text-lg font-bold text-orange-600 mt-1">${formatMoney(expense.amount)}</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="approveInvestorExpense('${expense.id}')" class="rounded-md bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700">Approve</button>
+                            <button onclick="rejectInvestorExpense('${expense.id}')" class="rounded-md bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700">Reject</button>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No pending expenses.</div>';
+        }
+
+        window.toggleInvestorPassword = function() {
+            const input = document.getElementById('investor-password');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        window.toggleInvestorRowPassword = function(uid) {
+            const input = document.getElementById(`investor-pass-${uid}`);
+            if(input) input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        window.saveInvestorProfile = async function() {
+            let uid = document.getElementById('investor-uid').value.trim();
+            const name = document.getElementById('investor-name').value.trim();
+            const email = document.getElementById('investor-email').value.trim();
+            const password = document.getElementById('investor-password').value;
+            const initialInvestment = Number(document.getElementById('investor-capital').value) || 0;
+            if(!name || !email) { showToast('Investor name and email are required', 'error'); return; }
+            if(!uid && password.length < 6) { showToast('Password must be at least 6 characters for new investor login', 'error'); return; }
+            try {
+                let loginPassword = password;
+                if(!uid) {
+                    const credential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+                    uid = credential.user.uid;
+                    await signOut(secondaryAuth);
+                }
+                const existingInvestor = investors.find(investor => investor.id === uid) || {};
+                if(!loginPassword) loginPassword = existingInvestor.loginPassword || '';
+                const oldInvestment = Number(existingInvestor.initialInvestment) || 0;
+                const oldHistory = Array.isArray(existingInvestor.capitalHistory) ? existingInvestor.capitalHistory : [];
+                const capitalHistory = initialInvestment !== oldInvestment
+                    ? [...oldHistory, { amount: initialInvestment, date: getTodayString(), note: oldHistory.length ? 'Base investment updated by manager' : 'Initial investment added by manager' }]
+                    : oldHistory;
+                await setDoc(doc(db, 'users', uid), { role: 'investor', name, email }, { merge: true });
+                await setDoc(doc(db, 'investors', uid), { name, email, initialInvestment, loginPassword, capitalHistory, updatedAt: getTodayString() }, { merge: true });
+                document.getElementById('investor-form').reset();
+                showToast('Investor login, access, and capital saved');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.approveInvestorExpense = async function(expenseId) {
+            if(!(await showConfirm({ title: 'Approve Expense?', message: 'Approved amount will be counted in company capital.', confirmText: 'Approve', confirmClass: 'bg-emerald-600 hover:bg-emerald-700' }))) return;
+            try {
+                await updateDoc(doc(db, 'investorExpenses', expenseId), { status: 'approved', approvedAt: getTodayString(), approvedBy: authUser?.uid || '' });
+                showToast('Expense approved and capital updated');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.rejectInvestorExpense = async function(expenseId) {
+            if(!(await showConfirm({ title: 'Reject Expense?', message: 'Reject this investor expense request?', confirmText: 'Reject' }))) return;
+            try {
+                await updateDoc(doc(db, 'investorExpenses', expenseId), { status: 'rejected', rejectedAt: getTodayString(), approvedBy: authUser?.uid || '' });
+                showToast('Expense rejected', 'error');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        function loadInvestorPortal() {
+            onSnapshot(collection(db, "investors"), (snapshot) => {
+                investors = [];
+                snapshot.forEach((doc) => investors.push({ id: doc.id, ...doc.data() }));
+                renderInvestorPortal();
+            });
+            onSnapshot(collection(db, "investorExpenses"), (snapshot) => {
+                investorExpenses = [];
+                snapshot.forEach((doc) => investorExpenses.push({ id: doc.id, ...doc.data() }));
+                investorExpenses.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
+                renderInvestorPortal();
+            });
+        }
+
+        function renderInvestorPortal() {
+            if(!authUser) return;
+            const profile = getInvestorByUid(authUser.uid);
+            const ownExpenses = investorExpenses.filter(expense => expense.uid === authUser.uid);
+            const approved = getApprovedExpenseTotal(authUser.uid);
+            const initial = Number(profile.initialInvestment) || 0;
+            const companyCapital = investors.reduce((sum, investor) => sum + (Number(investor.initialInvestment) || 0), 0) + getApprovedExpenseTotal();
+            document.getElementById('investor-welcome').innerText = `${profile.name || authUser.email || 'Investor'} • ${authUser.email || ''}`;
+            document.getElementById('investor-total-capital').innerText = formatMoney(initial + approved);
+            document.getElementById('investor-pending-count').innerText = ownExpenses.filter(expense => expense.status === 'pending').length;
+            document.getElementById('investor-company-capital').innerText = formatMoney(companyCapital);
+            document.getElementById('investor-expense-list').innerHTML = ownExpenses.map(expense => `
+                <div class="p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-bold text-gray-900">${expense.purpose || 'Expense'}</div>
+                            <div class="text-xs text-gray-500">${formatDisplayDate(expense.createdAt)}</div>
+                        </div>
+                        <span class="rounded-full px-2 py-1 text-xs font-bold ${expense.status === 'approved' ? 'bg-green-100 text-green-800' : expense.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'}">${expense.status || 'pending'}</span>
+                    </div>
+                    <div class="mt-2 text-lg font-bold text-gray-900">${formatMoney(expense.amount)}</div>
+                </div>
+            `).join('') || '<div class="p-8 text-center text-sm text-gray-500">No expense requests yet.</div>';
+        }
+
+        window.submitInvestorExpense = async function() {
+            if(!authUser) return;
+            const purpose = document.getElementById('investor-expense-purpose').value.trim();
+            const amount = Number(document.getElementById('investor-expense-amount').value) || 0;
+            if(!purpose || amount <= 0) { showToast('Purpose and valid amount are required', 'error'); return; }
+            const profile = getInvestorByUid(authUser.uid);
+            try {
+                await addDoc(collection(db, 'investorExpenses'), {
+                    uid: authUser.uid,
+                    investorName: profile.name || authUser.email || 'Investor',
+                    investorEmail: authUser.email || profile.email || '',
+                    purpose,
+                    amount,
+                    status: 'pending',
+                    createdAt: getTodayString()
+                });
+                document.getElementById('investor-expense-purpose').value = '';
+                document.getElementById('investor-expense-amount').value = '';
+                showToast('Submitted for manager approval');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        // ================= SETTINGS =================
+        window.populateSettingsForm = function() {
+            document.getElementById('set-company-name').value = companySettings.name || '';
+            document.getElementById('set-address1').value = companySettings.address1 || '';
+            document.getElementById('set-address2').value = companySettings.address2 || '';
+            document.getElementById('set-phone').value = companySettings.phone || '';
+        }
+
+        window.saveSettings = async function() {
+            if(!(await showConfirm({ title: 'Save Settings?', message: 'Update company details used on shipping labels and login screen?', confirmText: 'Save Settings', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            const data = {
+                name: document.getElementById('set-company-name').value,
+                address1: document.getElementById('set-address1').value,
+                address2: document.getElementById('set-address2').value,
+                phone: document.getElementById('set-phone').value,
+            };
+            try {
+                await setDoc(doc(db, "settings", "config"), data);
+                companySettings = data;
+                showToast("Company Settings Updated");
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        // ================= EXCEL / CSV EXPORT =================
+        function csvEscape(value) {
+            const text = String(value ?? '').replace(/\r?\n|\r/g, ' ');
+            return `"${text.replace(/"/g, '""')}"`;
+        }
+
+        window.downloadAllOrdersExcel = function() {
+            const exportOrders = orders
+                .filter(order => !order.isDeleted)
+                .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
+            if(exportOrders.length === 0) { showToast('No orders available to download', 'error'); return; }
+            const headers = ['Order Date', 'Accepted Date', 'Last Updated Date', 'Status', 'Customer Name', 'Phone', 'Address', 'Pincode', 'Products'];
+            const rows = exportOrders.map(order => [
+                formatDisplayDate(order.createdAt),
+                formatDisplayDate(order.createdAt),
+                formatDisplayDate(order.updatedAt || order.createdAt),
+                order.status || '',
+                order.name || '',
+                order.phone || '',
+                order.address || '',
+                order.pincode || '',
+                getOrderItemsText(order) || ''
+            ]);
+            const csv = '\ufeff' + [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Lakfa_All_Orders_${getTodayString()}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Excel file download started');
+        }
+
+        // ================= PDF PRINTING (Updated Sizes) =================
+        window.printSingleOrder = async function(id) {
+            const previousSelection = new Set(selectedOrders);
+            selectedOrders = new Set([id]);
+            await printSelectedOrders();
+            selectedOrders = previousSelection;
+            renderOrders();
+        }
+
+        window.printSelectedOrders = async function() {
+            if (selectedOrders.size === 0) return;
+            if(!(await showConfirm({ title: 'Print Selected Orders?', message: `Generate shipping labels for ${selectedOrders.size} selected order(s)?`, confirmText: 'Print Labels', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const pgW = 210; const pgH = 297;
+                
+                ordersToPrint.forEach((order, index) => {
+                    if (index > 0 && index % 4 === 0) doc.addPage();
+                    
+                    const posIndex = index % 4;
+                    const isLeft = posIndex === 0 || posIndex === 2;
+                    const isTop = posIndex === 0 || posIndex === 1;
+                    
+                    const startX = isLeft ? 10 : (pgW / 2) + 5;
+                    const startY = isTop ? 10 : (pgH / 2) + 5;
+                    const boxW = (pgW / 2) - 15;
+                    const boxH = (pgH / 2) - 15;
+
+                    // Draw Cross Cutting Lines once per page
+                    if (posIndex === 0) {
+                        doc.setDrawColor(200); doc.setLineDashPattern([2, 2], 0);
+                        doc.line(pgW / 2, 5, pgW / 2, pgH - 5);
+                        doc.line(5, pgH / 2, pgW - 5, pgH / 2);
+                        doc.setLineDashPattern([], 0); doc.setDrawColor(0);
+                    }
+
+                    // Label Border Margin
+                    doc.setLineWidth(0.3);
+                    doc.rect(startX, startY, boxW, boxH);
+
+                    // --- FROM SECTION ---
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("From:", startX + 5, startY + 10);
+                    
+                    // Name: Bold & Larger
+                    doc.setFontSize(14);
+                    doc.text(companySettings.name, startX + 5, startY + 18);
+                    
+                    // Address: Normal & Medium Size
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+                    doc.text([
+                        companySettings.address1,
+                        companySettings.address2,
+                    ], startX + 5, startY + 24);
+                    
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`Ph: ${companySettings.phone}`, startX + 5, startY + 36);
+
+                    // Divider Line
+                    doc.setDrawColor(150);
+                    doc.line(startX + 5, startY + 42, startX + boxW - 5, startY + 42);
+                    doc.setDrawColor(0);
+
+                    // --- TO SECTION ---
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("To:", startX + 5, startY + 52);
+                    
+                    // Name: Bold & Larger (Same as From)
+                    doc.setFontSize(14);
+                    const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                    doc.text(splitName, startX + 5, startY + 60);
+                    
+                    // Calculate Y based on name length
+                    let nextY = startY + 60 + (splitName.length * 6);
+                    
+                    // Address: Normal & Medium Size (Same as From)
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+                    const addrText = `${order.address || ""}\nPIN: ${order.pincode || ""}`;
+                    const splitAddress = doc.splitTextToSize(addrText, boxW - 10);
+                    doc.text(splitAddress, startX + 5, nextY);
+                    
+                    nextY = nextY + (splitAddress.length * 6) + 3;
+                    
+                    // Bold Phone Number
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
+                });
+
+                doc.save("Lakfa_Shipping_Labels.pdf");
+                selectedOrders.clear();
+                document.getElementById('select-all-orders').checked = false;
+                renderOrders();
+                showToast('PDF Download Started');
+            } catch (err) {
+                console.error(err);
+                showToast('PDF Error: ' + err.message, 'error');
+            }
+        }
+
+        window.closeModal = function(id) { 
+            document.getElementById(id).classList.add('hidden'); 
+            if(id === 'history-modal') document.getElementById('history-modal').removeAttribute('data-product-id');
+        }
+    </script>
+</body>
+</html>
