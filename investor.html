@@ -127,7 +127,7 @@
                 </button>
                 <button onclick="switchTab('payment-requests')" id="nav-payment-requests" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                    Payment Requests
+                    <span class="flex-1 text-left">Payment Requests</span><span id="payment-request-alert-count" class="hidden rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">0</span>
                 </button>
                 <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -363,7 +363,7 @@
                             </div>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Payment Request History</h3></div>
+                            <div class="px-6 py-4 border-b bg-gray-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><h3 class="font-bold text-gray-900">Payment Request History</h3><button onclick="exportInvestorPaymentRequestsReport()" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100">Export CSV</button></div>
                             <div id="manager-payment-request-list" class="divide-y divide-gray-100 max-h-[520px] overflow-y-auto"></div>
                         </div>
                     </div>
@@ -803,11 +803,25 @@
         </div>
     </div>
 
+
+    <div id="payment-request-edit-modal" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div class="px-6 py-4 border-b bg-blue-50"><h2 class="text-lg font-bold text-blue-950">Edit Payment Request</h2><p class="text-xs text-blue-700 mt-1">Investor, purpose, amount എന്നിവ update ചെയ്യുക.</p></div>
+            <div class="p-6 space-y-4">
+                <input id="edit-payment-request-id" type="hidden">
+                <div><label class="block text-sm font-medium text-gray-700">Investor</label><select id="edit-payment-target" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></select></div>
+                <div><label class="block text-sm font-medium text-gray-700">Purpose</label><input id="edit-payment-purpose" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Amount (₹)</label><input id="edit-payment-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closePaymentRequestEditModal()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">Cancel</button><button onclick="saveInvestorPaymentRequestEdit()" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">Save</button></div>
+        </div>
+    </div>
+
     <!-- ================== JAVASCRIPT ================== -->
     <script type="module">
         import { auth, secondaryAuth, db } from "./firebase-config.js";
         import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         let orders = [];
         let products = [];
@@ -2052,6 +2066,9 @@
                     .map(investor => `<option value="${investor.id}">${escapeHtml(investor.name || 'Investor')} (${escapeHtml(investor.email || investor.id)})</option>`).join('');
                 target.value = investors.some(investor => investor.id === currentValue) ? currentValue : 'all';
             }
+            const alertCount = investorPaymentRequests.filter(request => request.status === 'active' || request.status === 'claimed').length;
+            const alertEl = document.getElementById('payment-request-alert-count');
+            if(alertEl) { alertEl.innerText = alertCount; alertEl.classList.toggle('hidden', alertCount === 0); }
             const list = document.getElementById('manager-payment-request-list');
             if(!list) return;
             list.innerHTML = investorPaymentRequests.map(request => {
@@ -2081,7 +2098,8 @@
                     amount,
                     status: 'active',
                     createdAt: getTodayString(),
-                    createdBy: authUser?.uid || ''
+                    createdBy: authUser?.uid || '',
+                    auditLog: [{ action: 'created', at: getTodayString(), by: authUser?.uid || '' }]
                 });
                 document.getElementById('manager-payment-purpose').value = '';
                 document.getElementById('manager-payment-amount').value = '';
@@ -2091,20 +2109,41 @@
 
 
 
-        window.editInvestorPaymentRequest = async function(requestId) {
+        function populatePaymentRequestEditInvestors(selectedValue = 'all') {
+            const target = document.getElementById('edit-payment-target');
+            if(!target) return;
+            target.innerHTML = '<option value="all">All Investors</option>' + investors
+                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+                .map(investor => `<option value="${investor.id}">${escapeHtml(investor.name || 'Investor')} (${escapeHtml(investor.email || investor.id)})</option>`).join('');
+            target.value = selectedValue;
+        }
+
+        window.editInvestorPaymentRequest = function(requestId) {
             const request = investorPaymentRequests.find(item => item.id === requestId);
             if(!request || request.status !== 'active') { showToast('Only waiting or rejected payment requests can be edited', 'error'); return; }
-            const currentTarget = request.targetType === 'all' ? 'all' : request.targetUid;
-            const newTargetUid = (window.prompt('Investor UID മാറ്റുക. All Investors ആക്കാൻ all എന്ന് നൽകുക.', currentTarget) || '').trim();
-            if(!newTargetUid) return;
-            const purpose = (window.prompt('Purpose', request.purpose || '') || '').trim();
-            if(!purpose) return;
-            const amount = Number(window.prompt('Amount (₹)', Number(request.amount) || 0)) || 0;
-            if(amount <= 0) { showToast('Valid amount is required', 'error'); return; }
+            document.getElementById('edit-payment-request-id').value = requestId;
+            populatePaymentRequestEditInvestors(request.targetType === 'all' ? 'all' : request.targetUid);
+            document.getElementById('edit-payment-purpose').value = request.purpose || '';
+            document.getElementById('edit-payment-amount').value = Number(request.amount) || 0;
+            document.getElementById('payment-request-edit-modal').classList.remove('hidden');
+        }
+
+        window.closePaymentRequestEditModal = function() {
+            document.getElementById('payment-request-edit-modal')?.classList.add('hidden');
+        }
+
+        window.saveInvestorPaymentRequestEdit = async function() {
+            const requestId = document.getElementById('edit-payment-request-id').value;
+            const request = investorPaymentRequests.find(item => item.id === requestId);
+            if(!request || request.status !== 'active') { showToast('Only waiting or rejected payment requests can be edited', 'error'); return; }
+            const newTargetUid = document.getElementById('edit-payment-target').value;
+            const purpose = document.getElementById('edit-payment-purpose').value.trim();
+            const amount = Number(document.getElementById('edit-payment-amount').value) || 0;
+            if(!purpose || amount <= 0) { showToast('Purpose and valid amount are required', 'error'); return; }
             const targetInvestor = newTargetUid === 'all' ? null : getInvestorByUid(newTargetUid);
-            if(newTargetUid !== 'all' && !targetInvestor.id) { showToast('Valid investor UID or all is required', 'error'); return; }
-            if(!(await showConfirm({ title: 'Update Payment Request?', message: 'Investor, purpose, amount update ചെയ്യണോ?', confirmText: 'Update', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            if(newTargetUid !== 'all' && !targetInvestor.id) { showToast('Select a valid investor', 'error'); return; }
             try {
+                const auditLog = Array.isArray(request.auditLog) ? request.auditLog : [];
                 await updateDoc(doc(db, 'investorPaymentRequests', requestId), {
                     targetType: newTargetUid === 'all' ? 'all' : 'single',
                     targetUid: newTargetUid === 'all' ? '' : newTargetUid,
@@ -2112,8 +2151,10 @@
                     purpose,
                     amount,
                     updatedAt: getTodayString(),
-                    updatedBy: authUser?.uid || ''
+                    updatedBy: authUser?.uid || '',
+                    auditLog: [...auditLog, { action: 'edited', at: getTodayString(), by: authUser?.uid || '' }]
                 });
+                closePaymentRequestEditModal();
                 showToast('Payment request updated');
             } catch (error) { showToast(error.message, 'error'); }
         }
@@ -2122,8 +2163,28 @@
             const request = investorPaymentRequests.find(item => item.id === requestId);
             if(!request || request.status !== 'active') { showToast('Only waiting or rejected payment requests can be deleted', 'error'); return; }
             if(!(await showConfirm({ title: 'Delete Payment Request?', message: 'This payment request will be removed for investors.', confirmText: 'Delete' }))) return;
-            try { await deleteDoc(doc(db, 'investorPaymentRequests', requestId)); showToast('Payment request deleted'); }
+            try {
+                await addDoc(collection(db, 'investorPaymentRequestAudit'), { requestId, action: 'deleted', snapshot: request, at: getTodayString(), by: authUser?.uid || '' });
+                await deleteDoc(doc(db, 'investorPaymentRequests', requestId));
+                showToast('Payment request deleted');
+            }
             catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.exportInvestorPaymentRequestsReport = function() {
+            const rows = [['Date', 'Target', 'Purpose', 'Amount', 'Status', 'Paid By']];
+            investorPaymentRequests.forEach(request => {
+                const target = request.targetType === 'all' ? 'All Investors' : (getInvestorByUid(request.targetUid).name || request.targetName || request.targetUid || 'Selected Investor');
+                rows.push([formatDisplayDate(request.createdAt), target, request.purpose || '', Number(request.amount) || 0, request.status || '', request.claimedByName || request.claimedByEmail || '']);
+            });
+            const csv = rows.map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `investor-payment-requests-${getTodayString()}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
         }
 
         window.showInvestorExpenseHistory = function(uid) {
@@ -2347,24 +2408,36 @@
             if(!(await showConfirm({ title: 'Accept Payment Request?', message: `${formatMoney(request.amount)} approval-ലേക്ക് submit ചെയ്യണോ?`, confirmText: 'Accept', confirmClass: 'bg-emerald-600 hover:bg-emerald-700' }))) return;
             const profile = getInvestorByUid(authUser.uid);
             try {
-                await addDoc(collection(db, 'investorExpenses'), {
-                    uid: authUser.uid,
-                    investorName: profile.name || authUser.email || 'Investor',
-                    investorEmail: authUser.email || profile.email || '',
-                    purpose: request.purpose || 'Payment Request',
-                    amount: Number(request.amount) || 0,
-                    status: 'pending',
-                    createdAt: getTodayString(),
-                    managerRequestId: request.id,
-                    requestedByManager: true
+                await runTransaction(db, async (transaction) => {
+                    const requestRef = doc(db, 'investorPaymentRequests', request.id);
+                    const requestSnap = await transaction.get(requestRef);
+                    if(!requestSnap.exists()) throw new Error('Payment request no longer exists');
+                    const latestRequest = requestSnap.data();
+                    if(latestRequest.status !== 'active') throw new Error('This payment request was already accepted');
+                    if(latestRequest.targetType !== 'all' && latestRequest.targetUid !== authUser.uid) throw new Error('This payment request is not assigned to you');
+                    const auditLog = Array.isArray(latestRequest.auditLog) ? latestRequest.auditLog : [];
+                    const expenseRef = doc(collection(db, 'investorExpenses'));
+                    transaction.set(expenseRef, {
+                        uid: authUser.uid,
+                        investorName: profile.name || authUser.email || 'Investor',
+                        investorEmail: authUser.email || profile.email || '',
+                        purpose: latestRequest.purpose || 'Payment Request',
+                        amount: Number(latestRequest.amount) || 0,
+                        status: 'pending',
+                        createdAt: getTodayString(),
+                        managerRequestId: request.id,
+                        requestedByManager: true
+                    });
+                    transaction.update(requestRef, {
+                        status: 'claimed',
+                        claimedBy: authUser.uid,
+                        claimedByName: profile.name || authUser.email || 'Investor',
+                        claimedByEmail: authUser.email || profile.email || '',
+                        claimedAt: getTodayString(),
+                        auditLog: [...auditLog, { action: 'claimed', at: getTodayString(), by: authUser.uid }]
+                    });
                 });
-                await updateDoc(doc(db, 'investorPaymentRequests', request.id), {
-                    status: 'claimed',
-                    claimedBy: authUser.uid,
-                    claimedByName: profile.name || authUser.email || 'Investor',
-                    claimedByEmail: authUser.email || profile.email || '',
-                    claimedAt: getTodayString()
-                });
+                markInvestorNotificationRead(request.id);
                 showToast('Submitted for manager approval');
                 switchInvestorTab('requests');
             } catch (error) { showToast(error.message, 'error'); }
@@ -2463,8 +2536,21 @@
         }
 
 
+        function getInvestorNotificationReadIds() {
+            try { return JSON.parse(localStorage.getItem(`investor-notification-reads-${authUser?.uid}`) || '[]'); }
+            catch (_) { return []; }
+        }
+
+        function markInvestorNotificationRead(requestId) {
+            if(!authUser?.uid || !requestId) return;
+            const readIds = new Set(getInvestorNotificationReadIds());
+            readIds.add(requestId);
+            localStorage.setItem(`investor-notification-reads-${authUser.uid}`, JSON.stringify([...readIds]));
+        }
+
         function getInvestorNotifications() {
             return getVisibleManagerPaymentRequests().map(request => ({
+                id: request.id,
                 tab: 'contribution',
                 title: request.purpose || 'Payment Request',
                 subtitle: `${request.targetType === 'all' ? 'All investors' : 'Sent to you'} • ${formatMoney(request.amount)}`
@@ -2473,14 +2559,16 @@
 
         function renderInvestorNotifications() {
             const notifications = getInvestorNotifications();
+            const readIds = new Set(getInvestorNotificationReadIds());
+            const unreadCount = notifications.filter(item => !readIds.has(item.id)).length;
             const countEl = document.getElementById('investor-notification-count');
             const listEl = document.getElementById('investor-notification-list');
             if(countEl) {
-                countEl.innerText = notifications.length;
-                countEl.classList.toggle('hidden', notifications.length === 0);
+                countEl.innerText = unreadCount;
+                countEl.classList.toggle('hidden', unreadCount === 0);
             }
             if(listEl) {
-                listEl.innerHTML = notifications.map(item => `<button onclick="openInvestorNotification('${item.tab}')" class="block w-full px-4 py-3 text-left hover:bg-gray-50"><div class="text-sm font-bold text-gray-900">${escapeHtml(item.title)}</div><div class="mt-1 text-xs text-gray-500">${escapeHtml(item.subtitle)}</div></button>`).join('') || '<div class="px-4 py-8 text-center text-sm text-gray-500">No notifications now.</div>';
+                listEl.innerHTML = notifications.map(item => `<button onclick="markInvestorNotificationRead('${item.id}'); openInvestorNotification('${item.tab}')" class="block w-full px-4 py-3 text-left hover:bg-gray-50"><div class="flex items-start gap-2"><span class="mt-1 h-2 w-2 rounded-full ${readIds.has(item.id) ? 'bg-gray-300' : 'bg-red-500'}"></span><div><div class="text-sm font-bold text-gray-900">${escapeHtml(item.title)}</div><div class="mt-1 text-xs text-gray-500">${escapeHtml(item.subtitle)}</div></div></div></button>`).join('') || '<div class="px-4 py-8 text-center text-sm text-gray-500">No notifications now.</div>';
             }
         }
 
