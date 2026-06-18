@@ -58,7 +58,8 @@ service cloud.firestore {
         && request.resource.data.amount > 0
         && request.resource.data.purpose is string
         && request.resource.data.purpose.size() > 0;
-      allow update, delete: if isManager();
+      allow update: if isManager();
+      allow delete: if isManager() || (isInvestor() && resource.data.uid == request.auth.uid && resource.data.status == 'rejected');
     }
   }
 }
