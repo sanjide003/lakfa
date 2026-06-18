@@ -121,6 +121,10 @@
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                     Inventory & Products
                 </button>
+                <button onclick="switchTab('capital')" id="nav-capital" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 10v2m8-6a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
+                    Investors & Capital
+                </button>
                 <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     Settings
@@ -266,7 +270,79 @@
                     </div>
                 </div>
 
-                <!-- 4. SETTINGS TAB -->
+                <!-- 4. INVESTORS & CAPITAL TAB -->
+                <div id="tab-capital" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="text-xs font-bold uppercase text-gray-500">Company Capital</div>
+                            <div id="capital-total" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div>
+                            <p class="mt-2 text-sm text-gray-500">Approved investor capital + approved expense contributions.</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="text-xs font-bold uppercase text-gray-500">Pending Expenses</div>
+                            <div id="capital-pending-count" class="mt-2 text-3xl font-bold text-orange-600">0</div>
+                            <p class="mt-2 text-sm text-gray-500">Waiting for manager approval.</p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="text-xs font-bold uppercase text-gray-500">Investors</div>
+                            <div id="capital-investor-count" class="mt-2 text-3xl font-bold text-indigo-700">0</div>
+                            <p class="mt-2 text-sm text-gray-500">Accounts controlled by manager.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50">
+                                <h3 class="font-bold text-gray-900">Create / Update Investor Access</h3>
+                                <p class="text-sm text-gray-500 mt-1">Manager can create investor email/password access or update an existing investor by UID.</p>
+                            </div>
+                            <div class="p-6">
+                                <form id="investor-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700">Investor UID (optional for new login)</label>
+                                        <input id="investor-uid" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Leave empty to create from email/password">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Name</label>
+                                        <input id="investor-name" required class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                                        <input id="investor-email" type="email" required class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Initial Investment (₹)</label>
+                                        <input id="investor-capital" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Login Password</label>
+                                        <input id="investor-password" type="password" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Required only when UID is empty">
+                                    </div>
+                                    <div class="sm:col-span-2 flex justify-end">
+                                        <button type="button" onclick="saveInvestorProfile()" class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Save Investor</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Expense Approval Queue</h3></div>
+                            <div id="manager-expense-list" class="divide-y divide-gray-100 max-h-[420px] overflow-y-auto"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Investor Capital Ledger</h3></div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Investor</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Initial</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Approved Expenses</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total Capital</th></tr></thead>
+                                <tbody id="manager-investor-list" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. SETTINGS TAB -->
                 <div id="tab-settings" class="tab-content hidden fade-in max-w-3xl mx-auto">
                     <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
                         <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
@@ -303,6 +379,38 @@
 
             </main>
         </div>
+    </div>
+
+    <!-- ================== INVESTOR PORTAL ================== -->
+    <div id="investor-app" class="hidden min-h-screen bg-gray-50">
+        <header class="bg-white border-b shadow-sm px-4 md:px-8 py-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Investor Portal</h1>
+                <p id="investor-welcome" class="text-sm text-gray-500 mt-1">Capital and expense dashboard</p>
+            </div>
+            <button onclick="handleLogout()" class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Logout</button>
+        </header>
+        <main class="p-4 md:p-8 max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Your Approved Capital</div><div id="investor-total-capital" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div></div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Pending Requests</div><div id="investor-pending-count" class="mt-2 text-3xl font-bold text-orange-600">0</div></div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Company Capital</div><div id="investor-company-capital" class="mt-2 text-3xl font-bold text-indigo-700">₹0</div></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50"><h2 class="font-bold text-gray-900">Submit Expense / Contribution</h2><p class="text-sm text-gray-500 mt-1">This is added to capital only after manager approval.</p></div>
+                    <div class="p-6 space-y-4">
+                        <div><label class="block text-sm font-medium text-gray-700">Purpose</label><input id="investor-expense-purpose" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Packaging machine repair"></div>
+                        <div><label class="block text-sm font-medium text-gray-700">Amount (₹)</label><input id="investor-expense-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                        <button onclick="submitInvestorExpense()" class="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Submit for Approval</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b bg-gray-50"><h2 class="font-bold text-gray-900">Your Requests</h2></div>
+                    <div id="investor-expense-list" class="divide-y divide-gray-100 max-h-[460px] overflow-y-auto"></div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- ================== MODALS (POPUPS) ================== -->
@@ -562,7 +670,7 @@
     <!-- ================== JAVASCRIPT ================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -576,11 +684,17 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const secondaryApp = initializeApp(firebaseConfig, "investor-account-creator");
         const auth = getAuth(app);
+        const secondaryAuth = getAuth(secondaryApp);
         const db = getFirestore(app);
 
         let orders = [];
         let products = [];
+        let investors = [];
+        let investorExpenses = [];
+        let authUser = null;
+        let currentUserRole = 'manager';
         let selectedOrders = new Set();
         let currentTab = 'dashboard';
         let currentOrderStatusFilter = 'Pending';
@@ -699,14 +813,25 @@
 
         window.handleLogout = async function() { toggleMobileMenu(false); if(!(await showConfirm({ title: 'Confirm Logout', message: 'Do you want to log out of the admin dashboard?', confirmText: 'Logout' }))) return; await signOut(auth); window.location.reload(); }
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
+            authUser = user;
             if (user) {
+                const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
+                currentUserRole = userSnap && userSnap.exists() ? (userSnap.data().role || 'manager') : 'manager';
                 document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                loadData();
+                if(currentUserRole === 'investor') {
+                    document.getElementById('main-app').classList.add('hidden');
+                    document.getElementById('investor-app').classList.remove('hidden');
+                    loadInvestorPortal();
+                } else {
+                    document.getElementById('investor-app').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+                    loadData();
+                }
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('investor-app').classList.add('hidden');
                 getDoc(doc(db, "settings", "config")).then(docSnap => {
                     if (docSnap.exists()) {
                         const s = docSnap.data();
@@ -820,6 +945,10 @@
                 document.getElementById('page-title').innerText = "Inventory & Products";
                 headerActions.innerHTML = `<button onclick="openProductModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center">${getIconSvg('plus', 'w-4 h-4 mr-1')} Add Product</button>`;
                 renderProducts();
+            } else if (tabId === 'capital') {
+                document.getElementById('page-title').innerText = "Investors & Capital";
+                headerActions.innerHTML = '';
+                renderCapitalDashboard();
             } else if (tabId === 'settings') {
                 document.getElementById('page-title').innerText = "Settings";
                 headerActions.innerHTML = '';
@@ -852,6 +981,17 @@
                 if(currentTab === 'orders') renderOrders();
                 if(orderUtilityTabs[currentTab]) renderOrders(`${currentTab}-content-host`);
                 if(currentTab === 'dashboard') renderDashboard();
+            });
+            onSnapshot(collection(db, "investors"), (snapshot) => {
+                investors = [];
+                snapshot.forEach((doc) => investors.push({ id: doc.id, ...doc.data() }));
+                if(currentTab === 'capital') renderCapitalDashboard();
+            });
+            onSnapshot(collection(db, "investorExpenses"), (snapshot) => {
+                investorExpenses = [];
+                snapshot.forEach((doc) => investorExpenses.push({ id: doc.id, ...doc.data() }));
+                investorExpenses.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
+                if(currentTab === 'capital') renderCapitalDashboard();
             });
         }
 
@@ -1710,6 +1850,161 @@
             }
             list.innerHTML = html;
             document.getElementById('history-modal').classList.remove('hidden');
+        }
+
+        // ================= INVESTORS & CAPITAL =================
+        function formatMoney(amount) {
+            return `₹${(Number(amount) || 0).toLocaleString('en-IN')}`;
+        }
+
+        function getApprovedExpenseTotal(uid = null) {
+            return investorExpenses
+                .filter(expense => expense.status === 'approved' && (!uid || expense.uid === uid))
+                .reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+        }
+
+        function getInvestorByUid(uid) {
+            return investors.find(investor => investor.id === uid) || {};
+        }
+
+        function renderCapitalDashboard() {
+            const pending = investorExpenses.filter(expense => expense.status === 'pending');
+            const baseCapital = investors.reduce((sum, investor) => sum + (Number(investor.initialInvestment) || 0), 0);
+            const approvedExpenses = getApprovedExpenseTotal();
+            document.getElementById('capital-total').innerText = formatMoney(baseCapital + approvedExpenses);
+            document.getElementById('capital-pending-count').innerText = pending.length;
+            document.getElementById('capital-investor-count').innerText = investors.length;
+
+            const investorRows = investors
+                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+                .map(investor => {
+                    const approved = getApprovedExpenseTotal(investor.id);
+                    const initial = Number(investor.initialInvestment) || 0;
+                    return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${investor.name || 'Investor'}</div><div class="text-xs text-gray-500">${investor.email || ''}<br>UID: ${investor.id}</div></td>
+                            <td class="px-6 py-4 text-right text-sm font-bold text-gray-700">${formatMoney(initial)}</td>
+                            <td class="px-6 py-4 text-right text-sm font-bold text-emerald-700">${formatMoney(approved)}</td>
+                            <td class="px-6 py-4 text-right text-sm font-bold text-indigo-700">${formatMoney(initial + approved)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
+
+            document.getElementById('manager-expense-list').innerHTML = pending.map(expense => {
+                const investor = getInvestorByUid(expense.uid);
+                return `
+                    <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-bold text-gray-900">${expense.purpose || 'Expense'}</div>
+                            <div class="text-xs text-gray-500">${investor.name || expense.investorName || 'Investor'} • ${formatDisplayDate(expense.createdAt)}</div>
+                            <div class="text-lg font-bold text-orange-600 mt-1">${formatMoney(expense.amount)}</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="approveInvestorExpense('${expense.id}')" class="rounded-md bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700">Approve</button>
+                            <button onclick="rejectInvestorExpense('${expense.id}')" class="rounded-md bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700">Reject</button>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No pending expenses.</div>';
+        }
+
+        window.saveInvestorProfile = async function() {
+            let uid = document.getElementById('investor-uid').value.trim();
+            const name = document.getElementById('investor-name').value.trim();
+            const email = document.getElementById('investor-email').value.trim();
+            const password = document.getElementById('investor-password').value;
+            const initialInvestment = Number(document.getElementById('investor-capital').value) || 0;
+            if(!name || !email) { showToast('Investor name and email are required', 'error'); return; }
+            if(!uid && password.length < 6) { showToast('Password must be at least 6 characters for new investor login', 'error'); return; }
+            try {
+                if(!uid) {
+                    const credential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+                    uid = credential.user.uid;
+                    await signOut(secondaryAuth);
+                }
+                await setDoc(doc(db, 'users', uid), { role: 'investor', name, email }, { merge: true });
+                await setDoc(doc(db, 'investors', uid), { name, email, initialInvestment, updatedAt: getTodayString() }, { merge: true });
+                document.getElementById('investor-form').reset();
+                showToast('Investor login, access, and capital saved');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.approveInvestorExpense = async function(expenseId) {
+            if(!(await showConfirm({ title: 'Approve Expense?', message: 'Approved amount will be counted in company capital.', confirmText: 'Approve', confirmClass: 'bg-emerald-600 hover:bg-emerald-700' }))) return;
+            try {
+                await updateDoc(doc(db, 'investorExpenses', expenseId), { status: 'approved', approvedAt: getTodayString(), approvedBy: authUser?.uid || '' });
+                showToast('Expense approved and capital updated');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.rejectInvestorExpense = async function(expenseId) {
+            if(!(await showConfirm({ title: 'Reject Expense?', message: 'Reject this investor expense request?', confirmText: 'Reject' }))) return;
+            try {
+                await updateDoc(doc(db, 'investorExpenses', expenseId), { status: 'rejected', rejectedAt: getTodayString(), approvedBy: authUser?.uid || '' });
+                showToast('Expense rejected', 'error');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        function loadInvestorPortal() {
+            onSnapshot(collection(db, "investors"), (snapshot) => {
+                investors = [];
+                snapshot.forEach((doc) => investors.push({ id: doc.id, ...doc.data() }));
+                renderInvestorPortal();
+            });
+            onSnapshot(collection(db, "investorExpenses"), (snapshot) => {
+                investorExpenses = [];
+                snapshot.forEach((doc) => investorExpenses.push({ id: doc.id, ...doc.data() }));
+                investorExpenses.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
+                renderInvestorPortal();
+            });
+        }
+
+        function renderInvestorPortal() {
+            if(!authUser) return;
+            const profile = getInvestorByUid(authUser.uid);
+            const ownExpenses = investorExpenses.filter(expense => expense.uid === authUser.uid);
+            const approved = getApprovedExpenseTotal(authUser.uid);
+            const initial = Number(profile.initialInvestment) || 0;
+            const companyCapital = investors.reduce((sum, investor) => sum + (Number(investor.initialInvestment) || 0), 0) + getApprovedExpenseTotal();
+            document.getElementById('investor-welcome').innerText = `${profile.name || authUser.email || 'Investor'} • ${authUser.email || ''}`;
+            document.getElementById('investor-total-capital').innerText = formatMoney(initial + approved);
+            document.getElementById('investor-pending-count').innerText = ownExpenses.filter(expense => expense.status === 'pending').length;
+            document.getElementById('investor-company-capital').innerText = formatMoney(companyCapital);
+            document.getElementById('investor-expense-list').innerHTML = ownExpenses.map(expense => `
+                <div class="p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-bold text-gray-900">${expense.purpose || 'Expense'}</div>
+                            <div class="text-xs text-gray-500">${formatDisplayDate(expense.createdAt)}</div>
+                        </div>
+                        <span class="rounded-full px-2 py-1 text-xs font-bold ${expense.status === 'approved' ? 'bg-green-100 text-green-800' : expense.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'}">${expense.status || 'pending'}</span>
+                    </div>
+                    <div class="mt-2 text-lg font-bold text-gray-900">${formatMoney(expense.amount)}</div>
+                </div>
+            `).join('') || '<div class="p-8 text-center text-sm text-gray-500">No expense requests yet.</div>';
+        }
+
+        window.submitInvestorExpense = async function() {
+            if(!authUser) return;
+            const purpose = document.getElementById('investor-expense-purpose').value.trim();
+            const amount = Number(document.getElementById('investor-expense-amount').value) || 0;
+            if(!purpose || amount <= 0) { showToast('Purpose and valid amount are required', 'error'); return; }
+            const profile = getInvestorByUid(authUser.uid);
+            try {
+                await addDoc(collection(db, 'investorExpenses'), {
+                    uid: authUser.uid,
+                    investorName: profile.name || authUser.email || 'Investor',
+                    investorEmail: authUser.email || profile.email || '',
+                    purpose,
+                    amount,
+                    status: 'pending',
+                    createdAt: getTodayString()
+                });
+                document.getElementById('investor-expense-purpose').value = '';
+                document.getElementById('investor-expense-amount').value = '';
+                showToast('Submitted for manager approval');
+            } catch (error) { showToast(error.message, 'error'); }
         }
 
         // ================= SETTINGS =================
