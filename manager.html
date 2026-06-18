@@ -1868,7 +1868,7 @@
                             <td class="px-6 py-4 text-right text-sm font-bold text-gray-700">${formatMoney(initial)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-emerald-700">${formatMoney(approved)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-indigo-700">${formatMoney(initial + approved)}</td>
-                            <td class="px-6 py-4 text-xs text-gray-600">${history.length ? history.map(item => `<div class="mb-1"><span class="font-bold">${formatMoney(item.amount)}</span> • ${formatDisplayDate(item.date)} • ${item.note || 'Investment updated'}</div>`).join('') : 'No history'}</td>
+                            <td class="px-6 py-4 text-xs text-gray-600"><button onclick="showInvestorExpenseHistory('${investor.id}')" class="rounded border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100">History</button><div class="mt-2">${history.length ? history.map(item => `<div class="mb-1"><span class="font-bold">${formatMoney(item.amount)}</span> • ${formatDisplayDate(item.date)} • ${item.note || 'Investment updated'}</div>`).join('') : 'No base history'}</div></td>
                         </tr>
                     `;
                 }).join('');
@@ -1890,6 +1890,23 @@
                     </div>
                 `;
             }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No pending expenses.</div>';
+        }
+
+
+        window.showInvestorExpenseHistory = function(uid) {
+            const investor = getInvestorByUid(uid);
+            const list = document.getElementById('history-list');
+            document.getElementById('history-product-name').innerText = `${investor.name || 'Investor'} - Approved Expense History`;
+            const approved = investorExpenses.filter(expense => expense.uid === uid && expense.status === 'approved');
+            list.innerHTML = approved.map(expense => `
+                <tr>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${formatDisplayDate(expense.approvedAt || expense.createdAt)}</td>
+                    <td class="px-4 py-3 text-sm"><div class="font-bold text-gray-900">${escapeHtml(expense.purpose || 'Expense')}</div><div class="text-xs text-gray-500">Submitted: ${formatDisplayDate(expense.createdAt)}</div></td>
+                    <td class="px-4 py-3 text-center font-bold text-emerald-700">${formatMoney(expense.amount)}</td>
+                    <td class="px-4 py-3 text-right"><button onclick="rejectInvestorExpense('${expense.id}')" class="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white hover:bg-red-700">Reject</button></td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="text-center text-sm text-gray-500 py-6">No approved expense history.</td></tr>';
+            document.getElementById('history-modal').classList.remove('hidden');
         }
 
         window.toggleInvestorPassword = function() {

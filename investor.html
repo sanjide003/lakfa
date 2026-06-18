@@ -407,21 +407,26 @@
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
-            <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-2">
-                <button onclick="switchInvestorTab('dashboard')" id="investor-nav-dashboard" class="investor-nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md bg-emerald-50 text-emerald-700 transition-colors">
+            <nav class="flex-1 overflow-y-auto py-4 space-y-2 px-2">
+                <button onclick="switchInvestorTab('dashboard')" id="investor-nav-dashboard" class="investor-nav-btn w-full min-h-12 flex items-center px-4 py-3 text-sm font-medium rounded-xl bg-emerald-50 text-emerald-700 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
                     Dashboard
                 </button>
-                <button onclick="switchInvestorTab('contribution')" id="investor-nav-contribution" class="investor-nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <button onclick="switchInvestorTab('company')" id="investor-nav-company" class="investor-nav-btn w-full min-h-12 flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 7v10a2 2 0 002 2h10a2 2 0 002-2V7M9 11h6" /></svg>
+                    Product Status
+                </button>
+                <button onclick="switchInvestorTab('contribution')" id="investor-nav-contribution" class="investor-nav-btn w-full min-h-12 flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 10v2m8-6a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
                     Contribution
                 </button>
-                <button onclick="switchInvestorTab('requests')" id="investor-nav-requests" class="investor-nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <button onclick="switchInvestorTab('requests')" id="investor-nav-requests" class="investor-nav-btn w-full min-h-12 flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" /></svg>
                     Requests
                 </button>
             </nav>
-            <div class="p-2 md:p-4 border-t border-gray-200">
+            <div class="p-2 md:p-4 border-t border-gray-200 space-y-2">
+                <button onclick="switchInvestorTab('profile')" id="investor-nav-profile" class="investor-nav-btn w-full flex justify-center items-center px-4 py-2 border border-emerald-200 shadow-sm text-sm font-medium rounded-md text-emerald-700 bg-emerald-50 hover:bg-emerald-100">Profile</button>
                 <button onclick="handleLogout()" class="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Logout</button>
             </div>
         </aside>
@@ -430,6 +435,7 @@
             <header class="bg-white shadow-sm border-b border-gray-200 py-3 md:py-4 px-4 md:px-6 flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
                 <div>
                     <h1 id="investor-page-title" class="text-2xl font-bold leading-7 text-gray-900 sm:truncate">Dashboard</h1>
+                    <p id="investor-name-subtitle" class="text-sm font-semibold text-emerald-700 mt-1">Loading investor...</p>
                     <p id="investor-welcome" class="text-sm text-gray-500 mt-1">Capital and expense dashboard</p>
                 </div>
             </header>
@@ -437,10 +443,10 @@
             <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
                 <section id="investor-tab-dashboard" class="investor-tab-content fade-in">
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Your Total Investment</div><div id="investor-total-capital" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div><p class="mt-2 text-sm text-gray-500">Base investment + approved contributions.</p></div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Company Total Capital</div><div id="investor-company-capital" class="mt-2 text-3xl font-bold text-indigo-700">₹0</div><p class="mt-2 text-sm text-gray-500">All investors and approved contributions.</p></div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Pending Requests</div><div id="investor-pending-count" class="mt-2 text-3xl font-bold text-orange-600">0</div><p class="mt-2 text-sm text-gray-500">Waiting for manager approval.</p></div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Approved Requests</div><div id="investor-approved-count" class="mt-2 text-3xl font-bold text-green-600">0</div><p class="mt-2 text-sm text-gray-500">Accepted and added to capital.</p></div>
+                        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-emerald-50">Your Total</div><div id="investor-total-capital" class="mt-2 text-3xl font-bold text-white">₹0</div><p class="mt-2 text-sm text-emerald-50">Base investment + approved contributions.</p></div>
+                        <div class="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-indigo-50">Total</div><div id="investor-company-capital" class="mt-2 text-3xl font-bold text-white">₹0</div><p class="mt-2 text-sm text-indigo-50">All investors and approved contributions.</p></div>
+                        <div class="bg-gradient-to-br from-orange-400 to-amber-500 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-orange-50">Pending Requests</div><div id="investor-pending-count" class="mt-2 text-3xl font-bold text-white">0</div><p class="mt-2 text-sm text-orange-50">Waiting for manager approval.</p></div>
+                        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-green-50">Approved Requests</div><div id="investor-approved-count" class="mt-2 text-3xl font-bold text-white">0</div><p class="mt-2 text-sm text-green-50">Accepted and added to capital.</p></div>
                     </div>
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><h2 class="font-bold text-gray-900 mb-4">Investment Summary</h2><div id="investor-capital-breakdown" class="space-y-3"></div></div>
@@ -467,8 +473,29 @@
                     </div>
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div class="px-6 py-4 border-b bg-gray-50"><h2 class="font-bold text-gray-900">All Requests</h2><p class="text-sm text-gray-500 mt-1">Accepted, rejected, pending എല്ലാം ഇവിടെ കാണാം.</p></div>
+                        <div class="px-6 py-3 border-b bg-white flex flex-wrap gap-2">
+                            <button onclick="setInvestorRequestFilter('all')" id="investor-filter-all" class="investor-filter-btn rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white">All</button>
+                            <button onclick="setInvestorRequestFilter('pending')" id="investor-filter-pending" class="investor-filter-btn rounded-full bg-gray-100 px-4 py-2 text-xs font-bold text-gray-600">Pending</button>
+                            <button onclick="setInvestorRequestFilter('approved')" id="investor-filter-approved" class="investor-filter-btn rounded-full bg-gray-100 px-4 py-2 text-xs font-bold text-gray-600">Accepted</button>
+                        </div>
                         <div id="investor-expense-list" class="divide-y divide-gray-100"></div>
                     </div>
+                </section>
+
+                <section id="investor-tab-company" class="investor-tab-content hidden fade-in">
+                    <div class="rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 p-5 mb-6 text-white shadow-sm">
+                        <h2 class="text-xl font-bold">Product Status</h2>
+                        <p class="text-sm text-blue-50 mt-1">Stock, order status, and order history with date filtering.</p>
+                    </div>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="bg-gradient-to-br from-sky-50 to-blue-100 rounded-2xl shadow-sm border border-blue-100 p-4 sm:p-6"><div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4"><h2 class="font-bold text-blue-950">Order Status Overview</h2><div class="flex flex-col sm:flex-row gap-2 text-xs"><input id="investor-company-from" type="date" onchange="renderInvestorPortal()" class="min-h-11 rounded-lg border border-blue-200 p-2 bg-white"><input id="investor-company-to" type="date" onchange="renderInvestorPortal()" class="min-h-11 rounded-lg border border-blue-200 p-2 bg-white"></div></div><div id="investor-company-status" class="grid grid-cols-2 gap-3"></div></div>
+                        <div class="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-2xl shadow-sm border border-emerald-100 p-4 sm:p-6"><h2 class="font-bold text-emerald-950 mb-4">Current Stock Status</h2><div id="investor-company-stock" class="overflow-x-auto"></div></div>
+                        <div class="bg-gradient-to-br from-indigo-50 to-purple-100 rounded-2xl shadow-sm border border-indigo-100 p-4 sm:p-6 xl:col-span-2"><h2 class="font-bold text-indigo-950 mb-4">Total Order History</h2><div id="investor-company-order-history" class="space-y-3 mb-6"></div><h2 class="font-bold text-indigo-950 mb-4">Investor Expenditure Tracking</h2><div id="investor-expenditure-tracking" class="overflow-x-auto rounded-xl border border-indigo-100 bg-white"></div></div>
+                    </div>
+                </section>
+
+                <section id="investor-tab-profile" class="investor-tab-content hidden fade-in max-w-2xl">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><h2 class="text-xl font-bold text-gray-900 mb-4">Profile</h2><div id="investor-profile-details" class="space-y-3"></div></div>
                 </section>
             </main>
         </div>
@@ -743,6 +770,7 @@
         let selectedOrders = new Set();
         let currentTab = 'dashboard';
         let currentOrderStatusFilter = 'Pending';
+        let currentInvestorRequestFilter = 'all';
         const orderUtilityTabs = {
             recycle: { title: 'Recycle Bin', statusFilter: 'Recycle Bin', icon: 'trash', color: 'red' },
             returns: { title: 'Return', statusFilter: 'Return', icon: 'return', color: 'orange' },
@@ -1315,7 +1343,7 @@
                     </tr>
                 `;
             });
-            if(filtered.length === 0) html = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
+            if(filtered.length === 0) html = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
             list.innerHTML = html;
 
             document.getElementById('select-all-orders').checked = !isRecycle && filtered.length > 0 && filtered.every(o => selectedOrders.has(o.id));
@@ -1924,11 +1952,11 @@
                             <td class="px-6 py-4 text-right text-sm font-bold text-gray-700">${formatMoney(initial)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-emerald-700">${formatMoney(approved)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-indigo-700">${formatMoney(initial + approved)}</td>
-                            <td class="px-6 py-4 text-xs text-gray-600">${history.length ? history.map(item => `<div class="mb-1"><span class="font-bold">${formatMoney(item.amount)}</span> • ${formatDisplayDate(item.date)} • ${item.note || 'Investment updated'}</div>`).join('') : 'No history'}</td>
+                            <td class="px-6 py-4 text-xs text-gray-600"><button onclick="showInvestorExpenseHistory('${investor.id}')" class="rounded border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100">History</button><div class="mt-2">${history.length ? history.map(item => `<div class="mb-1"><span class="font-bold">${formatMoney(item.amount)}</span> • ${formatDisplayDate(item.date)} • ${item.note || 'Investment updated'}</div>`).join('') : 'No base history'}</div></td>
                         </tr>
                     `;
                 }).join('');
-            document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
+            document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
 
             document.getElementById('manager-expense-list').innerHTML = pending.map(expense => {
                 const investor = getInvestorByUid(expense.uid);
@@ -1946,6 +1974,23 @@
                     </div>
                 `;
             }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No pending expenses.</div>';
+        }
+
+
+        window.showInvestorExpenseHistory = function(uid) {
+            const investor = getInvestorByUid(uid);
+            const list = document.getElementById('history-list');
+            document.getElementById('history-product-name').innerText = `${investor.name || 'Investor'} - Approved Expense History`;
+            const approved = investorExpenses.filter(expense => expense.uid === uid && expense.status === 'approved');
+            list.innerHTML = approved.map(expense => `
+                <tr>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${formatDisplayDate(expense.approvedAt || expense.createdAt)}</td>
+                    <td class="px-4 py-3 text-sm"><div class="font-bold text-gray-900">${escapeHtml(expense.purpose || 'Expense')}</div><div class="text-xs text-gray-500">Submitted: ${formatDisplayDate(expense.createdAt)}</div></td>
+                    <td class="px-4 py-3 text-center font-bold text-emerald-700">${formatMoney(expense.amount)}</td>
+                    <td class="px-4 py-3 text-right"><button onclick="rejectInvestorExpense('${expense.id}')" class="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white hover:bg-red-700">Reject</button></td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="text-center text-sm text-gray-500 py-6">No approved expense history.</td></tr>';
+            document.getElementById('history-modal').classList.remove('hidden');
         }
 
         window.toggleInvestorPassword = function() {
@@ -2030,8 +2075,49 @@
                 active.classList.remove('text-gray-600');
                 active.classList.add('bg-emerald-50', 'text-emerald-700');
             }
-            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests' };
+            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests', company: 'Product Status', profile: 'Profile' };
             document.getElementById('investor-page-title').innerText = titles[tabId] || 'Investor Portal';
+            renderInvestorPortal();
+        }
+
+        window.setInvestorRequestFilter = function(filter) {
+            currentInvestorRequestFilter = filter;
+            document.querySelectorAll('.investor-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-600');
+            });
+            const active = document.getElementById(`investor-filter-${filter}`);
+            if(active) {
+                active.classList.remove('bg-gray-100', 'text-gray-600');
+                active.classList.add('bg-emerald-600', 'text-white');
+            }
+            renderInvestorPortal();
+        }
+
+
+        function getMonthKey(dateValue) {
+            const normalized = normalizeDateInput(dateValue);
+            const dateObj = new Date(normalized);
+            if(isNaN(dateObj)) return 'Unknown Month';
+            return dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+        }
+
+        function getComparableDate(dateValue) {
+            const normalized = normalizeDateInput(dateValue);
+            const dateObj = new Date(normalized);
+            return isNaN(dateObj) ? null : dateObj;
+        }
+
+        function isWithinDateRange(dateValue, fromValue, toValue) {
+            const dateObj = getComparableDate(dateValue);
+            if(!dateObj) return false;
+            if(fromValue && dateObj < new Date(fromValue)) return false;
+            if(toValue) {
+                const toDate = new Date(toValue);
+                toDate.setHours(23, 59, 59, 999);
+                if(dateObj > toDate) return false;
+            }
+            return true;
         }
 
         function getInvestorStatusBadge(status) {
@@ -2062,6 +2148,20 @@
         }
 
         function loadInvestorPortal() {
+            onSnapshot(collection(db, "settings"), (snapshot) => {
+                snapshot.forEach((doc) => { if(doc.id === 'config') companySettings = { ...companySettings, ...doc.data() }; });
+                renderInvestorPortal();
+            });
+            onSnapshot(collection(db, "products"), (snapshot) => {
+                products = [];
+                snapshot.forEach((doc) => products.push({ id: doc.id, ...doc.data() }));
+                renderInvestorPortal();
+            });
+            onSnapshot(collection(db, "orders"), (snapshot) => {
+                orders = [];
+                snapshot.forEach((doc) => orders.push({ id: doc.id, ...doc.data() }));
+                renderInvestorPortal();
+            });
             onSnapshot(collection(db, "investors"), (snapshot) => {
                 investors = [];
                 snapshot.forEach((doc) => investors.push({ id: doc.id, ...doc.data() }));
@@ -2075,6 +2175,56 @@
             });
         }
 
+        function renderCompanyOverview(companyCapital) {
+            const fromValue = document.getElementById('investor-company-from')?.value || '';
+            const toValue = document.getElementById('investor-company-to')?.value || '';
+            const activeOrders = orders.filter(order => order.status !== 'Recycle Bin');
+            const filteredOrders = activeOrders.filter(order => isWithinDateRange(order.createdAt, fromValue, toValue));
+            const statusCounts = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return', 'Order Cancelled'].map(status => ({ status, count: filteredOrders.filter(order => order.status === status).length }));
+            document.getElementById('investor-company-status').innerHTML = statusCounts.map((item, index) => {
+                const colors = ['from-yellow-400 to-orange-500', 'from-blue-500 to-sky-600', 'from-purple-500 to-indigo-600', 'from-green-500 to-emerald-600', 'from-orange-500 to-red-500', 'from-red-500 to-rose-600'];
+                return `<div class="rounded-xl bg-gradient-to-br ${colors[index]} p-4 text-white shadow-sm min-h-24 flex flex-col justify-center"><div class="text-xs font-bold uppercase text-white/80">${item.status}</div><div class="mt-1 text-3xl font-bold">${item.count}</div></div>`;
+            }).join('');
+            const stockRows = products.map(product => {
+                const added = Array.isArray(product.stockHistory) ? product.stockHistory.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
+                const balance = (Number(product.initialStock) || 0) + added - (Number(product.ordered) || 0);
+                const isLow = balance < 5;
+                return `<tr class="border-b last:border-0"><td class="px-3 py-3 font-semibold text-gray-900">${escapeHtml(product.name || 'Product')}</td><td class="px-3 py-3 text-right font-bold ${isLow ? 'text-red-700' : 'text-emerald-700'}">${balance.toLocaleString('en-IN')}</td><td class="px-3 py-3 text-right"><span class="rounded-full px-2 py-1 text-xs font-bold ${isLow ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${isLow ? 'Low' : 'OK'}</span></td></tr>`;
+            }).join('');
+            document.getElementById('investor-company-stock').innerHTML = stockRows ? `<table class="min-w-full text-sm bg-white rounded-xl overflow-hidden"><thead class="bg-emerald-600 text-white"><tr><th class="px-3 py-3 text-left">Product</th><th class="px-3 py-3 text-right">Balance</th><th class="px-3 py-3 text-right">Status</th></tr></thead><tbody>${stockRows}</tbody></table>` : '<div class="text-sm text-gray-500 text-center py-6">No stock data available.</div>';
+
+            const ordersByMonth = {};
+            filteredOrders.forEach(order => {
+                const month = getMonthKey(order.createdAt);
+                if(!ordersByMonth[month]) ordersByMonth[month] = { total: 0, days: {} };
+                ordersByMonth[month].total++;
+                const day = formatDisplayDate(normalizeDateInput(order.createdAt));
+                ordersByMonth[month].days[day] = (ordersByMonth[month].days[day] || 0) + 1;
+            });
+            const months = Object.keys(ordersByMonth).sort((a, b) => new Date(b) - new Date(a));
+            document.getElementById('investor-company-order-history').innerHTML = months.map((month, index) => {
+                const id = `investor-order-${month.replace(/\s+/g, '-')}`;
+                const data = ordersByMonth[month];
+                const days = Object.keys(data.days).sort((a, b) => new Date(b.split('-').reverse().join('-')) - new Date(a.split('-').reverse().join('-'))).map(day => `<tr class="border-b last:border-0"><td class="px-3 py-2">${day}</td><td class="px-3 py-2 text-right font-bold">${data.days[day]} Orders</td></tr>`).join('');
+                return `<div class="border border-indigo-100 rounded-xl overflow-hidden bg-white"><button onclick="toggleInvestorAccordion('${id}')" class="min-h-12 w-full flex justify-between items-center bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-3"><span class="font-bold">${month}</span><span class="text-xs font-bold bg-white/20 px-2 py-1 rounded-full">Total: ${data.total}</span></button><div id="${id}" class="${index === 0 ? '' : 'hidden'} p-3 bg-white overflow-x-auto"><table class="min-w-full text-sm"><thead class="bg-indigo-50 text-indigo-800"><tr><th class="px-3 py-2 text-left">Date</th><th class="px-3 py-2 text-right">Orders</th></tr></thead><tbody>${days}</tbody></table></div></div>`;
+            }).join('') || '<div class="text-sm text-gray-500 text-center py-6">No order history for this date range.</div>';
+
+            const rows = investors.map(investor => {
+                const expenses = investorExpenses.filter(expense => expense.uid === investor.id);
+                const spent = expenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+                const approved = expenses.filter(expense => expense.status === 'approved').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+                const pending = expenses.filter(expense => expense.status === 'pending').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+                const rejected = expenses.filter(expense => expense.status === 'rejected').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+                return `<tr class="border-t"><td class="px-4 py-3 font-bold text-gray-900">${escapeHtml(investor.name || 'Investor')}</td><td class="px-4 py-3 text-right font-bold">${formatMoney(spent)}</td><td class="px-4 py-3 text-right text-green-700 font-bold">${formatMoney(approved)}</td><td class="px-4 py-3 text-right text-orange-700 font-bold">${formatMoney(pending)}</td><td class="px-4 py-3 text-right text-red-700 font-bold">${formatMoney(rejected)}</td></tr>`;
+            }).join('');
+            document.getElementById('investor-expenditure-tracking').innerHTML = `<table class="min-w-full text-sm"><thead class="bg-indigo-600 text-white"><tr><th class="px-4 py-3 text-left text-xs font-bold uppercase text-white">Investor</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-white">Total Spent</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-white">Accepted</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-white">Pending</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-white">Rejected</th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-500">No investor expenditure data yet.</td></tr>'}</tbody></table>`;
+        }
+
+        window.toggleInvestorAccordion = function(id) {
+            const el = document.getElementById(id);
+            if(el) el.classList.toggle('hidden');
+        }
+
         function renderInvestorPortal() {
             if(!authUser || !document.getElementById('investor-total-capital')) return;
             const profile = getInvestorByUid(authUser.uid);
@@ -2085,7 +2235,9 @@
             const approved = getApprovedExpenseTotal(authUser.uid);
             const initial = Number(profile.initialInvestment) || 0;
             const companyCapital = investors.reduce((sum, investor) => sum + (Number(investor.initialInvestment) || 0), 0) + getApprovedExpenseTotal();
-            document.getElementById('investor-welcome').innerText = `${profile.name || authUser.email || 'Investor'} • ${authUser.email || ''}`;
+            const displayName = profile.name || authUser.displayName || authUser.email || 'Investor';
+            document.getElementById('investor-name-subtitle').innerText = displayName;
+            document.getElementById('investor-welcome').innerText = 'Capital and expense dashboard';
             document.getElementById('investor-total-capital').innerText = formatMoney(initial + approved);
             document.getElementById('investor-pending-count').innerText = pendingExpenses.length;
             document.getElementById('investor-approved-count').innerText = approvedExpenses.length;
@@ -2093,14 +2245,70 @@
             document.getElementById('investor-requests-pending').innerText = pendingExpenses.length;
             document.getElementById('investor-requests-approved').innerText = approvedExpenses.length;
             document.getElementById('investor-requests-rejected').innerText = rejectedExpenses.length;
-            document.getElementById('investor-capital-breakdown').innerHTML = `
-                <div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm text-gray-600">Base Investment</span><span class="font-bold text-gray-900">${formatMoney(initial)}</span></div>
-                <div class="flex justify-between rounded-lg bg-green-50 p-3"><span class="text-sm text-green-700">Approved Contributions</span><span class="font-bold text-green-800">${formatMoney(approved)}</span></div>
-                <div class="flex justify-between rounded-lg bg-indigo-50 p-3"><span class="text-sm text-indigo-700">Your Total Investment</span><span class="font-bold text-indigo-900">${formatMoney(initial + approved)}</span></div>
-                <div class="flex justify-between rounded-lg bg-emerald-50 p-3"><span class="text-sm text-emerald-700">Company Total Capital</span><span class="font-bold text-emerald-900">${formatMoney(companyCapital)}</span></div>
+            document.getElementById('investor-capital-breakdown').innerHTML = investors
+                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+                .map(investor => {
+                    const investorTotal = (Number(investor.initialInvestment) || 0) + getApprovedExpenseTotal(investor.id);
+                    return `<div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm font-semibold text-gray-700">${escapeHtml(investor.name || 'Investor')}</span><span class="font-bold text-gray-900">${formatMoney(investorTotal)}</span></div>`;
+                }).join('') || '<div class="text-sm text-gray-500 text-center py-6">No investment summary available.</div>';
+            const filteredExpenses = currentInvestorRequestFilter === 'all' ? ownExpenses : ownExpenses.filter(expense => expense.status === currentInvestorRequestFilter);
+            const expensesByMonth = {};
+            ownExpenses.forEach(expense => {
+                const month = getMonthKey(expense.createdAt);
+                if(!expensesByMonth[month]) expensesByMonth[month] = [];
+                expensesByMonth[month].push(expense);
+            });
+            const expenseMonths = Object.keys(expensesByMonth).sort((a, b) => new Date(b) - new Date(a));
+            document.getElementById('investor-latest-requests').innerHTML = expenseMonths.map((month, index) => {
+                const id = `investor-requests-${month.replace(/\s+/g, '-')}`;
+                const list = expensesByMonth[month].map(renderInvestorRequestCard).join('');
+                return `<div class="border rounded-lg overflow-hidden"><button onclick="toggleInvestorAccordion('${id}')" class="w-full flex justify-between bg-gray-50 p-3"><span class="font-bold text-gray-800">${month}</span><span class="text-xs font-bold text-emerald-700">${expensesByMonth[month].length} Requests</span></button><div id="${id}" class="${index === 0 ? '' : 'hidden'} p-2 space-y-2 bg-white">${list}</div></div>`;
+            }).join('') || '<div class="text-sm text-gray-500 text-center py-6">No requests yet.</div>';
+            document.getElementById('investor-expense-list').innerHTML = renderInvestorRequestsTable(filteredExpenses);
+            document.getElementById('investor-profile-details').innerHTML = `
+                <div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm text-gray-600">Name</span><span class="font-bold text-gray-900">${escapeHtml(displayName)}</span></div>
+                <div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm text-gray-600">Email</span><span class="font-bold text-gray-900">${escapeHtml(authUser.email || profile.email || '')}</span></div>
+                <div class="flex justify-between rounded-lg bg-gray-50 p-3"><span class="text-sm text-gray-600">Investor UID</span><span class="font-mono text-xs text-gray-700">${escapeHtml(authUser.uid)}</span></div>
             `;
-            document.getElementById('investor-latest-requests').innerHTML = ownExpenses.slice(0, 4).map(renderInvestorRequestCard).join('') || '<div class="text-sm text-gray-500 text-center py-6">No requests yet.</div>';
-            document.getElementById('investor-expense-list').innerHTML = ownExpenses.map(renderInvestorRequestCard).join('') || '<div class="p-8 text-center text-sm text-gray-500">No expense requests yet.</div>';
+            renderCompanyOverview(companyCapital);
+        }
+
+
+        window.renderInvestorPortal = renderInvestorPortal;
+
+        function renderInvestorRequestsTable(expenses) {
+            if(!expenses.length) return '<div class="p-8 text-center text-sm text-gray-500">No matching expense requests yet.</div>';
+            const rows = expenses.map(expense => {
+                const canRetry = expense.status === 'rejected';
+                return `<tr class="border-b last:border-0 align-top">
+                    <td class="px-3 py-3 min-w-[140px] font-semibold text-gray-900">${escapeHtml(expense.purpose || 'Expense')}</td>
+                    <td class="px-3 py-3 whitespace-nowrap font-bold text-gray-900">${formatMoney(expense.amount)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-gray-600">${formatDisplayDate(expense.createdAt)}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-gray-600">${expense.approvedAt ? formatDisplayDate(expense.approvedAt) : '-'}</td>
+                    <td class="px-3 py-3 whitespace-nowrap"><span class="rounded-full border px-2 py-1 text-xs font-bold ${getInvestorStatusBadge(expense.status)}">${getInvestorStatusText(expense.status)}</span></td>
+                    <td class="px-3 py-3 whitespace-nowrap">${canRetry ? `<button onclick="retryInvestorExpense('${expense.id}')" class="mb-1 rounded bg-emerald-600 px-2 py-1 text-xs font-bold text-white">Request Again</button><button onclick="deleteInvestorExpense('${expense.id}')" class="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white">Delete</button>` : '<span class="text-xs text-gray-400">No action</span>'}</td>
+                </tr>`;
+            }).join('');
+            return `<div class="overflow-x-auto"><table class="min-w-full text-xs sm:text-sm"><thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-bold text-gray-500 uppercase">Purpose</th><th class="px-3 py-2 text-left font-bold text-gray-500 uppercase">Amount</th><th class="px-3 py-2 text-left font-bold text-gray-500 uppercase">Submitted</th><th class="px-3 py-2 text-left font-bold text-gray-500 uppercase">Approved</th><th class="px-3 py-2 text-left font-bold text-gray-500 uppercase">Status</th><th class="px-3 py-2 text-left font-bold text-gray-500 uppercase">Actions</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+        }
+
+        window.deleteInvestorExpense = async function(expenseId) {
+            const expense = investorExpenses.find(item => item.id === expenseId);
+            if(!expense || expense.uid !== authUser?.uid || expense.status !== 'rejected') return;
+            if(!(await showConfirm({ title: 'Delete Rejected Request?', message: 'This rejected request will be removed.', confirmText: 'Delete' }))) return;
+            try { await deleteDoc(doc(db, 'investorExpenses', expenseId)); showToast('Rejected request deleted'); }
+            catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.retryInvestorExpense = async function(expenseId) {
+            const expense = investorExpenses.find(item => item.id === expenseId);
+            if(!expense || expense.uid !== authUser?.uid || expense.status !== 'rejected') return;
+            if(!(await showConfirm({ title: 'Request Again?', message: 'Create a new pending request with the same purpose and amount?', confirmText: 'Request Again', confirmClass: 'bg-emerald-600 hover:bg-emerald-700' }))) return;
+            const profile = getInvestorByUid(authUser.uid);
+            try {
+                await addDoc(collection(db, 'investorExpenses'), { uid: authUser.uid, investorName: profile.name || authUser.email || 'Investor', investorEmail: authUser.email || profile.email || '', purpose: expense.purpose || 'Expense', amount: Number(expense.amount) || 0, status: 'pending', createdAt: getTodayString(), retriedFrom: expenseId });
+                showToast('New pending request created');
+            } catch (error) { showToast(error.message, 'error'); }
         }
 
         window.submitInvestorExpense = async function() {
