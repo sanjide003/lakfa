@@ -422,7 +422,7 @@
                 </button>
                 <button onclick="switchInvestorTab('company')" id="investor-nav-company" class="investor-nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 7v10a2 2 0 002 2h10a2 2 0 002-2V7M9 11h6" /></svg>
-                    Company Overview
+                    Product Status
                 </button>
             </nav>
             <div class="p-2 md:p-4 border-t border-gray-200 space-y-2">
@@ -443,10 +443,10 @@
             <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
                 <section id="investor-tab-dashboard" class="investor-tab-content fade-in">
                     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Total</div><div id="investor-total-capital" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div><p class="mt-2 text-sm text-gray-500">Base investment + approved contributions.</p></div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Total</div><div id="investor-company-capital" class="mt-2 text-3xl font-bold text-indigo-700">₹0</div><p class="mt-2 text-sm text-gray-500">All investors and approved contributions.</p></div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Pending Requests</div><div id="investor-pending-count" class="mt-2 text-3xl font-bold text-orange-600">0</div><p class="mt-2 text-sm text-gray-500">Waiting for manager approval.</p></div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Approved Requests</div><div id="investor-approved-count" class="mt-2 text-3xl font-bold text-green-600">0</div><p class="mt-2 text-sm text-gray-500">Accepted and added to capital.</p></div>
+                        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-emerald-50">Your Total</div><div id="investor-total-capital" class="mt-2 text-3xl font-bold text-white">₹0</div><p class="mt-2 text-sm text-emerald-50">Base investment + approved contributions.</p></div>
+                        <div class="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-indigo-50">Total</div><div id="investor-company-capital" class="mt-2 text-3xl font-bold text-white">₹0</div><p class="mt-2 text-sm text-indigo-50">All investors and approved contributions.</p></div>
+                        <div class="bg-gradient-to-br from-orange-400 to-amber-500 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-orange-50">Pending Requests</div><div id="investor-pending-count" class="mt-2 text-3xl font-bold text-white">0</div><p class="mt-2 text-sm text-orange-50">Waiting for manager approval.</p></div>
+                        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-sm p-6 text-white"><div class="text-xs font-bold uppercase text-green-50">Approved Requests</div><div id="investor-approved-count" class="mt-2 text-3xl font-bold text-white">0</div><p class="mt-2 text-sm text-green-50">Accepted and added to capital.</p></div>
                     </div>
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><h2 class="font-bold text-gray-900 mb-4">Investment Summary</h2><div id="investor-capital-breakdown" class="space-y-3"></div></div>
@@ -483,10 +483,9 @@
                 </section>
 
                 <section id="investor-tab-company" class="investor-tab-content hidden fade-in">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Total Orders</div><div id="investor-company-orders" class="mt-2 text-3xl font-bold text-blue-700">0</div></div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Products Tracked</div><div id="investor-company-products" class="mt-2 text-3xl font-bold text-indigo-700">0</div></div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Company Capital</div><div id="investor-company-overview-capital" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div></div>
+                    <div class="rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600 p-5 mb-6 text-white shadow-sm">
+                        <h2 class="text-xl font-bold">Product Status</h2>
+                        <p class="text-sm text-blue-50 mt-1">Stock, order status, and order history with date filtering.</p>
                     </div>
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"><div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4"><h2 class="font-bold text-gray-900">Order Status Overview</h2><div class="flex flex-col sm:flex-row gap-2 text-xs"><input id="investor-company-from" type="date" onchange="renderInvestorPortal()" class="rounded border border-gray-300 p-2"><input id="investor-company-to" type="date" onchange="renderInvestorPortal()" class="rounded border border-gray-300 p-2"></div></div><div id="investor-company-status" class="grid grid-cols-2 gap-3"></div></div>
@@ -1344,7 +1343,7 @@
                     </tr>
                 `;
             });
-            if(filtered.length === 0) html = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
+            if(filtered.length === 0) html = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
             list.innerHTML = html;
 
             document.getElementById('select-all-orders').checked = !isRecycle && filtered.length > 0 && filtered.every(o => selectedOrders.has(o.id));
@@ -1957,7 +1956,7 @@
                         </tr>
                     `;
                 }).join('');
-            document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
+            document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
 
             document.getElementById('manager-expense-list').innerHTML = pending.map(expense => {
                 const investor = getInvestorByUid(expense.uid);
@@ -1988,7 +1987,7 @@
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${formatDisplayDate(expense.approvedAt || expense.createdAt)}</td>
                     <td class="px-4 py-3 text-sm"><div class="font-bold text-gray-900">${escapeHtml(expense.purpose || 'Expense')}</div><div class="text-xs text-gray-500">Submitted: ${formatDisplayDate(expense.createdAt)}</div></td>
                     <td class="px-4 py-3 text-center font-bold text-emerald-700">${formatMoney(expense.amount)}</td>
-                    <td class="px-4 py-3 text-right text-xs text-green-700 font-bold">Approved</td>
+                    <td class="px-4 py-3 text-right"><button onclick="rejectInvestorExpense('${expense.id}')" class="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white hover:bg-red-700">Reject</button></td>
                 </tr>
             `).join('') || '<tr><td colspan="4" class="text-center text-sm text-gray-500 py-6">No approved expense history.</td></tr>';
             document.getElementById('history-modal').classList.remove('hidden');
@@ -2076,7 +2075,7 @@
                 active.classList.remove('text-gray-600');
                 active.classList.add('bg-emerald-50', 'text-emerald-700');
             }
-            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests', company: 'Company Overview', profile: 'Profile' };
+            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests', company: 'Product Status', profile: 'Profile' };
             document.getElementById('investor-page-title').innerText = titles[tabId] || 'Investor Portal';
             renderInvestorPortal();
         }
@@ -2182,9 +2181,6 @@
             const activeOrders = orders.filter(order => order.status !== 'Recycle Bin');
             const filteredOrders = activeOrders.filter(order => isWithinDateRange(order.createdAt, fromValue, toValue));
             const statusCounts = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return', 'Order Cancelled'].map(status => ({ status, count: filteredOrders.filter(order => order.status === status).length }));
-            document.getElementById('investor-company-orders').innerText = filteredOrders.length;
-            document.getElementById('investor-company-products').innerText = products.length;
-            document.getElementById('investor-company-overview-capital').innerText = formatMoney(companyCapital);
             document.getElementById('investor-company-status').innerHTML = statusCounts.map(item => `<div class="rounded-lg bg-gray-50 p-3"><div class="text-xs font-bold uppercase text-gray-500">${item.status}</div><div class="mt-1 text-2xl font-bold text-gray-900">${item.count}</div></div>`).join('');
             document.getElementById('investor-company-stock').innerHTML = products.map(product => {
                 const added = Array.isArray(product.stockHistory) ? product.stockHistory.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
@@ -2215,9 +2211,9 @@
                 const approved = expenses.filter(expense => expense.status === 'approved').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
                 const pending = expenses.filter(expense => expense.status === 'pending').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
                 const rejected = expenses.filter(expense => expense.status === 'rejected').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
-                return `<tr class="border-t"><td class="px-4 py-3 font-bold text-gray-900">${escapeHtml(investor.name || 'Investor')}</td><td class="px-4 py-3 text-gray-600">${escapeHtml(investor.email || '')}</td><td class="px-4 py-3 text-right font-bold">${formatMoney(spent)}</td><td class="px-4 py-3 text-right text-green-700 font-bold">${formatMoney(approved)}</td><td class="px-4 py-3 text-right text-orange-700 font-bold">${formatMoney(pending)}</td><td class="px-4 py-3 text-right text-red-700 font-bold">${formatMoney(rejected)}</td></tr>`;
+                return `<tr class="border-t"><td class="px-4 py-3 font-bold text-gray-900">${escapeHtml(investor.name || 'Investor')}</td><td class="px-4 py-3 text-right font-bold">${formatMoney(spent)}</td><td class="px-4 py-3 text-right text-green-700 font-bold">${formatMoney(approved)}</td><td class="px-4 py-3 text-right text-orange-700 font-bold">${formatMoney(pending)}</td><td class="px-4 py-3 text-right text-red-700 font-bold">${formatMoney(rejected)}</td></tr>`;
             }).join('');
-            document.getElementById('investor-expenditure-tracking').innerHTML = `<table class="min-w-full text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Investor</th><th class="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Email</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Total Spent</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Accepted</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Pending</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Rejected</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No investor expenditure data yet.</td></tr>'}</tbody></table>`;
+            document.getElementById('investor-expenditure-tracking').innerHTML = `<table class="min-w-full text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Investor</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Total Spent</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Accepted</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Pending</th><th class="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Rejected</th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-500">No investor expenditure data yet.</td></tr>'}</tbody></table>`;
         }
 
         window.toggleInvestorAccordion = function(id) {
