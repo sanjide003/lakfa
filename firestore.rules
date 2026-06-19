@@ -54,6 +54,10 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /managerLoans/{loanId} {
+      allow read, create, update, delete: if isManager();
+    }
+
     match /investorPaymentRequests/{requestId} {
       allow read: if isManager() || isInvestor();
       allow create, delete: if isManager();
