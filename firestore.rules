@@ -49,6 +49,22 @@ service cloud.firestore {
       allow create, update, delete: if isManager();
     }
 
+    match /investorPaymentRequestAudit/{auditId} {
+      allow read, create: if isManager();
+      allow update, delete: if false;
+    }
+
+    match /investorPaymentRequests/{requestId} {
+      allow read: if isManager() || isInvestor();
+      allow create, delete: if isManager();
+      allow update: if isManager()
+        || (isInvestor()
+          && resource.data.status == 'active'
+          && (resource.data.targetType == 'all' || resource.data.targetUid == request.auth.uid)
+          && request.resource.data.status == 'claimed'
+          && request.resource.data.claimedBy == request.auth.uid);
+    }
+
     match /investorExpenses/{expenseId} {
       allow read: if isManager() || isInvestor();
       allow create: if isInvestor()
