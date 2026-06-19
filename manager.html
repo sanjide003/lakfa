@@ -125,9 +125,21 @@
                     <svg class="mr-3 h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 10v2m8-6a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
                     Investors & Capital
                 </button>
+                <button onclick="switchTab('expense-approvals')" id="nav-expense-approvals" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-orange-700 bg-orange-50 border border-orange-100 hover:bg-orange-100 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span class="flex-1 text-left">Expense Approvals</span><span id="expense-approval-alert-count" class="hidden rounded-full bg-orange-600 px-2 py-0.5 text-[10px] font-bold text-white">0</span>
+                </button>
+                <button onclick="switchTab('manager-loans')" id="nav-manager-loans" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-amber-700 bg-amber-50 border border-amber-100 hover:bg-amber-100 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                    Manager Loans
+                </button>
                 <button onclick="switchTab('payment-requests')" id="nav-payment-requests" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                     <span class="flex-1 text-left">Payment Requests</span><span id="payment-request-alert-count" class="hidden rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">0</span>
+                </button>
+                <button onclick="switchTab('company-finance')" id="nav-company-finance" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-cyan-700 bg-cyan-50 border border-cyan-100 hover:bg-cyan-100 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
+                    Company Finance
                 </button>
                 <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -333,11 +345,6 @@
                                 </form>
                             </div>
                         </div>
-
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Expense Approval Queue</h3></div>
-                            <div id="manager-expense-list" class="divide-y divide-gray-100 max-h-[420px] overflow-y-auto"></div>
-                        </div>
                     </div>
 
                     <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -347,6 +354,39 @@
                                 <thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Investor</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Login</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Base Investment</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Approved Expenses</th><th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Total Capital</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">History</th></tr></thead>
                                 <tbody id="manager-investor-list" class="divide-y divide-gray-100"></tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="tab-expense-approvals" class="tab-content hidden fade-in">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b bg-orange-50"><h3 class="font-bold text-orange-950">Expense Approval Queue</h3><p class="text-sm text-orange-700 mt-1">Investor expense/contribution requests are approved here as a separate manager tab.</p></div>
+                        <div id="manager-expense-list" class="divide-y divide-gray-100 max-h-[650px] overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <div id="tab-manager-loans" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Total Borrowed</div><div id="loan-total-borrowed" class="mt-2 text-3xl font-bold text-amber-700">₹0</div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Total Repaid</div><div id="loan-total-repaid" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Pending Balance</div><div id="loan-total-pending" class="mt-2 text-3xl font-bold text-red-700">₹0</div></div>
+                    </div>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-amber-50"><h3 class="font-bold text-amber-950">Record Borrowed Amount</h3><p class="text-sm text-amber-700 mt-1">Manager borrowed money / money given by other persons can be recorded here.</p></div>
+                            <div class="p-6 space-y-4">
+                                <input id="loan-edit-id" type="hidden">
+                                <div><label class="block text-sm font-medium text-gray-700">Date</label><input id="loan-date" type="date" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Lender / Person Name</label><input id="loan-lender-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Abdul Rahman"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Purpose / Note</label><input id="loan-purpose" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Emergency purchase"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Amount (₹)</label><input id="loan-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <div class="flex gap-2"><button onclick="saveManagerLoan()" class="flex-1 rounded-md bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">Save Loan</button><button onclick="resetManagerLoanForm()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Clear</button></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Loan Ledger & Repayment</h3><p class="text-sm text-gray-500 mt-1">Select whether an investor or the company repaid each loan.</p></div>
+                            <div id="manager-loan-list" class="divide-y divide-gray-100 max-h-[650px] overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>
@@ -365,6 +405,32 @@
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="px-6 py-4 border-b bg-gray-50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><h3 class="font-bold text-gray-900">Payment Request History</h3><button onclick="exportInvestorPaymentRequestsReport()" class="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100">Export CSV</button></div>
                             <div id="manager-payment-request-list" class="divide-y divide-gray-100 max-h-[520px] overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="tab-company-finance" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Total Income</div><div id="finance-total-income" class="mt-2 text-3xl font-bold text-cyan-700">₹0</div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Total Expense</div><div id="finance-total-expense" class="mt-2 text-3xl font-bold text-red-700">₹0</div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"><div class="text-xs font-bold uppercase text-gray-500">Balance / Profit</div><div id="finance-total-balance" class="mt-2 text-3xl font-bold text-emerald-700">₹0</div></div>
+                    </div>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-cyan-50"><h3 class="font-bold text-cyan-950">Add Daily Company Account</h3><p class="text-sm text-cyan-700 mt-1">Enter each day's total income and company expense manually.</p></div>
+                            <div class="p-6 space-y-4">
+                                <input id="finance-edit-id" type="hidden">
+                                <div><label class="block text-sm font-medium text-gray-700">Date</label><input id="finance-date" type="date" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Income Received (₹)</label><input id="finance-income" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Expense Spent (₹)</label><input id="finance-expense" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Note</label><input id="finance-note" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Daily sales and packing expense"></div>
+                                <div class="flex gap-2"><button onclick="saveCompanyDailyAccount()" class="flex-1 rounded-md bg-cyan-600 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-700">Save Account</button><button onclick="resetCompanyDailyAccountForm()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Clear</button></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Daily Income / Expense Ledger</h3><p class="text-sm text-gray-500 mt-1">Shows daily balance and total company profit.</p></div>
+                            <div id="company-finance-list" class="divide-y divide-gray-100 max-h-[650px] overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>
@@ -719,6 +785,8 @@
         let investors = [];
         let investorExpenses = [];
         let investorPaymentRequests = [];
+        let managerLoans = [];
+        let companyDailyAccounts = [];
         let authUser = null;
         let currentUserRole = 'manager';
         let selectedOrders = new Set();
@@ -966,10 +1034,22 @@
                 document.getElementById('page-title').innerText = "Investors & Capital";
                 headerActions.innerHTML = '';
                 renderCapitalDashboard();
+            } else if (tabId === 'expense-approvals') {
+                document.getElementById('page-title').innerText = "Expense Approvals";
+                headerActions.innerHTML = '';
+                renderExpenseApprovalsDashboard();
+            } else if (tabId === 'manager-loans') {
+                document.getElementById('page-title').innerText = "Manager Loans";
+                headerActions.innerHTML = '';
+                renderManagerLoansDashboard();
             } else if (tabId === 'payment-requests') {
                 document.getElementById('page-title').innerText = "Investor Payment Requests";
                 headerActions.innerHTML = '';
                 renderPaymentRequestsDashboard();
+            } else if (tabId === 'company-finance') {
+                document.getElementById('page-title').innerText = "Company Finance";
+                headerActions.innerHTML = '';
+                renderCompanyFinanceDashboard();
             } else if (tabId === 'settings') {
                 document.getElementById('page-title').innerText = "Settings";
                 headerActions.innerHTML = '';
@@ -1008,12 +1088,26 @@
                 snapshot.forEach((doc) => investors.push({ id: doc.id, ...doc.data() }));
                 if(currentTab === 'capital') renderCapitalDashboard();
                 if(currentTab === 'payment-requests') renderPaymentRequestsDashboard();
+                if(currentTab === 'manager-loans') renderManagerLoansDashboard();
             });
             onSnapshot(collection(db, "investorExpenses"), (snapshot) => {
                 investorExpenses = [];
                 snapshot.forEach((doc) => investorExpenses.push({ id: doc.id, ...doc.data() }));
                 investorExpenses.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
                 if(currentTab === 'capital') renderCapitalDashboard();
+                renderExpenseApprovalsDashboard();
+            });
+            onSnapshot(collection(db, "managerLoans"), (snapshot) => {
+                managerLoans = [];
+                snapshot.forEach((doc) => managerLoans.push({ id: doc.id, ...doc.data() }));
+                managerLoans.sort((a, b) => new Date(normalizeDateInput(b.loanDate || b.createdAt)) - new Date(normalizeDateInput(a.loanDate || a.createdAt)));
+                if(currentTab === 'manager-loans') renderManagerLoansDashboard();
+            });
+            onSnapshot(collection(db, "companyDailyAccounts"), (snapshot) => {
+                companyDailyAccounts = [];
+                snapshot.forEach((doc) => companyDailyAccounts.push({ id: doc.id, ...doc.data() }));
+                companyDailyAccounts.sort((a, b) => new Date(normalizeDateInput(b.accountDate || b.createdAt)) - new Date(normalizeDateInput(a.accountDate || a.createdAt)));
+                if(currentTab === 'company-finance') renderCompanyFinanceDashboard();
             });
             onSnapshot(collection(db, "investorPaymentRequests"), (snapshot) => {
                 investorPaymentRequests = [];
@@ -1928,13 +2022,22 @@
                 }).join('');
             document.getElementById('manager-investor-list').innerHTML = investorRows || '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No investors added yet.</td></tr>';
 
-            document.getElementById('manager-expense-list').innerHTML = pending.map(expense => {
+        }
+
+
+        function renderExpenseApprovalsDashboard() {
+            const pending = investorExpenses.filter(expense => expense.status === 'pending');
+            const alertEl = document.getElementById('expense-approval-alert-count');
+            if(alertEl) { alertEl.innerText = pending.length; alertEl.classList.toggle('hidden', pending.length === 0); }
+            const list = document.getElementById('manager-expense-list');
+            if(!list) return;
+            list.innerHTML = pending.map(expense => {
                 const investor = getInvestorByUid(expense.uid);
                 return `
                     <div class="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
-                            <div class="text-sm font-bold text-gray-900">${expense.purpose || 'Expense'}</div>
-                            <div class="text-xs text-gray-500">${investor.name || expense.investorName || 'Investor'} • ${formatDisplayDate(expense.createdAt)}</div>
+                            <div class="text-sm font-bold text-gray-900">${escapeHtml(expense.purpose || 'Expense')}</div>
+                            <div class="text-xs text-gray-500">${escapeHtml(investor.name || expense.investorName || 'Investor')} • ${formatDisplayDate(expense.createdAt)}</div>
                             <div class="text-lg font-bold text-orange-600 mt-1">${formatMoney(expense.amount)}</div>
                         </div>
                         <div class="flex gap-2">
@@ -1944,6 +2047,239 @@
                     </div>
                 `;
             }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No pending expenses.</div>';
+        }
+
+        function getLoanRepaidTotal(loan) {
+            return (Array.isArray(loan.repayments) ? loan.repayments : []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+        }
+
+        function getLoanDate(loan) {
+            return loan.loanDate || loan.createdAt || getTodayString();
+        }
+
+        function setDefaultLoanDate() {
+            const dateInput = document.getElementById('loan-date');
+            if(dateInput && !dateInput.value) dateInput.value = getTodayString();
+        }
+
+        function renderManagerLoansDashboard() {
+            setDefaultLoanDate();
+            const totalBorrowed = managerLoans.reduce((sum, loan) => sum + (Number(loan.amount) || 0), 0);
+            const totalRepaid = managerLoans.reduce((sum, loan) => sum + getLoanRepaidTotal(loan), 0);
+            document.getElementById('loan-total-borrowed').innerText = formatMoney(totalBorrowed);
+            document.getElementById('loan-total-repaid').innerText = formatMoney(totalRepaid);
+            document.getElementById('loan-total-pending').innerText = formatMoney(totalBorrowed - totalRepaid);
+            const list = document.getElementById('manager-loan-list');
+            if(!list) return;
+            list.innerHTML = managerLoans.map(loan => {
+                const repaid = getLoanRepaidTotal(loan);
+                const balance = (Number(loan.amount) || 0) - repaid;
+                const statusClass = balance <= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                const repayments = (Array.isArray(loan.repayments) ? loan.repayments : []).map(item => `<div class="mt-1 text-xs text-gray-600">${formatDisplayDate(item.date)} • ${escapeHtml(item.payerType === 'company' ? 'Company' : (item.payerName || 'Investor'))} • ${formatMoney(item.amount)}</div>`).join('') || '<div class="mt-1 text-xs text-gray-400">No repayments yet</div>';
+                return `<div class="p-4 space-y-3"><div class="flex flex-col sm:flex-row sm:justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(loan.lenderName || 'Lender')}</div><div class="text-xs text-gray-500">${escapeHtml(loan.purpose || 'Loan')} • ${formatDisplayDate(getLoanDate(loan))}</div><div class="mt-1 font-bold text-amber-700">Borrowed: ${formatMoney(loan.amount)}</div><div class="text-sm text-emerald-700">Repaid: ${formatMoney(repaid)}</div><div class="text-sm text-red-700">Balance: ${formatMoney(balance)}</div>${repayments}<div class="mt-3 flex flex-wrap gap-2"><button onclick="editManagerLoan('${loan.id}')" class="rounded border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 hover:bg-amber-100">Edit</button><button onclick="deleteManagerLoan('${loan.id}')" class="rounded border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700 hover:bg-red-100">Delete</button></div></div><span class="self-start rounded-full px-3 py-1 text-xs font-bold ${statusClass}">${balance <= 0 ? 'Paid' : 'Pending'}</span></div>${balance > 0 ? `<div class="grid grid-cols-1 sm:grid-cols-5 gap-2 border-t pt-3"><select id="loan-payer-type-${loan.id}" onchange="toggleLoanInvestorSelect('${loan.id}')" class="rounded-md border border-gray-300 p-2 text-sm"><option value="company">Company</option><option value="investor">Investor</option></select><select id="loan-payer-investor-${loan.id}" class="hidden rounded-md border border-gray-300 p-2 text-sm">${investors.map(investor => `<option value="${investor.id}">${escapeHtml(investor.name || 'Investor')}</option>`).join('')}</select><input id="loan-repay-date-${loan.id}" type="date" value="${getTodayString()}" class="rounded-md border border-gray-300 p-2 text-sm"><input id="loan-repay-amount-${loan.id}" type="number" min="1" max="${balance}" value="${balance}" class="rounded-md border border-gray-300 p-2 text-sm"><button onclick="recordLoanRepayment('${loan.id}')" class="rounded-md bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700">Record Repayment</button></div>` : ''}</div>`;
+            }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No manager loans recorded yet.</div>';
+        }
+
+        window.resetManagerLoanForm = function() {
+            document.getElementById('loan-edit-id').value = '';
+            document.getElementById('loan-date').value = getTodayString();
+            document.getElementById('loan-lender-name').value = '';
+            document.getElementById('loan-purpose').value = '';
+            document.getElementById('loan-amount').value = '';
+        }
+
+        window.editManagerLoan = function(loanId) {
+            const loan = managerLoans.find(item => item.id === loanId);
+            if(!loan) return;
+            document.getElementById('loan-edit-id').value = loan.id;
+            document.getElementById('loan-date').value = normalizeDateInput(getLoanDate(loan));
+            document.getElementById('loan-lender-name').value = loan.lenderName || '';
+            document.getElementById('loan-purpose').value = loan.purpose || '';
+            document.getElementById('loan-amount').value = Number(loan.amount) || 0;
+            document.getElementById('loan-lender-name').focus();
+        }
+
+        window.saveManagerLoan = async function() {
+            const loanId = document.getElementById('loan-edit-id').value;
+            const loanDate = document.getElementById('loan-date').value || getTodayString();
+            const lenderName = document.getElementById('loan-lender-name').value.trim();
+            const purpose = document.getElementById('loan-purpose').value.trim();
+            const amount = Number(document.getElementById('loan-amount').value) || 0;
+            if(!lenderName || amount <= 0) { showToast('Date, lender name, and valid amount are required', 'error'); return; }
+            const existingLoan = loanId ? managerLoans.find(item => item.id === loanId) : null;
+            if(existingLoan && amount < getLoanRepaidTotal(existingLoan)) { showToast('Loan amount cannot be less than already repaid total', 'error'); return; }
+            try {
+                if(loanId) {
+                    const repaid = getLoanRepaidTotal(existingLoan || {});
+                    await updateDoc(doc(db, 'managerLoans', loanId), { lenderName, purpose, amount, loanDate, status: repaid >= amount ? 'paid' : repaid > 0 ? 'partial' : 'pending', updatedAt: getTodayString(), updatedBy: authUser?.uid || '' });
+                    showToast('Manager loan updated');
+                } else {
+                    await addDoc(collection(db, 'managerLoans'), { lenderName, purpose, amount, loanDate, status: 'pending', repayments: [], createdAt: loanDate, createdBy: authUser?.uid || '' });
+                    showToast('Manager loan recorded');
+                }
+                resetManagerLoanForm();
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.createManagerLoan = window.saveManagerLoan;
+
+        window.deleteManagerLoan = async function(loanId) {
+            const loan = managerLoans.find(item => item.id === loanId);
+            if(!loan) return;
+            if(!(await showConfirm({ title: 'Delete Manager Loan?', message: 'This loan ledger entry will be removed. Investor capital entries already posted from repayments will remain for audit history.', confirmText: 'Delete' }))) return;
+            try {
+                await deleteDoc(doc(db, 'managerLoans', loanId));
+                if(document.getElementById('loan-edit-id').value === loanId) resetManagerLoanForm();
+                showToast('Manager loan deleted', 'error');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.toggleLoanInvestorSelect = function(loanId) {
+            const type = document.getElementById(`loan-payer-type-${loanId}`)?.value;
+            document.getElementById(`loan-payer-investor-${loanId}`)?.classList.toggle('hidden', type !== 'investor');
+        }
+
+        window.recordLoanRepayment = async function(loanId) {
+            const loan = managerLoans.find(item => item.id === loanId);
+            if(!loan) return;
+            const balance = (Number(loan.amount) || 0) - getLoanRepaidTotal(loan);
+            const amount = Number(document.getElementById(`loan-repay-amount-${loanId}`).value) || 0;
+            const repaymentDate = document.getElementById(`loan-repay-date-${loanId}`)?.value || getTodayString();
+            const payerType = document.getElementById(`loan-payer-type-${loanId}`).value;
+            const investorUid = payerType === 'investor' ? document.getElementById(`loan-payer-investor-${loanId}`).value : '';
+            const investor = investorUid ? getInvestorByUid(investorUid) : {};
+            if(amount <= 0 || amount > balance) { showToast('Enter a valid repayment amount', 'error'); return; }
+            if(payerType === 'investor' && !investor.id) { showToast('Select a valid investor', 'error'); return; }
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const loanRef = doc(db, 'managerLoans', loanId);
+                    const repayments = Array.isArray(loan.repayments) ? loan.repayments : [];
+                    const payerName = payerType === 'company' ? 'Company' : (investor.name || 'Investor');
+                    const repaymentEntry = { amount, payerType, investorUid, payerName, date: repaymentDate, recordedBy: authUser?.uid || '' };
+                    transaction.update(loanRef, {
+                        repayments: [...repayments, repaymentEntry],
+                        status: amount >= balance ? 'paid' : 'partial',
+                        updatedAt: getTodayString(),
+                        updatedBy: authUser?.uid || ''
+                    });
+                    if(payerType === 'investor') {
+                        const expenseRef = doc(collection(db, 'investorExpenses'));
+                        transaction.set(expenseRef, {
+                            uid: investorUid,
+                            investorName: investor.name || 'Investor',
+                            investorEmail: investor.email || '',
+                            purpose: `Manager loan repayment: ${loan.lenderName || 'Loan'}`,
+                            amount,
+                            status: 'approved',
+                            createdAt: repaymentDate,
+                            approvedAt: repaymentDate,
+                            approvedBy: authUser?.uid || '',
+                            source: 'managerLoanRepayment',
+                            managerLoanId: loanId
+                        });
+                    }
+                });
+                showToast(payerType === 'investor' ? 'Repayment recorded and added to investor investment' : 'Repayment recorded');
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        function renderCompanyFinanceDashboard() {
+            const dateInput = document.getElementById('finance-date');
+            if(dateInput && !dateInput.value) dateInput.value = getTodayString();
+            const totalIncome = companyDailyAccounts.reduce((sum, item) => sum + (Number(item.income) || 0), 0);
+            const totalExpense = companyDailyAccounts.reduce((sum, item) => sum + (Number(item.expense) || 0), 0);
+            document.getElementById('finance-total-income').innerText = formatMoney(totalIncome);
+            document.getElementById('finance-total-expense').innerText = formatMoney(totalExpense);
+            document.getElementById('finance-total-balance').innerText = formatMoney(totalIncome - totalExpense);
+            const list = document.getElementById('company-finance-list');
+            if(!list) return;
+            list.innerHTML = companyDailyAccounts.map(item => {
+                const income = Number(item.income) || 0;
+                const expense = Number(item.expense) || 0;
+                const balance = income - expense;
+                return `<div class="p-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><div class="font-bold text-gray-900">${formatDisplayDate(item.accountDate || item.createdAt)}</div><div class="text-xs text-gray-500 mt-1">${escapeHtml(item.note || 'Daily company account')}</div><div class="mt-2 grid grid-cols-3 gap-3 text-sm"><div><div class="text-xs font-bold uppercase text-cyan-500">Income</div><div class="font-bold text-cyan-700">${formatMoney(income)}</div></div><div><div class="text-xs font-bold uppercase text-red-500">Expense</div><div class="font-bold text-red-700">${formatMoney(expense)}</div></div><div><div class="text-xs font-bold uppercase text-emerald-500">Balance</div><div class="font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'}">${formatMoney(balance)}</div></div></div></div><div class="flex gap-2"><button onclick="editCompanyDailyAccount('${item.id}')" class="rounded border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-700 hover:bg-cyan-100">Edit</button><button onclick="deleteCompanyDailyAccount('${item.id}')" class="rounded border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700 hover:bg-red-100">Delete</button></div></div>`;
+            }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No daily company accounts added yet.</div>';
+        }
+
+        window.resetCompanyDailyAccountForm = function() {
+            document.getElementById('finance-edit-id').value = '';
+            document.getElementById('finance-date').value = getTodayString();
+            document.getElementById('finance-income').value = 0;
+            document.getElementById('finance-expense').value = 0;
+            document.getElementById('finance-note').value = '';
+        }
+
+        window.editCompanyDailyAccount = function(accountId) {
+            const account = companyDailyAccounts.find(item => item.id === accountId);
+            if(!account) return;
+            document.getElementById('finance-edit-id').value = account.id;
+            document.getElementById('finance-date').value = normalizeDateInput(account.accountDate || account.createdAt);
+            document.getElementById('finance-income').value = Number(account.income) || 0;
+            document.getElementById('finance-expense').value = Number(account.expense) || 0;
+            document.getElementById('finance-note').value = account.note || '';
+            document.getElementById('finance-income').focus();
+        }
+
+        async function syncCompanyDailyExpense(accountId, accountDate, expense, note, existingExpenseId = '') {
+            const purpose = `Company expense: ${note || formatDisplayDate(accountDate)}`;
+            if(expense > 0) {
+                const expensePayload = {
+                    uid: 'company',
+                    investorName: companySettings.name || 'Company',
+                    investorEmail: '',
+                    purpose,
+                    amount: expense,
+                    status: 'approved',
+                    createdAt: accountDate,
+                    approvedAt: accountDate,
+                    approvedBy: authUser?.uid || '',
+                    source: 'companyDailyAccount',
+                    companyDailyAccountId: accountId
+                };
+                if(existingExpenseId) {
+                    await updateDoc(doc(db, 'investorExpenses', existingExpenseId), expensePayload);
+                    return existingExpenseId;
+                }
+                const expenseRef = await addDoc(collection(db, 'investorExpenses'), expensePayload);
+                return expenseRef.id;
+            }
+            if(existingExpenseId) await deleteDoc(doc(db, 'investorExpenses', existingExpenseId));
+            return '';
+        }
+
+        window.saveCompanyDailyAccount = async function() {
+            const accountId = document.getElementById('finance-edit-id').value;
+            const accountDate = document.getElementById('finance-date').value || getTodayString();
+            const income = Number(document.getElementById('finance-income').value) || 0;
+            const expense = Number(document.getElementById('finance-expense').value) || 0;
+            const note = document.getElementById('finance-note').value.trim();
+            if(income < 0 || expense < 0) { showToast('Income and expense cannot be negative', 'error'); return; }
+            try {
+                const existingAccount = accountId ? companyDailyAccounts.find(item => item.id === accountId) : null;
+                const payload = { accountDate, income, expense, note, balance: income - expense, updatedAt: getTodayString(), updatedBy: authUser?.uid || '' };
+                if(accountId) {
+                    const companyExpenseId = await syncCompanyDailyExpense(accountId, accountDate, expense, note, existingAccount?.companyExpenseId || '');
+                    await updateDoc(doc(db, 'companyDailyAccounts', accountId), { ...payload, companyExpenseId });
+                    showToast('Company account updated');
+                } else {
+                    const accountRef = await addDoc(collection(db, 'companyDailyAccounts'), { ...payload, companyExpenseId: '', createdAt: accountDate, createdBy: authUser?.uid || '' });
+                    const companyExpenseId = await syncCompanyDailyExpense(accountRef.id, accountDate, expense, note, '');
+                    if(companyExpenseId) await updateDoc(accountRef, { companyExpenseId });
+                    showToast('Company account added');
+                }
+                resetCompanyDailyAccountForm();
+            } catch (error) { showToast(error.message, 'error'); }
+        }
+
+        window.deleteCompanyDailyAccount = async function(accountId) {
+            const account = companyDailyAccounts.find(item => item.id === accountId);
+            if(!(await showConfirm({ title: 'Delete Daily Account?', message: 'Remove this company income/expense entry?', confirmText: 'Delete' }))) return;
+            try {
+                if(account?.companyExpenseId) await deleteDoc(doc(db, 'investorExpenses', account.companyExpenseId));
+                await deleteDoc(doc(db, 'companyDailyAccounts', accountId));
+                if(document.getElementById('finance-edit-id').value === accountId) resetCompanyDailyAccountForm();
+                showToast('Company account deleted', 'error');
+            } catch (error) { showToast(error.message, 'error'); }
         }
 
 

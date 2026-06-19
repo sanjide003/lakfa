@@ -54,6 +54,14 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /managerLoans/{loanId} {
+      allow read, create, update, delete: if isManager();
+    }
+
+    match /companyDailyAccounts/{accountId} {
+      allow read, create, update, delete: if isManager();
+    }
+
     match /investorPaymentRequests/{requestId} {
       allow read: if isManager() || isInvestor();
       allow create, delete: if isManager();
@@ -67,13 +75,14 @@ service cloud.firestore {
 
     match /investorExpenses/{expenseId} {
       allow read: if isManager() || isInvestor();
-      allow create: if isInvestor()
+      allow create: if isManager()
+        || (isInvestor()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.status == 'pending'
         && request.resource.data.amount is number
         && request.resource.data.amount > 0
         && request.resource.data.purpose is string
-        && request.resource.data.purpose.size() > 0;
+        && request.resource.data.purpose.size() > 0);
       allow update: if isManager();
       allow delete: if isManager() || (isInvestor() && resource.data.uid == request.auth.uid && resource.data.status == 'rejected');
     }
