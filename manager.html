@@ -777,15 +777,37 @@
 
     <div id="manager-loan-repayment-modal" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div class="px-6 py-4 border-b bg-emerald-50"><h2 class="text-lg font-bold text-emerald-950">Update Loan Repayment</h2><p id="loan-repayment-summary" class="text-xs text-emerald-700 mt-1">Record who paid, date, and amount.</p></div>
+            <div class="px-6 py-4 border-b bg-emerald-50"><h2 class="text-lg font-bold text-emerald-950">Update Loan Repayment</h2><p id="loan-repayment-summary" class="text-xs text-emerald-700 mt-1">Select who paid, date, and amount.</p></div>
             <div class="p-6 space-y-4">
                 <input id="loan-repayment-id" type="hidden">
-                <div><label class="block text-sm font-medium text-gray-700">Fund Paid By</label><input id="loan-repayment-payer-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Company / Abdul Rahman"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Fund Paid By</label><select id="loan-repayment-payer" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></select></div>
                 <div><label class="block text-sm font-medium text-gray-700">Date</label><input id="loan-repayment-date" type="date" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Amount (₹)</label><input id="loan-repayment-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <p id="loan-repayment-balance-note" class="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"></p>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeManagerLoanRepaymentModal()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">Cancel</button><button onclick="recordLoanRepayment()" class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Save Update</button></div>
+        </div>
+    </div>
+
+    <div id="manager-loan-edit-modal" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div class="px-6 py-4 border-b bg-amber-50"><h2 class="text-lg font-bold text-amber-950">Edit Manager Loan</h2><p class="text-xs text-amber-700 mt-1">Update date, lender, purpose, and amount.</p></div>
+            <div class="p-6 space-y-4">
+                <input id="edit-loan-id" type="hidden">
+                <div><label class="block text-sm font-medium text-gray-700">Date</label><input id="edit-loan-date" type="date" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Lender / Person Name</label><input id="edit-loan-lender-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Purpose / Note</label><input id="edit-loan-purpose" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Amount (₹)</label><input id="edit-loan-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeManagerLoanEditModal()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">Cancel</button><button onclick="saveManagerLoanEdit()" class="rounded-md bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">Save Changes</button></div>
+        </div>
+    </div>
+
+    <div id="manager-loan-history-modal" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b bg-indigo-50"><h2 class="text-lg font-bold text-indigo-950">Loan Payment History</h2><p id="loan-history-summary" class="text-xs text-indigo-700 mt-1"></p></div>
+            <div id="loan-history-list" class="max-h-[60vh] overflow-y-auto p-6"></div>
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-end"><button onclick="closeManagerLoanHistoryModal()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">Close</button></div>
         </div>
     </div>
 
@@ -977,7 +999,7 @@
             Object.keys(orderUtilityTabs).forEach(tabKey => {
                 if(tabKey !== nextTabId) document.getElementById('tab-' + tabKey).innerHTML = '';
             });
-            ['order-modal', 'product-modal', 'stock-modal', 'history-modal', 'status-modal', 'order-history-modal', 'repeat-customer-modal', 'manager-loan-repayment-modal'].forEach(modalId => {
+            ['order-modal', 'product-modal', 'stock-modal', 'history-modal', 'status-modal', 'order-history-modal', 'repeat-customer-modal', 'manager-loan-repayment-modal', 'manager-loan-edit-modal', 'manager-loan-history-modal'].forEach(modalId => {
                 const modal = document.getElementById(modalId);
                 if(modal) modal.classList.add('hidden');
             });
@@ -2090,13 +2112,12 @@
                 list.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">No manager loans recorded yet.</div>';
                 return;
             }
-            list.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left font-bold text-gray-600">Date</th><th class="px-4 py-3 text-left font-bold text-gray-600">Lender</th><th class="px-4 py-3 text-left font-bold text-gray-600">Purpose</th><th class="px-4 py-3 text-right font-bold text-gray-600">Amount</th><th class="px-4 py-3 text-right font-bold text-gray-600">Repaid</th><th class="px-4 py-3 text-right font-bold text-gray-600">Balance</th><th class="px-4 py-3 text-left font-bold text-gray-600">Repayment History</th><th class="px-4 py-3 text-center font-bold text-gray-600">Action</th></tr></thead><tbody class="divide-y divide-gray-100 bg-white">${managerLoans.map(loan => {
+            list.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left font-bold text-gray-600">Date</th><th class="px-4 py-3 text-left font-bold text-gray-600">Lender</th><th class="px-4 py-3 text-left font-bold text-gray-600">Purpose</th><th class="px-4 py-3 text-right font-bold text-gray-600">Amount</th><th class="px-4 py-3 text-right font-bold text-gray-600">Repaid</th><th class="px-4 py-3 text-right font-bold text-gray-600">Balance</th><th class="px-4 py-3 text-center font-bold text-gray-600">Payment History</th><th class="px-4 py-3 text-center font-bold text-gray-600">Action</th></tr></thead><tbody class="divide-y divide-gray-100 bg-white">${managerLoans.map(loan => {
                 const repaid = getLoanRepaidTotal(loan);
                 const amount = Number(loan.amount) || 0;
                 const balance = amount - repaid;
                 const statusClass = balance <= 0 ? 'bg-green-100 text-green-800' : balance < amount ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800';
-                const repayments = (Array.isArray(loan.repayments) ? loan.repayments : []).map(item => `<div class="whitespace-nowrap">${formatDisplayDate(item.date)} • ${escapeHtml(item.payerName || 'Fund payer')} • ${formatMoney(item.amount)}</div>`).join('') || '<span class="text-gray-400">No repayments</span>';
-                return `<tr><td class="px-4 py-3 whitespace-nowrap text-gray-700">${formatDisplayDate(getLoanDate(loan))}</td><td class="px-4 py-3 font-semibold text-gray-900">${escapeHtml(loan.lenderName || 'Lender')}</td><td class="px-4 py-3 text-gray-700">${escapeHtml(loan.purpose || 'Loan')}</td><td class="px-4 py-3 text-right font-bold text-amber-700">${formatMoney(amount)}</td><td class="px-4 py-3 text-right font-bold text-emerald-700">${formatMoney(repaid)}</td><td class="px-4 py-3 text-right"><div class="font-bold text-red-700">${formatMoney(Math.max(balance, 0))}</div><span class="inline-flex mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${statusClass}">${balance <= 0 ? 'Paid' : balance < amount ? 'Partial' : 'Pending'}</span></td><td class="px-4 py-3 text-xs text-gray-600">${repayments}</td><td class="px-4 py-3"><div class="flex flex-wrap justify-center gap-2"><button onclick="editManagerLoan('${loan.id}')" class="rounded border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 hover:bg-amber-100">Edit</button><button onclick="deleteManagerLoan('${loan.id}')" class="rounded border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700 hover:bg-red-100">Delete</button><button onclick="openManagerLoanRepaymentModal('${loan.id}')" class="rounded border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100" ${balance <= 0 ? 'disabled title="Fully paid"' : ''}>Update</button></div></td></tr>`;
+                return `<tr><td class="px-4 py-3 whitespace-nowrap text-gray-700">${formatDisplayDate(getLoanDate(loan))}</td><td class="px-4 py-3 font-semibold text-gray-900">${escapeHtml(loan.lenderName || 'Lender')}</td><td class="px-4 py-3 text-gray-700">${escapeHtml(loan.purpose || 'Loan')}</td><td class="px-4 py-3 text-right font-bold text-amber-700 whitespace-nowrap">${formatMoney(amount)}</td><td class="px-4 py-3 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(repaid)}</td><td class="px-4 py-3 text-right whitespace-nowrap"><div class="font-bold text-red-700">${formatMoney(Math.max(balance, 0))}</div><span class="inline-flex mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${statusClass}">${balance <= 0 ? 'Paid' : balance < amount ? 'Partial' : 'Pending'}</span></td><td class="px-4 py-3 text-center"><button onclick="showManagerLoanHistory('${loan.id}')" class="inline-flex items-center justify-center rounded border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100">${getIconSvg('history', 'w-4 h-4 mr-1')} History</button></td><td class="px-4 py-3 whitespace-nowrap"><div class="flex items-center justify-center gap-2 flex-nowrap"><button onclick="editManagerLoan('${loan.id}')" title="Edit" class="inline-flex items-center justify-center rounded border border-amber-200 bg-amber-50 p-2 text-amber-700 hover:bg-amber-100">${getIconSvg('edit', 'w-4 h-4')}</button><button onclick="deleteManagerLoan('${loan.id}')" title="Delete" class="inline-flex items-center justify-center rounded border border-red-200 bg-red-50 p-2 text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-4 h-4')}</button><button onclick="openManagerLoanRepaymentModal('${loan.id}')" title="Update" class="inline-flex items-center justify-center rounded border border-emerald-200 bg-emerald-50 p-2 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40" ${balance <= 0 ? 'disabled' : ''}>${getIconSvg('status', 'w-4 h-4')}</button></div></td></tr>`;
             }).join('')}</tbody></table></div>`;
         }
 
@@ -2111,12 +2132,36 @@
         window.editManagerLoan = function(loanId) {
             const loan = managerLoans.find(item => item.id === loanId);
             if(!loan) return;
-            document.getElementById('loan-edit-id').value = loan.id;
-            document.getElementById('loan-date').value = normalizeDateInput(getLoanDate(loan));
-            document.getElementById('loan-lender-name').value = loan.lenderName || '';
-            document.getElementById('loan-purpose').value = loan.purpose || '';
-            document.getElementById('loan-amount').value = Number(loan.amount) || 0;
-            document.getElementById('loan-lender-name').focus();
+            document.getElementById('edit-loan-id').value = loan.id;
+            document.getElementById('edit-loan-date').value = normalizeDateInput(getLoanDate(loan));
+            document.getElementById('edit-loan-lender-name').value = loan.lenderName || '';
+            document.getElementById('edit-loan-purpose').value = loan.purpose || '';
+            document.getElementById('edit-loan-amount').value = Number(loan.amount) || 0;
+            document.getElementById('manager-loan-edit-modal').classList.remove('hidden');
+            document.getElementById('edit-loan-lender-name').focus();
+        }
+
+        window.closeManagerLoanEditModal = function() {
+            document.getElementById('manager-loan-edit-modal').classList.add('hidden');
+            document.getElementById('edit-loan-id').value = '';
+        }
+
+        window.saveManagerLoanEdit = async function() {
+            const loanId = document.getElementById('edit-loan-id').value;
+            const loanDate = document.getElementById('edit-loan-date').value || getTodayString();
+            const lenderName = document.getElementById('edit-loan-lender-name').value.trim();
+            const purpose = document.getElementById('edit-loan-purpose').value.trim();
+            const amount = Number(document.getElementById('edit-loan-amount').value) || 0;
+            const existingLoan = managerLoans.find(item => item.id === loanId);
+            if(!existingLoan) return;
+            if(!loanDate || !lenderName || !purpose || amount <= 0) { showToast('Date, lender name, purpose, and valid amount are required', 'error'); return; }
+            if(amount < getLoanRepaidTotal(existingLoan)) { showToast('Loan amount cannot be less than already repaid total', 'error'); return; }
+            try {
+                const repaid = getLoanRepaidTotal(existingLoan || {});
+                await updateDoc(doc(db, 'managerLoans', loanId), { lenderName, purpose, amount, loanDate, status: repaid >= amount ? 'paid' : repaid > 0 ? 'partial' : 'pending', updatedAt: getTodayString(), updatedBy: authUser?.uid || '' });
+                closeManagerLoanEditModal();
+                showToast('Manager loan updated');
+            } catch (error) { showToast(error.message, 'error'); }
         }
 
         window.saveManagerLoan = async function() {
@@ -2154,20 +2199,39 @@
             } catch (error) { showToast(error.message, 'error'); }
         }
 
+        window.showManagerLoanHistory = function(loanId) {
+            const loan = managerLoans.find(item => item.id === loanId);
+            if(!loan) return;
+            const repayments = Array.isArray(loan.repayments) ? loan.repayments : [];
+            document.getElementById('loan-history-summary').innerText = `${loan.lenderName || 'Loan'} • ${formatMoney(getLoanRepaidTotal(loan))} repaid of ${formatMoney(loan.amount)}`;
+            document.getElementById('loan-history-list').innerHTML = repayments.length ? `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left font-bold text-gray-600">Date</th><th class="px-4 py-3 text-left font-bold text-gray-600">Paid By</th><th class="px-4 py-3 text-right font-bold text-gray-600">Amount</th></tr></thead><tbody class="divide-y divide-gray-100">${repayments.map(item => `<tr><td class="px-4 py-3 whitespace-nowrap">${formatDisplayDate(item.date)}</td><td class="px-4 py-3">${escapeHtml(item.payerName || 'Fund payer')}</td><td class="px-4 py-3 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(item.amount)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="rounded-lg bg-gray-50 p-6 text-center text-sm text-gray-500">No repayments recorded yet.</div>';
+            document.getElementById('manager-loan-history-modal').classList.remove('hidden');
+        }
+
+        window.closeManagerLoanHistoryModal = function() {
+            document.getElementById('manager-loan-history-modal').classList.add('hidden');
+        }
+
+        function populateLoanRepaymentPayers() {
+            const select = document.getElementById('loan-repayment-payer');
+            if(!select) return;
+            select.innerHTML = `<option value="company">Company</option>${investors.map(investor => `<option value="investor:${investor.id}">${escapeHtml(investor.name || 'Investor')}</option>`).join('')}`;
+        }
+
         window.openManagerLoanRepaymentModal = function(loanId) {
             const loan = managerLoans.find(item => item.id === loanId);
             if(!loan) return;
             const balance = (Number(loan.amount) || 0) - getLoanRepaidTotal(loan);
             if(balance <= 0) { showToast('This loan is already fully paid'); return; }
+            populateLoanRepaymentPayers();
             document.getElementById('loan-repayment-id').value = loanId;
-            document.getElementById('loan-repayment-payer-name').value = '';
             document.getElementById('loan-repayment-date').value = getTodayString();
             document.getElementById('loan-repayment-amount').value = balance;
             document.getElementById('loan-repayment-amount').max = balance;
             document.getElementById('loan-repayment-summary').innerText = `${loan.lenderName || 'Loan'} • Pending ${formatMoney(balance)}`;
             document.getElementById('loan-repayment-balance-note').innerText = `If less than ${formatMoney(balance)} is paid, the remaining balance will stay pending.`;
             document.getElementById('manager-loan-repayment-modal').classList.remove('hidden');
-            document.getElementById('loan-repayment-payer-name').focus();
+            document.getElementById('loan-repayment-payer').focus();
         }
 
         window.closeManagerLoanRepaymentModal = function() {
@@ -2182,20 +2246,40 @@
             const balance = (Number(loan.amount) || 0) - getLoanRepaidTotal(loan);
             const amount = Number(document.getElementById('loan-repayment-amount').value) || 0;
             const repaymentDate = document.getElementById('loan-repayment-date')?.value || getTodayString();
-            const payerName = document.getElementById('loan-repayment-payer-name').value.trim();
-            if(!payerName) { showToast('Enter who paid the fund', 'error'); return; }
+            const payerValue = document.getElementById('loan-repayment-payer').value;
+            const isInvestor = payerValue.startsWith('investor:');
+            const investorUid = isInvestor ? payerValue.replace('investor:', '') : '';
+            const investor = investorUid ? getInvestorByUid(investorUid) : {};
+            const payerName = isInvestor ? (investor.name || 'Investor') : 'Company';
+            if(isInvestor && !investor.id) { showToast('Select a valid investor', 'error'); return; }
             if(amount <= 0 || amount > balance) { showToast('Enter a valid repayment amount', 'error'); return; }
             try {
                 await runTransaction(db, async (transaction) => {
                     const loanRef = doc(db, 'managerLoans', activeLoanId);
                     const repayments = Array.isArray(loan.repayments) ? loan.repayments : [];
-                    const repaymentEntry = { amount, payerType: 'manual', investorUid: '', payerName, date: repaymentDate, recordedBy: authUser?.uid || '' };
+                    const repaymentEntry = { amount, payerType: isInvestor ? 'investor' : 'company', investorUid, payerName, date: repaymentDate, recordedBy: authUser?.uid || '' };
                     transaction.update(loanRef, {
                         repayments: [...repayments, repaymentEntry],
                         status: amount >= balance ? 'paid' : 'partial',
                         updatedAt: getTodayString(),
                         updatedBy: authUser?.uid || ''
                     });
+                    if(isInvestor) {
+                        const expenseRef = doc(collection(db, 'investorExpenses'));
+                        transaction.set(expenseRef, {
+                            uid: investorUid,
+                            investorName: investor.name || 'Investor',
+                            investorEmail: investor.email || '',
+                            purpose: `Manager loan repayment: ${loan.lenderName || 'Loan'}`,
+                            amount,
+                            status: 'approved',
+                            createdAt: repaymentDate,
+                            approvedAt: repaymentDate,
+                            approvedBy: authUser?.uid || '',
+                            source: 'managerLoanRepayment',
+                            managerLoanId: activeLoanId
+                        });
+                    }
                 });
                 closeManagerLoanRepaymentModal();
                 showToast(amount >= balance ? 'Loan fully paid' : 'Repayment recorded; balance remains pending');
