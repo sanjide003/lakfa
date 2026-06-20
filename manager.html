@@ -599,9 +599,12 @@
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">New Payment ₹</label><input type="number" id="order-new-payment" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="When clearing balance"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Date</label><input type="date" id="order-new-payment-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
                                 <div class="sm:col-span-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Note</label><input id="order-new-payment-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Balance cleared by UPI"></div>
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense ₹</label><input type="number" id="order-new-expense" min="0" step="0.01" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Order expense"></div>
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Date</label><input type="date" id="order-new-expense-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
-                                <div class="sm:col-span-2"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Note</label><input id="order-new-expense-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Courier / packing"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Total Expense ₹</label><input type="number" id="order-expense-total" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Total expense"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Round Off / Discount ₹</label><input type="number" id="order-expense-adjustment" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Use - for discount"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Paid Now ₹</label><input type="number" id="order-new-expense" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Amount paid"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Paid Date</label><input type="date" id="order-new-expense-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
+                                <div class="sm:col-span-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Note</label><input id="order-new-expense-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Courier / packing paid"></div>
+                                <div class="sm:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm" id="order-expense-summary"></div>
                                 <div class="sm:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm" id="order-payment-summary"></div>
                                 <div class="sm:col-span-4" id="order-payment-history"></div>
                             </div>
@@ -1461,10 +1464,19 @@
             return orderList.reduce((sum, order) => sum + getOrderProductCount(order), 0);
         }
 
-        function getOrderExpenseTotal(order) {
+        function getOrderExpensePaidTotal(order) {
             return Array.isArray(order.orderExpenses)
                 ? order.orderExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
                 : 0;
+        }
+
+        function getOrderExpenseTotal(order) {
+            return Number(order.orderExpenseTotal) || getOrderExpensePaidTotal(order);
+        }
+
+        function getOrderExpenseBalance(order) {
+            const expensePayable = Math.max(0, getOrderExpenseTotal(order) + (Number(order.orderExpenseAdjustment) || 0));
+            return Math.max(0, expensePayable - getOrderExpensePaidTotal(order));
         }
 
         function orderPassedThroughStatus(order, status) {
@@ -1727,9 +1739,12 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-expense-total').value = '';
+            document.getElementById('order-expense-adjustment').value = 0;
             document.getElementById('order-new-expense').value = '';
             document.getElementById('order-new-expense-date').value = getTodayString();
             document.getElementById('order-new-expense-note').value = '';
+            updateOrderExpenseSummary();
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
             document.getElementById('customer-suggestions').classList.add('hidden');
             showToast('Customer details filled');
@@ -1779,9 +1794,12 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-expense-total').value = '';
+            document.getElementById('order-expense-adjustment').value = 0;
             document.getElementById('order-new-expense').value = '';
             document.getElementById('order-new-expense-date').value = getTodayString();
             document.getElementById('order-new-expense-note').value = '';
+            updateOrderExpenseSummary();
             renderOrderPaymentHistory([]);
             addOrderProductRow();
             document.getElementById('order-modal').classList.remove('hidden');
@@ -1833,6 +1851,21 @@
             return { total, payable, paid, due, historyPaid };
         }
 
+        window.updateOrderExpenseSummary = function(existingOrder = null) {
+            const total = Number(document.getElementById('order-expense-total')?.value) || 0;
+            const adjustment = Number(document.getElementById('order-expense-adjustment')?.value) || 0;
+            const newPaid = Number(document.getElementById('order-new-expense')?.value) || 0;
+            const orderId = document.getElementById('order-id')?.value;
+            const order = existingOrder || (orderId ? orders.find(o => o.id === orderId) : null);
+            const alreadyPaid = getOrderExpensePaidTotal(order || {});
+            const payable = Math.max(0, total + adjustment);
+            const paid = alreadyPaid + newPaid;
+            const balance = Math.max(0, payable - paid);
+            const summary = document.getElementById('order-expense-summary');
+            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Expense Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Expense Paid</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Expense Balance</div><div class="font-bold text-red-700">${formatMoney(balance)}</div></div>`;
+            return { total, adjustment, payable, paid, balance, alreadyPaid, newPaid };
+        }
+
         function renderOrderPaymentHistory(history = []) {
             const host = document.getElementById('order-payment-history');
             if(!host) return;
@@ -1840,8 +1873,10 @@
             const order = currentOrderId ? orders.find(o => o.id === currentOrderId) : null;
             const expenses = Array.isArray(order?.orderExpenses) ? order.orderExpenses : [];
             const paymentHtml = history.length ? history.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Payment')}</span><span class="font-bold text-emerald-700">${formatMoney(item.amount)}</span></div>`).join('') : '<div class="text-xs text-gray-500">No balance payments recorded yet.</div>';
+            const expenseBalance = order ? getOrderExpenseBalance(order) : 0;
+            const expenseHeader = order ? `<div class="mb-2 rounded bg-red-50 px-2 py-1 text-xs font-bold text-red-700">Balance: ${formatMoney(expenseBalance)}</div>` : '';
             const expenseHtml = expenses.length ? expenses.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Expense')}</span><span class="font-bold text-red-700">${formatMoney(item.amount)}</span></div>`).join('') : '<div class="text-xs text-gray-500">No expenses recorded yet.</div>';
-            host.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div class="rounded border border-gray-200 bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500 mb-2">Payment History</div>${paymentHtml}</div><div class="rounded border border-red-100 bg-white p-3"><div class="text-xs font-bold uppercase text-red-500 mb-2">Expense History</div>${expenseHtml}</div></div>`;
+            host.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div class="rounded border border-gray-200 bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500 mb-2">Payment History</div>${paymentHtml}</div><div class="rounded border border-red-100 bg-white p-3"><div class="text-xs font-bold uppercase text-red-500 mb-2">Expense Paid History</div>${expenseHeader}${expenseHtml}</div></div>`;
         }
 
         window.addOrderProductRow = function(productId = '', qty = 1, priceType = 'includingGst', unitPrice = null) {
@@ -1890,9 +1925,12 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-expense-total').value = getOrderExpenseTotal(order);
+            document.getElementById('order-expense-adjustment').value = Number(order.orderExpenseAdjustment) || 0;
             document.getElementById('order-new-expense').value = '';
             document.getElementById('order-new-expense-date').value = getTodayString();
             document.getElementById('order-new-expense-note').value = '';
+            updateOrderExpenseSummary(order);
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
             
             document.getElementById('order-products-container').innerHTML = '';
@@ -1922,9 +1960,9 @@
             const payload = {
                 accountDate,
                 income,
-                expense: getOrderExpenseTotal(orderData),
+                expense: getOrderExpensePaidTotal(orderData),
                 note,
-                balance: income - getOrderExpenseTotal(orderData),
+                balance: income - getOrderExpensePaidTotal(orderData),
                 receivableTotal: Number(orderData.orderTotal) || 0,
                 receivableBalance: Number(orderData.balanceDue) || 0,
                 source: 'order',
@@ -1969,10 +2007,16 @@
             const newPaymentNote = document.getElementById('order-new-payment-note').value.trim();
             const paymentHistory = newPaymentAmount > 0 ? [...existingPaymentHistory, { amount: newPaymentAmount, date: newPaymentDate, note: newPaymentNote || 'Balance payment', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingPaymentHistory;
             const existingOrderExpenses = Array.isArray(existingOrderForPayment?.orderExpenses) ? existingOrderForPayment.orderExpenses : [];
+            const expenseTotal = Number(document.getElementById('order-expense-total')?.value) || 0;
+            const expenseAdjustment = Number(document.getElementById('order-expense-adjustment')?.value) || 0;
             const newExpenseAmount = Number(document.getElementById('order-new-expense')?.value) || 0;
             const newExpenseDate = document.getElementById('order-new-expense-date')?.value || getTodayString();
             const newExpenseNote = document.getElementById('order-new-expense-note')?.value.trim();
-            const orderExpenses = newExpenseAmount > 0 ? [...existingOrderExpenses, { amount: newExpenseAmount, date: newExpenseDate, note: newExpenseNote || 'Order expense', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingOrderExpenses;
+            const orderExpenses = newExpenseAmount > 0 ? [...existingOrderExpenses, { amount: newExpenseAmount, date: newExpenseDate, note: newExpenseNote || 'Expense paid', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingOrderExpenses;
+            const expensePayable = Math.max(0, expenseTotal + expenseAdjustment);
+            const expensePaidTotal = orderExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+            const expenseBalanceDue = Math.max(0, expensePayable - expensePaidTotal);
+            if(expensePaidTotal - expensePayable > 0.01) { showToast('Expense paid cannot be greater than expense payable amount', 'error'); return; }
             const firstPayment = Number(document.getElementById('order-first-payment').value) || 0;
             const roundOff = Number(document.getElementById('order-round-off').value) || 0;
             const orderItemsTotal = itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal) || 0), 0);
@@ -1996,7 +2040,11 @@
                 firstPayment,
                 paymentHistory,
                 orderExpenses,
-                orderExpenseTotal: orderExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
+                orderExpenseTotal: expenseTotal,
+                orderExpenseAdjustment: expenseAdjustment,
+                orderExpensePayable: expensePayable,
+                orderExpensePaidTotal: expensePaidTotal,
+                orderExpenseBalanceDue: expenseBalanceDue,
                 paidTotal,
                 balanceDue
             };
