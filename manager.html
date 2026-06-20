@@ -220,8 +220,17 @@
                             <button onclick="filterOrdersByStatus('Processing')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Processing</button>
                             <button onclick="filterOrdersByStatus('Shipped')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Shipped</button>
                             <button onclick="filterOrdersByStatus('Delivered')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered</button>
+                            <button onclick="filterOrdersByStatus('Payment Due')" data-order-filter="Payment Due" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Payment Due</button>
                             <button onclick="filterOrdersByStatus('All')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">All Orders</button>
                         </nav>
+                        <div id="payment-due-status-filters" class="hidden mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-orange-100 bg-orange-50 p-3">
+                            <span class="text-xs font-bold uppercase text-orange-700">Filter Due By Status</span>
+                            <button onclick="filterPaymentDueByStatus('All')" data-due-status="All" class="payment-due-filter rounded-full bg-orange-600 px-3 py-1 text-xs font-bold text-white">All Due</button>
+                            <button onclick="filterPaymentDueByStatus('Pending')" data-due-status="Pending" class="payment-due-filter rounded-full bg-white px-3 py-1 text-xs font-bold text-orange-700 border border-orange-200">Pending</button>
+                            <button onclick="filterPaymentDueByStatus('Processing')" data-due-status="Processing" class="payment-due-filter rounded-full bg-white px-3 py-1 text-xs font-bold text-orange-700 border border-orange-200">Processing</button>
+                            <button onclick="filterPaymentDueByStatus('Shipped')" data-due-status="Shipped" class="payment-due-filter rounded-full bg-white px-3 py-1 text-xs font-bold text-orange-700 border border-orange-200">Shipped</button>
+                            <button onclick="filterPaymentDueByStatus('Delivered')" data-due-status="Delivered" class="payment-due-filter rounded-full bg-white px-3 py-1 text-xs font-bold text-orange-700 border border-orange-200">Delivered</button>
+                        </div>
                     </div>
 
                     <!-- Search & Actions -->
@@ -337,9 +346,10 @@
                             <div class="p-6 space-y-4">
                                 <input id="loan-edit-id" type="hidden">
                                 <div><label class="block text-sm font-medium text-gray-700">Date</label><input id="loan-date" type="date" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
-                                <div><label class="block text-sm font-medium text-gray-700">Lender / Person Name</label><input id="loan-lender-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Abdul Rahman"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Lender / Person Name <span class="text-red-500">*</span></label><input id="loan-lender-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Abdul Rahman"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Contact Number</label><input id="loan-contact" type="tel" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Optional phone number"></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Purpose / Note</label><input id="loan-purpose" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Emergency purchase"></div>
-                                <div><label class="block text-sm font-medium text-gray-700">Amount (₹)</label><input id="loan-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Amount (₹) <span class="text-red-500">*</span></label><input id="loan-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                                 <div class="flex gap-2"><button onclick="saveManagerLoan()" class="flex-1 rounded-md bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">Save Loan</button><button onclick="resetManagerLoanForm()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Clear</button></div>
                             </div>
                         </div>
@@ -589,6 +599,12 @@
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">New Payment ₹</label><input type="number" id="order-new-payment" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="When clearing balance"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Date</label><input type="date" id="order-new-payment-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
                                 <div class="sm:col-span-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Note</label><input id="order-new-payment-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Balance cleared by UPI"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Total Expense ₹</label><input type="number" id="order-expense-total" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Total expense"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Round Off / Discount ₹</label><input type="number" id="order-expense-adjustment" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Use - for discount"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Paid Now ₹</label><input type="number" id="order-new-expense" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Amount paid"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Paid Date</label><input type="date" id="order-new-expense-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
+                                <div class="sm:col-span-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Note</label><input id="order-new-expense-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Courier / packing paid"></div>
+                                <div class="sm:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm" id="order-expense-summary"></div>
                                 <div class="sm:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm" id="order-payment-summary"></div>
                                 <div class="sm:col-span-4" id="order-payment-history"></div>
                             </div>
@@ -840,13 +856,14 @@
 
     <div id="manager-loan-edit-modal" class="hidden fixed inset-0 z-[85] flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div class="px-6 py-4 border-b bg-amber-50"><h2 class="text-lg font-bold text-amber-950">Edit Manager Loan</h2><p class="text-xs text-amber-700 mt-1">Update date, lender, purpose, and amount.</p></div>
+            <div class="px-6 py-4 border-b bg-amber-50"><h2 class="text-lg font-bold text-amber-950">Edit Manager Loan</h2><p class="text-xs text-amber-700 mt-1">Only lender/person name and amount are required.</p></div>
             <div class="p-6 space-y-4">
                 <input id="edit-loan-id" type="hidden">
                 <div><label class="block text-sm font-medium text-gray-700">Date</label><input id="edit-loan-date" type="date" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
-                <div><label class="block text-sm font-medium text-gray-700">Lender / Person Name</label><input id="edit-loan-lender-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Lender / Person Name <span class="text-red-500">*</span></label><input id="edit-loan-lender-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Contact Number</label><input id="edit-loan-contact" type="tel" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Purpose / Note</label><input id="edit-loan-purpose" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
-                <div><label class="block text-sm font-medium text-gray-700">Amount (₹)</label><input id="edit-loan-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Amount (₹) <span class="text-red-500">*</span></label><input id="edit-loan-amount" type="number" min="1" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeManagerLoanEditModal()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">Cancel</button><button onclick="saveManagerLoanEdit()" class="rounded-md bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">Save Changes</button></div>
         </div>
@@ -878,6 +895,7 @@
         let selectedOrders = new Set();
         let currentTab = 'dashboard';
         let currentOrderStatusFilter = 'Pending';
+        let paymentDueStatusFilter = 'All';
         const orderUtilityTabs = {
             recycle: { title: 'Recycle Bin', statusFilter: 'Recycle Bin', icon: 'trash', color: 'red' },
             returns: { title: 'Return', statusFilter: 'Return', icon: 'return', color: 'orange' },
@@ -1086,7 +1104,7 @@
             }
             if(orderUtilityTabs[tabId]) {
                 orderFilter = orderUtilityTabs[tabId].statusFilter;
-                currentOrderStatusFilter = orderFilter;
+                currentOrderStatusFilter = orderFilter === 'Delivered Due' ? 'Payment Due' : orderFilter;
             }
             currentTab = tabId;
             if(pushHistory) pushAppHistory(tabId, orderFilter);
@@ -1115,7 +1133,7 @@
                 headerActions.innerHTML = '';
                 renderDashboard();
             } else if (tabId === 'orders') {
-                if(orderFilter) currentOrderStatusFilter = orderFilter;
+                if(orderFilter) currentOrderStatusFilter = orderFilter === 'Delivered Due' ? 'Payment Due' : orderFilter;
                 document.getElementById('page-title').innerText = "Order Management";
                 headerActions.innerHTML = getOrderHeaderActions();
                 syncOrderFilterUI();
@@ -1238,12 +1256,13 @@
             const currentMonthKey = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
             orders.forEach(order => {
-                if (order.status === 'Pending') pending++;
-                else if (order.status === 'Processing') processing++;
-                else if (order.status === 'Shipped') shipped++;
-                else if (order.status === 'Delivered') delivered++;
-                else if (order.status === 'Return') returned++;
-                else if (order.status === 'Order Cancelled') cancelled++;
+                const productCount = getOrderProductCount(order);
+                if (order.status === 'Pending') pending += productCount;
+                else if (order.status === 'Processing') processing += productCount;
+                else if (order.status === 'Shipped') shipped += productCount;
+                else if (order.status === 'Delivered') delivered += productCount;
+                else if (order.status === 'Return') returned += productCount;
+                else if (order.status === 'Order Cancelled') cancelled += productCount;
 
                 let dateStr = order.createdAt;
                 if (typeof dateStr === 'object' && dateStr.seconds) {
@@ -1256,10 +1275,10 @@
                 const dayStr = formatDisplayDate(dateStr);
 
                 if (!ordersByMonth[monthKey]) { ordersByMonth[monthKey] = { total: 0, days: {} }; }
-                ordersByMonth[monthKey].total++;
+                ordersByMonth[monthKey].total += productCount;
                 
                 if (!ordersByMonth[monthKey].days[dayStr]) { ordersByMonth[monthKey].days[dayStr] = 0; }
-                ordersByMonth[monthKey].days[dayStr]++;
+                ordersByMonth[monthKey].days[dayStr] += productCount;
             });
 
             document.getElementById('dashboard-status-counts').innerHTML = `
@@ -1307,7 +1326,7 @@
                     daysHTML += `
                         <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0 pl-4 hover:bg-gray-50">
                             <span class="text-sm text-gray-600 font-medium">${dayStr}</span>
-                            <span class="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">${data.days[dayStr]} Orders</span>
+                            <span class="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">${data.days[dayStr]} Products</span>
                         </div>
                     `;
                 });
@@ -1375,10 +1394,22 @@
             document.querySelectorAll('.order-tab').forEach(el => {
                 el.classList.remove('border-red-500', 'text-red-600');
                 el.classList.add('border-transparent', 'text-gray-500');
-                if(el.textContent.trim() === currentOrderStatusFilter || (currentOrderStatusFilter === 'All' && el.textContent.trim() === 'All Orders')) {
+                const tabFilter = el.dataset.orderFilter || el.textContent.trim();
+                if(tabFilter === currentOrderStatusFilter || (currentOrderStatusFilter === 'All' && tabFilter === 'All Orders')) {
                     el.classList.remove('border-transparent', 'text-gray-500');
                     el.classList.add('border-red-500', 'text-red-600');
                 }
+            });
+            const duePanel = document.getElementById('payment-due-status-filters');
+            if(duePanel) duePanel.classList.toggle('hidden', currentOrderStatusFilter !== 'Payment Due');
+            document.querySelectorAll('.payment-due-filter').forEach(el => {
+                const active = el.dataset.dueStatus === paymentDueStatusFilter;
+                el.classList.toggle('bg-orange-600', active);
+                el.classList.toggle('text-white', active);
+                el.classList.toggle('bg-white', !active);
+                el.classList.toggle('text-orange-700', !active);
+                el.classList.toggle('border', !active);
+                el.classList.toggle('border-orange-200', !active);
             });
             document.querySelectorAll('.side-order-filter').forEach(el => {
                 const active = el.dataset.orderFilter === currentOrderStatusFilter;
@@ -1389,10 +1420,17 @@
         }
 
         window.filterOrdersByStatus = function(status) {
-            currentOrderStatusFilter = status;
-            pushAppHistory('orders', status);
+            currentOrderStatusFilter = status === 'Delivered Due' ? 'Payment Due' : status;
+            if(currentOrderStatusFilter !== 'Payment Due') paymentDueStatusFilter = 'All';
+            pushAppHistory('orders', currentOrderStatusFilter);
             syncOrderFilterUI();
             updateOrderHeaderActions();
+            renderOrders();
+        }
+
+        window.filterPaymentDueByStatus = function(status) {
+            paymentDueStatusFilter = status;
+            syncOrderFilterUI();
             renderOrders();
         }
 
@@ -1416,6 +1454,31 @@
             return order.items || '';
         }
 
+        function getOrderProductCount(order) {
+            return Array.isArray(order.itemsObj)
+                ? order.itemsObj.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)
+                : 0;
+        }
+
+        function getOrdersProductCount(orderList) {
+            return orderList.reduce((sum, order) => sum + getOrderProductCount(order), 0);
+        }
+
+        function getOrderExpensePaidTotal(order) {
+            return Array.isArray(order.orderExpenses)
+                ? order.orderExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                : 0;
+        }
+
+        function getOrderExpenseTotal(order) {
+            return Number(order.orderExpenseTotal) || getOrderExpensePaidTotal(order);
+        }
+
+        function getOrderExpenseBalance(order) {
+            const expensePayable = Math.max(0, getOrderExpenseTotal(order) + (Number(order.orderExpenseAdjustment) || 0));
+            return Math.max(0, expensePayable - getOrderExpensePaidTotal(order));
+        }
+
         function orderPassedThroughStatus(order, status) {
             return order.status === status || (Array.isArray(order.statusHistory) && order.statusHistory.some(entry => entry.status === status));
         }
@@ -1435,7 +1498,7 @@
                     groups[key].latestDate = order.createdAt;
                 }
             });
-            return Object.values(groups).sort((a, b) => b.orders.length - a.orders.length || String(a.name).localeCompare(String(b.name)));
+            return Object.values(groups).sort((a, b) => getOrdersProductCount(b.orders) - getOrdersProductCount(a.orders) || String(a.name).localeCompare(String(b.name)));
         }
 
         function getFilteredOrders() {
@@ -1447,7 +1510,9 @@
                 if(currentOrderStatusFilter === 'Repeat Customers') return false;
                 if(isRecycle ? !o.isDeleted : o.isDeleted) return false;
                 const lifecycleTab = currentOrderStatusFilter === 'Return' || currentOrderStatusFilter === 'Order Cancelled';
-                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter);
+                const isPaymentDue = currentOrderStatusFilter === 'Payment Due';
+                const matchesDueStatus = paymentDueStatusFilter === 'All' || o.status === paymentDueStatusFilter;
+                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (isPaymentDue ? ((Number(o.balanceDue) || 0) > 0 && matchesDueStatus) : (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter));
                 const matchesSearch = ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search));
                 const orderDate = normalizeDateInput(o.createdAt);
                 const matchesFrom = !fromDate || orderDate >= fromDate;
@@ -1475,6 +1540,7 @@
                             </div>
                 ` : `
                             <button onclick="printSingleOrder('${order.id}')" class="text-red-600 hover:text-red-800 mr-3" title="Print Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg></button>
+                            <button onclick="openOrderPaymentUpdate('${order.id}')" class="inline-flex items-center text-orange-700 hover:text-orange-900 text-xs font-bold mr-3 px-2 py-1 rounded border border-orange-100 bg-orange-50" title="Update payment">Due: ${formatMoney(order.balanceDue)}</button>
                             <button onclick="showOrderHistory('${order.id}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-xs font-bold mr-3 px-2 py-1 rounded border border-indigo-100 bg-indigo-50">${getIconSvg('history', 'w-4 h-4 mr-1')} History</button>
                             <div class="relative inline-block text-left">
                                 <button onclick="toggleOrderMenu('${order.id}', this)" class="text-gray-500 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100" title="More actions"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
@@ -1564,7 +1630,7 @@
                         <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address || '-'}</div>
                         <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
                     </td>
-                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${customer.orders.length} Orders</span></td>
+                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${getOrdersProductCount(customer.orders)} Products</span></td>
                     <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open</button>
@@ -1572,10 +1638,10 @@
                 </tr>
             ` : `
                 <tr class="hover:bg-gray-50 bg-indigo-50/30">
-                    <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${customer.orders.length}</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${getOrdersProductCount(customer.orders)}</span></td>
                     <td class="px-6 py-4">
                         <div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div>
-                        <div class="text-xs text-indigo-700 font-semibold">${customer.orders.length} total orders</div>
+                        <div class="text-xs text-indigo-700 font-semibold">${getOrdersProductCount(customer.orders)} products in ${customer.orders.length} orders</div>
                     </td>
                     <td class="px-6 py-4">
                         <div class="text-sm font-medium text-gray-900">${customer.name}</div>
@@ -1589,6 +1655,11 @@
                     </td>
                 </tr>
             `).join('');
+        }
+
+        window.openOrderPaymentUpdate = async function(id) {
+            await editOrder(id, true);
+            setTimeout(() => document.getElementById('order-new-payment')?.focus(), 50);
         }
 
         window.toggleOrderMenu = function(id, trigger = null) {
@@ -1668,6 +1739,12 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-expense-total').value = '';
+            document.getElementById('order-expense-adjustment').value = 0;
+            document.getElementById('order-new-expense').value = '';
+            document.getElementById('order-new-expense-date').value = getTodayString();
+            document.getElementById('order-new-expense-note').value = '';
+            updateOrderExpenseSummary();
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
             document.getElementById('customer-suggestions').classList.add('hidden');
             showToast('Customer details filled');
@@ -1679,7 +1756,7 @@
                 .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
             if(customerOrders.length === 0) return;
             const latest = customerOrders[0];
-            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${customerOrders.length} orders`;
+            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${getOrdersProductCount(customerOrders)} products in ${customerOrders.length} orders`;
             document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => `
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
@@ -1717,6 +1794,12 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-expense-total').value = '';
+            document.getElementById('order-expense-adjustment').value = 0;
+            document.getElementById('order-new-expense').value = '';
+            document.getElementById('order-new-expense-date').value = getTodayString();
+            document.getElementById('order-new-expense-note').value = '';
+            updateOrderExpenseSummary();
             renderOrderPaymentHistory([]);
             addOrderProductRow();
             document.getElementById('order-modal').classList.remove('hidden');
@@ -1768,10 +1851,32 @@
             return { total, payable, paid, due, historyPaid };
         }
 
+        window.updateOrderExpenseSummary = function(existingOrder = null) {
+            const total = Number(document.getElementById('order-expense-total')?.value) || 0;
+            const adjustment = Number(document.getElementById('order-expense-adjustment')?.value) || 0;
+            const newPaid = Number(document.getElementById('order-new-expense')?.value) || 0;
+            const orderId = document.getElementById('order-id')?.value;
+            const order = existingOrder || (orderId ? orders.find(o => o.id === orderId) : null);
+            const alreadyPaid = getOrderExpensePaidTotal(order || {});
+            const payable = Math.max(0, total + adjustment);
+            const paid = alreadyPaid + newPaid;
+            const balance = Math.max(0, payable - paid);
+            const summary = document.getElementById('order-expense-summary');
+            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Expense Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Expense Paid</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Expense Balance</div><div class="font-bold text-red-700">${formatMoney(balance)}</div></div>`;
+            return { total, adjustment, payable, paid, balance, alreadyPaid, newPaid };
+        }
+
         function renderOrderPaymentHistory(history = []) {
             const host = document.getElementById('order-payment-history');
             if(!host) return;
-            host.innerHTML = history.length ? `<div class="rounded border border-gray-200 bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500 mb-2">Payment History</div>${history.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Payment')}</span><span class="font-bold text-emerald-700">${formatMoney(item.amount)}</span></div>`).join('')}</div>` : '<div class="text-xs text-gray-500">No balance payments recorded yet.</div>';
+            const currentOrderId = document.getElementById('order-id')?.value;
+            const order = currentOrderId ? orders.find(o => o.id === currentOrderId) : null;
+            const expenses = Array.isArray(order?.orderExpenses) ? order.orderExpenses : [];
+            const paymentHtml = history.length ? history.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Payment')}</span><span class="font-bold text-emerald-700">${formatMoney(item.amount)}</span></div>`).join('') : '<div class="text-xs text-gray-500">No balance payments recorded yet.</div>';
+            const expenseBalance = order ? getOrderExpenseBalance(order) : 0;
+            const expenseHeader = order ? `<div class="mb-2 rounded bg-red-50 px-2 py-1 text-xs font-bold text-red-700">Balance: ${formatMoney(expenseBalance)}</div>` : '';
+            const expenseHtml = expenses.length ? expenses.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Expense')}</span><span class="font-bold text-red-700">${formatMoney(item.amount)}</span></div>`).join('') : '<div class="text-xs text-gray-500">No expenses recorded yet.</div>';
+            host.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div class="rounded border border-gray-200 bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500 mb-2">Payment History</div>${paymentHtml}</div><div class="rounded border border-red-100 bg-white p-3"><div class="text-xs font-bold uppercase text-red-500 mb-2">Expense Paid History</div>${expenseHeader}${expenseHtml}</div></div>`;
         }
 
         window.addOrderProductRow = function(productId = '', qty = 1, priceType = 'includingGst', unitPrice = null) {
@@ -1801,10 +1906,10 @@
             updateOrderPaymentSummary();
         }
 
-        window.editOrder = async function(id) {
+        window.editOrder = async function(id, skipConfirm = false) {
             const order = orders.find(o => o.id === id);
             if(!order) return;
-            if(!(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            if(!skipConfirm && !(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('order-id').value = order.id;
             document.getElementById('order-modal-title').innerText = 'Edit Order';
             document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); 
@@ -1820,6 +1925,12 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-expense-total').value = getOrderExpenseTotal(order);
+            document.getElementById('order-expense-adjustment').value = Number(order.orderExpenseAdjustment) || 0;
+            document.getElementById('order-new-expense').value = '';
+            document.getElementById('order-new-expense-date').value = getTodayString();
+            document.getElementById('order-new-expense-note').value = '';
+            updateOrderExpenseSummary(order);
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
             
             document.getElementById('order-products-container').innerHTML = '';
@@ -1849,9 +1960,9 @@
             const payload = {
                 accountDate,
                 income,
-                expense: 0,
+                expense: getOrderExpensePaidTotal(orderData),
                 note,
-                balance: income,
+                balance: income - getOrderExpensePaidTotal(orderData),
                 receivableTotal: Number(orderData.orderTotal) || 0,
                 receivableBalance: Number(orderData.balanceDue) || 0,
                 source: 'order',
@@ -1895,6 +2006,17 @@
             const newPaymentDate = document.getElementById('order-new-payment-date').value || getTodayString();
             const newPaymentNote = document.getElementById('order-new-payment-note').value.trim();
             const paymentHistory = newPaymentAmount > 0 ? [...existingPaymentHistory, { amount: newPaymentAmount, date: newPaymentDate, note: newPaymentNote || 'Balance payment', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingPaymentHistory;
+            const existingOrderExpenses = Array.isArray(existingOrderForPayment?.orderExpenses) ? existingOrderForPayment.orderExpenses : [];
+            const expenseTotal = Number(document.getElementById('order-expense-total')?.value) || 0;
+            const expenseAdjustment = Number(document.getElementById('order-expense-adjustment')?.value) || 0;
+            const newExpenseAmount = Number(document.getElementById('order-new-expense')?.value) || 0;
+            const newExpenseDate = document.getElementById('order-new-expense-date')?.value || getTodayString();
+            const newExpenseNote = document.getElementById('order-new-expense-note')?.value.trim();
+            const orderExpenses = newExpenseAmount > 0 ? [...existingOrderExpenses, { amount: newExpenseAmount, date: newExpenseDate, note: newExpenseNote || 'Expense paid', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingOrderExpenses;
+            const expensePayable = Math.max(0, expenseTotal + expenseAdjustment);
+            const expensePaidTotal = orderExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+            const expenseBalanceDue = Math.max(0, expensePayable - expensePaidTotal);
+            if(expensePaidTotal - expensePayable > 0.01) { showToast('Expense paid cannot be greater than expense payable amount', 'error'); return; }
             const firstPayment = Number(document.getElementById('order-first-payment').value) || 0;
             const roundOff = Number(document.getElementById('order-round-off').value) || 0;
             const orderItemsTotal = itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal) || 0), 0);
@@ -1917,6 +2039,12 @@
                 roundOff,
                 firstPayment,
                 paymentHistory,
+                orderExpenses,
+                orderExpenseTotal: expenseTotal,
+                orderExpenseAdjustment: expenseAdjustment,
+                orderExpensePayable: expensePayable,
+                orderExpensePaidTotal: expensePaidTotal,
+                orderExpenseBalanceDue: expenseBalanceDue,
                 paidTotal,
                 balanceDue
             };
@@ -2253,7 +2381,7 @@
                     const history = Array.isArray(investor.capitalHistory) ? investor.capitalHistory : [];
                     return `
                         <tr class="hover:bg-gray-50 align-top">
-                            <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${escapeHtml(investor.name || 'Investor')}</div><div class="text-xs text-gray-500">Capital investor</div></td>
+                            <td class="px-6 py-4"><button onclick="toggleInvestorCapitalDetails('${investor.id}')" class="text-left text-sm font-bold text-emerald-700 hover:text-emerald-900">${escapeHtml(investor.name || 'Investor')}</button><div class="text-xs text-gray-500">Click name for month/day totals</div><div id="capital-details-${investor.id}" class="hidden mt-3 text-xs"></div></td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-gray-700">${formatMoney(initial)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-emerald-700">${formatMoney(approved)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-indigo-700">${formatMoney(initial + approved)}</td>
@@ -2265,6 +2393,41 @@
 
         }
 
+
+
+        window.toggleInvestorCapitalDetails = function(uid) {
+            const host = document.getElementById(`capital-details-${uid}`);
+            if(!host) return;
+            if(!host.classList.contains('hidden')) { host.classList.add('hidden'); return; }
+            const investor = getInvestorByUid(uid);
+            const entries = [];
+            (Array.isArray(investor.capitalHistory) ? investor.capitalHistory : []).forEach(item => entries.push({ date: item.date || investor.createdAt || getTodayString(), amount: Number(item.amount) || 0, note: item.note || 'Base investment' }));
+            investorExpenses.filter(expense => expense.uid === uid && expense.status === 'approved').forEach(expense => entries.push({ date: expense.approvedAt || expense.createdAt || getTodayString(), amount: Number(expense.amount) || 0, note: expense.purpose || 'Approved expense' }));
+            const months = {};
+            entries.forEach(entry => {
+                const date = normalizeDateInput(entry.date);
+                const dateObj = new Date(date);
+                if(isNaN(dateObj)) return;
+                const monthKey = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                const dayKey = formatDisplayDate(date);
+                if(!months[monthKey]) months[monthKey] = { total: 0, days: {} };
+                months[monthKey].total += entry.amount;
+                if(!months[monthKey].days[dayKey]) months[monthKey].days[dayKey] = { total: 0, entries: [] };
+                months[monthKey].days[dayKey].total += entry.amount;
+                months[monthKey].days[dayKey].entries.push(entry);
+            });
+            const html = Object.keys(months).sort((a, b) => new Date(b) - new Date(a)).map(month => {
+                const monthId = `${uid}-${month}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+                const data = months[month];
+                const daysHtml = Object.keys(data.days).sort((a, b) => new Date(b.split('-').reverse().join('-')) - new Date(a.split('-').reverse().join('-'))).map(day => {
+                    const dayData = data.days[day];
+                    return `<details class="rounded border border-gray-100 bg-white px-3 py-2"><summary class="cursor-pointer font-bold text-gray-700">${day} • ${formatMoney(dayData.total)}</summary><div class="mt-2 space-y-1 pl-3">${dayData.entries.map(entry => `<div class="flex justify-between gap-2"><span>${escapeHtml(entry.note)}</span><span class="font-bold">${formatMoney(entry.amount)}</span></div>`).join('')}</div></details>`;
+                }).join('');
+                return `<details class="mb-2 rounded border border-emerald-100 bg-emerald-50 p-2"><summary class="cursor-pointer font-bold text-emerald-800">${month} • ${formatMoney(data.total)}</summary><div class="mt-2 space-y-2">${daysHtml}</div></details>`;
+            }).join('') || '<div class="rounded bg-gray-50 p-3 text-gray-500">No capital history found.</div>';
+            host.innerHTML = html;
+            host.classList.remove('hidden');
+        }
 
         function renderExpenseApprovalsDashboard() {
             const pending = investorExpenses.filter(expense => expense.status === 'pending');
@@ -2321,7 +2484,7 @@
                 const amount = Number(loan.amount) || 0;
                 const balance = amount - repaid;
                 const statusClass = balance <= 0 ? 'bg-green-100 text-green-800' : balance < amount ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800';
-                return `<tr><td class="px-4 py-3 whitespace-nowrap text-gray-700">${formatDisplayDate(getLoanDate(loan))}</td><td class="px-4 py-3 font-semibold text-gray-900">${escapeHtml(loan.lenderName || 'Lender')}</td><td class="px-4 py-3 text-gray-700">${escapeHtml(loan.purpose || 'Loan')}</td><td class="px-4 py-3 text-right font-bold text-amber-700 whitespace-nowrap">${formatMoney(amount)}</td><td class="px-4 py-3 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(repaid)}</td><td class="px-4 py-3 text-right whitespace-nowrap"><div class="font-bold text-red-700">${formatMoney(Math.max(balance, 0))}</div><span class="inline-flex mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${statusClass}">${balance <= 0 ? 'Paid' : balance < amount ? 'Partial' : 'Pending'}</span></td><td class="px-4 py-3 text-center"><button onclick="showManagerLoanHistory('${loan.id}')" class="inline-flex items-center justify-center rounded border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100">${getIconSvg('history', 'w-4 h-4 mr-1')} History</button></td><td class="px-4 py-3 whitespace-nowrap"><div class="flex items-center justify-center gap-2 flex-nowrap"><button onclick="editManagerLoan('${loan.id}')" title="Edit" class="inline-flex items-center justify-center rounded border border-amber-200 bg-amber-50 p-2 text-amber-700 hover:bg-amber-100">${getIconSvg('edit', 'w-4 h-4')}</button><button onclick="deleteManagerLoan('${loan.id}')" title="Delete" class="inline-flex items-center justify-center rounded border border-red-200 bg-red-50 p-2 text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-4 h-4')}</button><button onclick="openManagerLoanRepaymentModal('${loan.id}')" title="Update" class="inline-flex items-center justify-center rounded border border-emerald-200 bg-emerald-50 p-2 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40" ${balance <= 0 ? 'disabled' : ''}>${getIconSvg('status', 'w-4 h-4')}</button></div></td></tr>`;
+                return `<tr><td class="px-4 py-3 whitespace-nowrap text-gray-700">${formatDisplayDate(getLoanDate(loan))}</td><td class="px-4 py-3"><div class="font-semibold text-gray-900">${escapeHtml(loan.lenderName || 'Lender')}</div>${loan.contactNumber ? `<div class="text-xs text-gray-500 mt-1">Ph: ${escapeHtml(loan.contactNumber)}</div>` : ''}</td><td class="px-4 py-3 text-gray-700">${escapeHtml(loan.purpose || '-')}</td><td class="px-4 py-3 text-right font-bold text-amber-700 whitespace-nowrap">${formatMoney(amount)}</td><td class="px-4 py-3 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(repaid)}</td><td class="px-4 py-3 text-right whitespace-nowrap"><div class="font-bold text-red-700">${formatMoney(Math.max(balance, 0))}</div><span class="inline-flex mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${statusClass}">${balance <= 0 ? 'Paid' : balance < amount ? 'Partial' : 'Pending'}</span></td><td class="px-4 py-3 text-center"><button onclick="showManagerLoanHistory('${loan.id}')" class="inline-flex items-center justify-center rounded border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100">${getIconSvg('history', 'w-4 h-4 mr-1')} History</button></td><td class="px-4 py-3 whitespace-nowrap"><div class="flex items-center justify-center gap-2 flex-nowrap"><button onclick="editManagerLoan('${loan.id}')" title="Edit" class="inline-flex items-center justify-center rounded border border-amber-200 bg-amber-50 p-2 text-amber-700 hover:bg-amber-100">${getIconSvg('edit', 'w-4 h-4')}</button><button onclick="deleteManagerLoan('${loan.id}')" title="Delete" class="inline-flex items-center justify-center rounded border border-red-200 bg-red-50 p-2 text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-4 h-4')}</button><button onclick="openManagerLoanRepaymentModal('${loan.id}')" title="Update" class="inline-flex items-center justify-center rounded border border-emerald-200 bg-emerald-50 p-2 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40" ${balance <= 0 ? 'disabled' : ''}>${getIconSvg('status', 'w-4 h-4')}</button></div></td></tr>`;
             }).join('')}</tbody></table></div>`;
         }
 
@@ -2329,6 +2492,7 @@
             document.getElementById('loan-edit-id').value = '';
             document.getElementById('loan-date').value = getTodayString();
             document.getElementById('loan-lender-name').value = '';
+            document.getElementById('loan-contact').value = '';
             document.getElementById('loan-purpose').value = '';
             document.getElementById('loan-amount').value = '';
         }
@@ -2339,6 +2503,7 @@
             document.getElementById('edit-loan-id').value = loan.id;
             document.getElementById('edit-loan-date').value = normalizeDateInput(getLoanDate(loan));
             document.getElementById('edit-loan-lender-name').value = loan.lenderName || '';
+            document.getElementById('edit-loan-contact').value = loan.contactNumber || '';
             document.getElementById('edit-loan-purpose').value = loan.purpose || '';
             document.getElementById('edit-loan-amount').value = Number(loan.amount) || 0;
             document.getElementById('manager-loan-edit-modal').classList.remove('hidden');
@@ -2354,15 +2519,16 @@
             const loanId = document.getElementById('edit-loan-id').value;
             const loanDate = document.getElementById('edit-loan-date').value || getTodayString();
             const lenderName = document.getElementById('edit-loan-lender-name').value.trim();
+            const contactNumber = document.getElementById('edit-loan-contact').value.trim();
             const purpose = document.getElementById('edit-loan-purpose').value.trim();
             const amount = Number(document.getElementById('edit-loan-amount').value) || 0;
             const existingLoan = managerLoans.find(item => item.id === loanId);
             if(!existingLoan) return;
-            if(!loanDate || !lenderName || !purpose || amount <= 0) { showToast('Date, lender name, purpose, and valid amount are required', 'error'); return; }
+            if(!lenderName || amount <= 0) { showToast('Lender/person name and valid amount are required', 'error'); return; }
             if(amount < getLoanRepaidTotal(existingLoan)) { showToast('Loan amount cannot be less than already repaid total', 'error'); return; }
             try {
                 const repaid = getLoanRepaidTotal(existingLoan || {});
-                await updateDoc(doc(db, 'managerLoans', loanId), { lenderName, purpose, amount, loanDate, status: repaid >= amount ? 'paid' : repaid > 0 ? 'partial' : 'pending', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' });
+                await updateDoc(doc(db, 'managerLoans', loanId), { lenderName, contactNumber, purpose, amount, loanDate, status: repaid >= amount ? 'paid' : repaid > 0 ? 'partial' : 'pending', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' });
                 closeManagerLoanEditModal();
                 showToast('Manager loan updated');
             } catch (error) { showToast(error.message, 'error'); }
@@ -2372,18 +2538,19 @@
             const loanId = document.getElementById('loan-edit-id').value;
             const loanDate = document.getElementById('loan-date').value || getTodayString();
             const lenderName = document.getElementById('loan-lender-name').value.trim();
+            const contactNumber = document.getElementById('loan-contact').value.trim();
             const purpose = document.getElementById('loan-purpose').value.trim();
             const amount = Number(document.getElementById('loan-amount').value) || 0;
-            if(!loanDate || !lenderName || !purpose || amount <= 0) { showToast('Date, lender name, purpose, and valid amount are required', 'error'); return; }
+            if(!lenderName || amount <= 0) { showToast('Lender/person name and valid amount are required', 'error'); return; }
             const existingLoan = loanId ? managerLoans.find(item => item.id === loanId) : null;
             if(existingLoan && amount < getLoanRepaidTotal(existingLoan)) { showToast('Loan amount cannot be less than already repaid total', 'error'); return; }
             try {
                 if(loanId) {
                     const repaid = getLoanRepaidTotal(existingLoan || {});
-                    await updateDoc(doc(db, 'managerLoans', loanId), { lenderName, purpose, amount, loanDate, status: repaid >= amount ? 'paid' : repaid > 0 ? 'partial' : 'pending', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' });
+                    await updateDoc(doc(db, 'managerLoans', loanId), { lenderName, contactNumber, purpose, amount, loanDate, status: repaid >= amount ? 'paid' : repaid > 0 ? 'partial' : 'pending', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' });
                     showToast('Manager loan updated');
                 } else {
-                    await addDoc(collection(db, 'managerLoans'), { lenderName, purpose, amount, loanDate, status: 'pending', repayments: [], createdAt: loanDate, createdBy: authUser?.uid || '' });
+                    await addDoc(collection(db, 'managerLoans'), { lenderName, contactNumber, purpose, amount, loanDate, status: 'pending', repayments: [], createdAt: loanDate, createdBy: authUser?.uid || '' });
                     showToast('Manager loan recorded');
                 }
                 resetManagerLoanForm();
