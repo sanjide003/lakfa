@@ -220,9 +220,17 @@
                             <button onclick="filterOrdersByStatus('Processing')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Processing</button>
                             <button onclick="filterOrdersByStatus('Shipped')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Shipped</button>
                             <button onclick="filterOrdersByStatus('Delivered')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered</button>
-                            <button onclick="filterOrdersByStatus('Delivered Due')" data-order-filter="Delivered Due" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered - Payment Due</button>
+                            <button onclick="filterOrdersByStatus('Payment Due')" data-order-filter="Payment Due" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Payment Due</button>
                             <button onclick="filterOrdersByStatus('All')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">All Orders</button>
                         </nav>
+                        <div id="payment-due-status-filters" class="hidden mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-orange-100 bg-orange-50 p-3">
+                            <span class="text-xs font-bold uppercase text-orange-700">Filter Due By Status</span>
+                            <button onclick="filterPaymentDueByStatus('All')" data-due-status="All" class="payment-due-filter rounded-full bg-orange-600 px-3 py-1 text-xs font-bold text-white">All Due</button>
+                            <button onclick="filterPaymentDueByStatus('Pending')" data-due-status="Pending" class="payment-due-filter rounded-full bg-white px-3 py-1 text-xs font-bold text-orange-700 border border-orange-200">Pending</button>
+                            <button onclick="filterPaymentDueByStatus('Processing')" data-due-status="Processing" class="payment-due-filter rounded-full bg-white px-3 py-1 text-xs font-bold text-orange-700 border border-orange-200">Processing</button>
+                            <button onclick="filterPaymentDueByStatus('Shipped')" data-due-status="Shipped" class="payment-due-filter rounded-full bg-white px-3 py-1 text-xs font-bold text-orange-700 border border-orange-200">Shipped</button>
+                            <button onclick="filterPaymentDueByStatus('Delivered')" data-due-status="Delivered" class="payment-due-filter rounded-full bg-white px-3 py-1 text-xs font-bold text-orange-700 border border-orange-200">Delivered</button>
+                        </div>
                     </div>
 
                     <!-- Search & Actions -->
@@ -884,6 +892,7 @@
         let selectedOrders = new Set();
         let currentTab = 'dashboard';
         let currentOrderStatusFilter = 'Pending';
+        let paymentDueStatusFilter = 'All';
         const orderUtilityTabs = {
             recycle: { title: 'Recycle Bin', statusFilter: 'Recycle Bin', icon: 'trash', color: 'red' },
             returns: { title: 'Return', statusFilter: 'Return', icon: 'return', color: 'orange' },
@@ -1092,7 +1101,7 @@
             }
             if(orderUtilityTabs[tabId]) {
                 orderFilter = orderUtilityTabs[tabId].statusFilter;
-                currentOrderStatusFilter = orderFilter;
+                currentOrderStatusFilter = orderFilter === 'Delivered Due' ? 'Payment Due' : orderFilter;
             }
             currentTab = tabId;
             if(pushHistory) pushAppHistory(tabId, orderFilter);
@@ -1121,7 +1130,7 @@
                 headerActions.innerHTML = '';
                 renderDashboard();
             } else if (tabId === 'orders') {
-                if(orderFilter) currentOrderStatusFilter = orderFilter;
+                if(orderFilter) currentOrderStatusFilter = orderFilter === 'Delivered Due' ? 'Payment Due' : orderFilter;
                 document.getElementById('page-title').innerText = "Order Management";
                 headerActions.innerHTML = getOrderHeaderActions();
                 syncOrderFilterUI();
@@ -1388,6 +1397,17 @@
                     el.classList.add('border-red-500', 'text-red-600');
                 }
             });
+            const duePanel = document.getElementById('payment-due-status-filters');
+            if(duePanel) duePanel.classList.toggle('hidden', currentOrderStatusFilter !== 'Payment Due');
+            document.querySelectorAll('.payment-due-filter').forEach(el => {
+                const active = el.dataset.dueStatus === paymentDueStatusFilter;
+                el.classList.toggle('bg-orange-600', active);
+                el.classList.toggle('text-white', active);
+                el.classList.toggle('bg-white', !active);
+                el.classList.toggle('text-orange-700', !active);
+                el.classList.toggle('border', !active);
+                el.classList.toggle('border-orange-200', !active);
+            });
             document.querySelectorAll('.side-order-filter').forEach(el => {
                 const active = el.dataset.orderFilter === currentOrderStatusFilter;
                 el.classList.toggle('bg-red-50', active);
@@ -1397,10 +1417,17 @@
         }
 
         window.filterOrdersByStatus = function(status) {
-            currentOrderStatusFilter = status;
-            pushAppHistory('orders', status);
+            currentOrderStatusFilter = status === 'Delivered Due' ? 'Payment Due' : status;
+            if(currentOrderStatusFilter !== 'Payment Due') paymentDueStatusFilter = 'All';
+            pushAppHistory('orders', currentOrderStatusFilter);
             syncOrderFilterUI();
             updateOrderHeaderActions();
+            renderOrders();
+        }
+
+        window.filterPaymentDueByStatus = function(status) {
+            paymentDueStatusFilter = status;
+            syncOrderFilterUI();
             renderOrders();
         }
 
@@ -1471,8 +1498,9 @@
                 if(currentOrderStatusFilter === 'Repeat Customers') return false;
                 if(isRecycle ? !o.isDeleted : o.isDeleted) return false;
                 const lifecycleTab = currentOrderStatusFilter === 'Return' || currentOrderStatusFilter === 'Order Cancelled';
-                const isDeliveredDue = currentOrderStatusFilter === 'Delivered Due';
-                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (isDeliveredDue ? (o.status === 'Delivered' && (Number(o.balanceDue) || 0) > 0) : (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter));
+                const isPaymentDue = currentOrderStatusFilter === 'Payment Due';
+                const matchesDueStatus = paymentDueStatusFilter === 'All' || o.status === paymentDueStatusFilter;
+                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (isPaymentDue ? ((Number(o.balanceDue) || 0) > 0 && matchesDueStatus) : (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter));
                 const matchesSearch = ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search));
                 const orderDate = normalizeDateInput(o.createdAt);
                 const matchesFrom = !fromDate || orderDate >= fromDate;
