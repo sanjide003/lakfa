@@ -271,6 +271,7 @@
                                         <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">Contact</th>
                                         <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                                         <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Status</th>
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">Expense</th>
                                         <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">Payment</th>
                                         <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-56">Action</th>
                                     </tr>
@@ -1537,14 +1538,24 @@
                 const statusColor = getOrderStatusColor(order.status);
                 const itemsText = getOrderItemsText(order);
                 const checkboxHtml = isRecycle ? '' : `<input type="checkbox" onchange="toggleSelectOrder('${order.id}')" ${selectedOrders.has(order.id) ? 'checked' : ''} class="order-checkbox rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">`;
-                const totalAmount = Number(order.orderTotal ?? order.itemsTotal) || 0;
+                const itemsAmount = Number(order.itemsTotal) || (Array.isArray(order.itemsObj) ? order.itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal ?? item.price) || 0), 0) : 0) || Number(order.orderTotal) || 0;
                 const paidAmount = Number(order.paidTotal) || 0;
-                const dueAmount = Number(order.balanceDue) || Math.max(0, totalAmount - paidAmount);
+                const dueAmount = Math.max(0, itemsAmount - paidAmount);
+                const expenseTotal = getOrderExpenseTotal(order);
+                const expensePaid = getOrderExpensePaidTotal(order);
+                const expenseDue = getOrderExpenseBalance(order);
+                const summaryLine = (label, amount, labelClass, amountClass) => `<div class="flex justify-between gap-3"><span class="font-bold ${labelClass}">${label}</span><span class="font-bold ${amountClass}">${formatMoney(amount)}</span></div>`;
+                const expenseSummaryHtml = `
+                    <div class="space-y-1 text-xs leading-5">
+                        ${summaryLine('Total', expenseTotal, 'text-gray-500', 'text-gray-900')}
+                        ${summaryLine('Paid', expensePaid, 'text-emerald-600', 'text-emerald-700')}
+                        ${summaryLine('Balance', expenseDue, 'text-red-600', 'text-red-700')}
+                    </div>`;
                 const paymentSummaryHtml = `
                     <div class="space-y-1 text-xs leading-5">
-                        <div class="flex justify-between gap-3"><span class="font-bold text-gray-500">Total</span><span class="font-bold text-gray-900">${formatMoney(totalAmount)}</span></div>
-                        <div class="flex justify-between gap-3"><span class="font-bold text-emerald-600">Paid</span><span class="font-bold text-emerald-700">${formatMoney(paidAmount)}</span></div>
-                        <div class="flex justify-between gap-3"><span class="font-bold text-red-600">Balance</span><span class="font-bold text-red-700">${formatMoney(dueAmount)}</span></div>
+                        ${summaryLine('Total', itemsAmount, 'text-gray-500', 'text-gray-900')}
+                        ${summaryLine('Paid', paidAmount, 'text-emerald-600', 'text-emerald-700')}
+                        ${summaryLine('Balance', dueAmount, 'text-red-600', 'text-red-700')}
                     </div>`;
                 const actionsHtml = isRecycle ? `
                             <div class="inline-flex flex-col sm:flex-row gap-2 justify-end">
@@ -1568,7 +1579,7 @@
                             ${isRecycle ? `<div class="text-xs text-red-600 font-semibold">Deleted: ${formatDisplayDate(order.deletedAt)}</div>` : ''}
                         </td>
                         <td class="px-3 py-3">
-                            <div class="text-sm font-bold text-gray-900 truncate max-w-32" title="${escapeHtml(order.name || '')}">${order.name}</div>
+                            <div class="text-sm font-bold text-gray-900 break-words" title="${escapeHtml(order.name || '')}">${order.name}</div>
                             <div class="text-xs text-gray-600 font-semibold">${order.phone || '-'}</div>
                             <div class="text-xs text-gray-500">PIN: ${order.pincode || '-'}</div>
                         </td>
@@ -1578,12 +1589,13 @@
                         <td class="px-3 py-3 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${order.status}</span>
                         </td>
+                        <td class="px-3 py-3 min-w-32">${expenseSummaryHtml}</td>
                         <td class="px-3 py-3 min-w-32">${paymentSummaryHtml}</td>
                         <td class="px-3 py-3 whitespace-nowrap text-right text-sm font-medium">${actionsHtml}</td>
                     </tr>
                 `;
             });
-            if(filtered.length === 0) html = '<tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
+            if(filtered.length === 0) html = '<tr><td colspan="8" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
             list.innerHTML = html;
 
             document.getElementById('select-all-orders').checked = !isRecycle && filtered.length > 0 && filtered.every(o => selectedOrders.has(o.id));
