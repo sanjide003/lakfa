@@ -264,14 +264,16 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
                                             <input type="checkbox" id="select-all-orders" onchange="toggleAllOrders()" class="rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Details</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address & Contact</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Date</th>
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">Contact</th>
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Status</th>
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">Expense</th>
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">Payment</th>
+                                        <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-56">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="orders-list" class="bg-white divide-y divide-gray-200">
@@ -1376,6 +1378,9 @@
         function getIconSvg(name, cls = 'w-5 h-5') {
             const icons = {
                 history: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-3-6.708M21 3v6h-6" />',
+                printer: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9V4h12v5M6 18H5a2 2 0 01-2-2v-5a2 2 0 012-2h14a2 2 0 012 2v5a2 2 0 01-2 2h-1M7 14h10v6H7v-6z" />',
+                truck: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h10v8H3V7zm10 3h3l3 3v2h-6v-5zM7 18a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4zM2 5h6M1 9h4M2 13h3" />',
+                rupee: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5h12M6 9h12M9 5c4 0 6 1.5 6 4s-2 4-6 4H6l8 7" />',
                 edit: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 20h4l10.5-10.5a2.5 2.5 0 10-3.536-3.536L4 16.928V20z" />',
                 trash: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M4 7h16" />',
                 status: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />',
@@ -1533,49 +1538,64 @@
                 const statusColor = getOrderStatusColor(order.status);
                 const itemsText = getOrderItemsText(order);
                 const checkboxHtml = isRecycle ? '' : `<input type="checkbox" onchange="toggleSelectOrder('${order.id}')" ${selectedOrders.has(order.id) ? 'checked' : ''} class="order-checkbox rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">`;
+                const itemsAmount = Number(order.itemsTotal) || (Array.isArray(order.itemsObj) ? order.itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal ?? item.price) || 0), 0) : 0) || Number(order.orderTotal) || 0;
+                const paidAmount = Number(order.paidTotal) || 0;
+                const dueAmount = Math.max(0, itemsAmount - paidAmount);
+                const expenseTotal = getOrderExpenseTotal(order);
+                const expensePaid = getOrderExpensePaidTotal(order);
+                const expenseDue = getOrderExpenseBalance(order);
+                const summaryLine = (label, amount, labelClass, amountClass) => `<div class="flex justify-between gap-3"><span class="font-bold ${labelClass}">${label}</span><span class="font-bold ${amountClass}">${formatMoney(amount)}</span></div>`;
+                const expenseSummaryHtml = `
+                    <div class="space-y-1 text-xs leading-5">
+                        ${summaryLine('Total', expenseTotal, 'text-gray-500', 'text-gray-900')}
+                        ${summaryLine('Paid', expensePaid, 'text-emerald-600', 'text-emerald-700')}
+                        ${summaryLine('Balance', expenseDue, 'text-red-600', 'text-red-700')}
+                    </div>`;
+                const paymentSummaryHtml = `
+                    <div class="space-y-1 text-xs leading-5">
+                        ${summaryLine('Total', itemsAmount, 'text-gray-500', 'text-gray-900')}
+                        ${summaryLine('Paid', paidAmount, 'text-emerald-600', 'text-emerald-700')}
+                        ${summaryLine('Balance', dueAmount, 'text-red-600', 'text-red-700')}
+                    </div>`;
                 const actionsHtml = isRecycle ? `
                             <div class="inline-flex flex-col sm:flex-row gap-2 justify-end">
                                 <button onclick="restoreOrder('${order.id}')" class="inline-flex items-center justify-center rounded-md border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-bold text-green-700 hover:bg-green-100">${getIconSvg('restore', 'w-4 h-4 mr-1')} Restore</button>
                                 <button onclick="permanentlyDeleteOrder('${order.id}')" class="inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-4 h-4 mr-1')} Delete Forever</button>
                             </div>
                 ` : `
-                            <button onclick="printSingleOrder('${order.id}')" class="text-red-600 hover:text-red-800 mr-3" title="Print Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg></button>
-                            <button onclick="openOrderPaymentUpdate('${order.id}')" class="inline-flex items-center text-orange-700 hover:text-orange-900 text-xs font-bold mr-3 px-2 py-1 rounded border border-orange-100 bg-orange-50" title="Update payment">Due: ${formatMoney(order.balanceDue)}</button>
-                            <button onclick="showOrderHistory('${order.id}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-xs font-bold mr-3 px-2 py-1 rounded border border-indigo-100 bg-indigo-50">${getIconSvg('history', 'w-4 h-4 mr-1')} History</button>
-                            <div class="relative inline-block text-left">
-                                <button onclick="toggleOrderMenu('${order.id}', this)" class="text-gray-500 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100" title="More actions"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
-                                <div id="order-menu-${order.id}" class="hidden absolute right-0 z-30 mt-2 w-44 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 border border-gray-100">
-                                    <button onclick="openStatusModal('${order.id}', '${order.status}')" class="block w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-blue-50">${getIconSvg('status','inline w-4 h-4 mr-2')}Update Status</button>
-                                    <button onclick="editOrder('${order.id}')" class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">${getIconSvg('edit','inline w-4 h-4 mr-2')}Edit</button>
-                                    <button onclick="deleteOrder('${order.id}')" class="block w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50">${getIconSvg('trash','inline w-4 h-4 mr-2')}Delete</button>
-                                </div>
+                            <div class="flex items-center justify-end gap-1">
+                                <button onclick="printSingleOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100" title="Print Order">${getIconSvg('printer', 'w-5 h-5 mb-0.5')}<span>Print</span></button>
+                                <button onclick="openStatusModal('${order.id}', '${order.status}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-blue-100 bg-blue-50 p-1 text-[10px] font-bold leading-tight text-blue-700 hover:bg-blue-100" title="Update product status">${getIconSvg('truck','w-5 h-5 mb-0.5')}<span>Update</span></button>
+                                <button onclick="openOrderPaymentUpdate('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-orange-100 bg-orange-50 p-1 text-[10px] font-bold leading-tight text-orange-700 hover:bg-orange-100" title="Edit payment">${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Payment</span></button>
+                                <button onclick="deleteOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-200 bg-white p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-50" title="Delete Order">${getIconSvg('trash','w-5 h-5 mb-0.5')}<span>Delete</span></button>
                             </div>
                 `;
 
                 html += `
                     <tr class="hover:bg-gray-50 ${isRecycle ? 'bg-red-50/30' : ''}">
-                        <td class="px-6 py-4 whitespace-nowrap">${checkboxHtml}</td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 py-3 whitespace-nowrap">${checkboxHtml}</td>
+                        <td class="px-3 py-3 whitespace-nowrap">
                             <div class="text-sm font-bold text-gray-900">${formatDisplayDate(order.createdAt)}</div>
-                            <div class="text-xs text-gray-500">Accepted: ${formatDisplayDate(order.createdAt)} • Last update: ${formatDisplayDate(order.updatedAt || order.createdAt)}</div>
                             ${isRecycle ? `<div class="text-xs text-red-600 font-semibold">Deleted: ${formatDisplayDate(order.deletedAt)}</div>` : ''}
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-gray-900">${order.name}</div>
-                            <div class="text-sm text-gray-500 max-w-xs truncate">${order.address}</div>
-                            <div class="text-xs text-gray-600 font-bold">Ph: ${order.phone} | PIN: ${order.pincode}</div>
+                        <td class="px-3 py-3">
+                            <div class="text-sm font-bold text-gray-900 break-words" title="${escapeHtml(order.name || '')}">${order.name}</div>
+                            <div class="text-xs text-gray-600 font-semibold">${order.phone || '-'}</div>
+                            <div class="text-xs text-gray-500">PIN: ${order.pincode || '-'}</div>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900 max-w-xs truncate" title="${itemsText}">${itemsText}</div>
+                        <td class="px-3 py-3">
+                            <div class="text-sm text-gray-900 max-w-44 truncate" title="${itemsText}">${itemsText}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-3 py-3 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${order.status}</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">${actionsHtml}</td>
+                        <td class="px-3 py-3 min-w-32">${expenseSummaryHtml}</td>
+                        <td class="px-3 py-3 min-w-32">${paymentSummaryHtml}</td>
+                        <td class="px-3 py-3 whitespace-nowrap text-right text-sm font-medium">${actionsHtml}</td>
                     </tr>
                 `;
             });
-            if(filtered.length === 0) html = '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
+            if(filtered.length === 0) html = '<tr><td colspan="8" class="px-6 py-10 text-center text-gray-500">No orders found</td></tr>';
             list.innerHTML = html;
 
             document.getElementById('select-all-orders').checked = !isRecycle && filtered.length > 0 && filtered.every(o => selectedOrders.has(o.id));
@@ -1733,7 +1753,8 @@
             document.getElementById('order-address').value = order.address || '';
             document.getElementById('order-pincode').value = order.pincode || '';
             document.getElementById('order-location').value = order.location || '';
-            window.currentEditingOrderPaymentHistory = Array.isArray(order.paymentHistory) ? order.paymentHistory : [];
+            window.currentEditingOrderPaymentHistory = Array.isArray(order.paymentHistory) ? [...order.paymentHistory] : [];
+            window.currentEditingOrderExpenses = Array.isArray(order.orderExpenses) ? [...order.orderExpenses] : [];
             document.getElementById('order-first-payment').value = Number(order.firstPayment) || 0;
             document.getElementById('order-round-off').value = Number(order.roundOff) || 0;
             document.getElementById('order-new-payment').value = '';
@@ -1789,6 +1810,7 @@
             document.getElementById('customer-suggestions').classList.add('hidden');
             document.getElementById('customer-suggestions').innerHTML = '';
             window.currentEditingOrderPaymentHistory = [];
+            window.currentEditingOrderExpenses = [];
             document.getElementById('order-first-payment').value = 0;
             document.getElementById('order-round-off').value = 0;
             document.getElementById('order-new-payment').value = '';
@@ -1857,7 +1879,8 @@
             const newPaid = Number(document.getElementById('order-new-expense')?.value) || 0;
             const orderId = document.getElementById('order-id')?.value;
             const order = existingOrder || (orderId ? orders.find(o => o.id === orderId) : null);
-            const alreadyPaid = getOrderExpensePaidTotal(order || {});
+            const currentExpenses = window.currentEditingOrderExpenses || (Array.isArray(order?.orderExpenses) ? order.orderExpenses : []);
+            const alreadyPaid = currentExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
             const payable = Math.max(0, total + adjustment);
             const paid = alreadyPaid + newPaid;
             const balance = Math.max(0, payable - paid);
@@ -1871,12 +1894,61 @@
             if(!host) return;
             const currentOrderId = document.getElementById('order-id')?.value;
             const order = currentOrderId ? orders.find(o => o.id === currentOrderId) : null;
-            const expenses = Array.isArray(order?.orderExpenses) ? order.orderExpenses : [];
-            const paymentHtml = history.length ? history.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Payment')}</span><span class="font-bold text-emerald-700">${formatMoney(item.amount)}</span></div>`).join('') : '<div class="text-xs text-gray-500">No balance payments recorded yet.</div>';
-            const expenseBalance = order ? getOrderExpenseBalance(order) : 0;
-            const expenseHeader = order ? `<div class="mb-2 rounded bg-red-50 px-2 py-1 text-xs font-bold text-red-700">Balance: ${formatMoney(expenseBalance)}</div>` : '';
-            const expenseHtml = expenses.length ? expenses.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Expense')}</span><span class="font-bold text-red-700">${formatMoney(item.amount)}</span></div>`).join('') : '<div class="text-xs text-gray-500">No expenses recorded yet.</div>';
+            const expenses = window.currentEditingOrderExpenses || (Array.isArray(order?.orderExpenses) ? [...order.orderExpenses] : []);
+            const paymentHtml = history.length ? history.map((item, index) => `<div class="flex items-center justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Payment')}</span><span class="flex items-center gap-2"><span class="font-bold text-emerald-700">${formatMoney(item.amount)}</span><button type="button" onclick="editOrderPaymentHistoryItem(${index})" class="text-amber-600 hover:text-amber-800" title="Edit payment">${getIconSvg('edit', 'w-4 h-4')}</button><button type="button" onclick="deleteOrderPaymentHistoryItem(${index})" class="text-red-600 hover:text-red-800" title="Delete payment">${getIconSvg('trash', 'w-4 h-4')}</button></span></div>`).join('') : '<div class="text-xs text-gray-500">No balance payments recorded yet.</div>';
+            const expensePayable = Math.max(0, (Number(document.getElementById('order-expense-total')?.value) || Number(order?.orderExpenseTotal) || 0) + (Number(document.getElementById('order-expense-adjustment')?.value) || Number(order?.orderExpenseAdjustment) || 0));
+            const expensePaid = expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+            const expenseBalance = Math.max(0, expensePayable - expensePaid);
+            const expenseHeader = `<div class="mb-2 rounded bg-red-50 px-2 py-1 text-xs font-bold text-red-700">Balance: ${formatMoney(expenseBalance)}</div>`;
+            const expenseHtml = expenses.length ? expenses.map((item, index) => `<div class="flex items-center justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Expense')}</span><span class="flex items-center gap-2"><span class="font-bold text-red-700">${formatMoney(item.amount)}</span><button type="button" onclick="editOrderExpenseHistoryItem(${index})" class="text-amber-600 hover:text-amber-800" title="Edit expense">${getIconSvg('edit', 'w-4 h-4')}</button><button type="button" onclick="deleteOrderExpenseHistoryItem(${index})" class="text-red-600 hover:text-red-800" title="Delete expense">${getIconSvg('trash', 'w-4 h-4')}</button></span></div>`).join('') : '<div class="text-xs text-gray-500">No expenses recorded yet.</div>';
             host.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div class="rounded border border-gray-200 bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500 mb-2">Payment History</div>${paymentHtml}</div><div class="rounded border border-red-100 bg-white p-3"><div class="text-xs font-bold uppercase text-red-500 mb-2">Expense Paid History</div>${expenseHeader}${expenseHtml}</div></div>`;
+        }
+
+
+        window.editOrderPaymentHistoryItem = function(index) {
+            const history = window.currentEditingOrderPaymentHistory || [];
+            const item = history[index];
+            if(!item) return;
+            const amount = Number(prompt('Payment amount', Number(item.amount) || 0));
+            if(!Number.isFinite(amount) || amount < 0) return;
+            const date = prompt('Payment date (YYYY-MM-DD)', normalizeDateInput(item.date) || getTodayString()) || item.date || getTodayString();
+            const note = prompt('Payment note', item.note || 'Balance payment') || item.note || 'Balance payment';
+            history[index] = { ...item, amount, date, note, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
+            window.currentEditingOrderPaymentHistory = history;
+            renderOrderPaymentHistory(history);
+            updateOrderPaymentSummary(history);
+        }
+
+        window.deleteOrderPaymentHistoryItem = async function(index) {
+            if(!(await showConfirm({ title: 'Delete Payment?', message: 'Remove this payment from the order payment history?', confirmText: 'Delete' }))) return;
+            const history = window.currentEditingOrderPaymentHistory || [];
+            history.splice(index, 1);
+            window.currentEditingOrderPaymentHistory = history;
+            renderOrderPaymentHistory(history);
+            updateOrderPaymentSummary(history);
+        }
+
+        window.editOrderExpenseHistoryItem = function(index) {
+            const expenses = window.currentEditingOrderExpenses || [];
+            const item = expenses[index];
+            if(!item) return;
+            const amount = Number(prompt('Expense amount', Number(item.amount) || 0));
+            if(!Number.isFinite(amount) || amount < 0) return;
+            const date = prompt('Expense date (YYYY-MM-DD)', normalizeDateInput(item.date) || getTodayString()) || item.date || getTodayString();
+            const note = prompt('Expense note', item.note || 'Expense paid') || item.note || 'Expense paid';
+            expenses[index] = { ...item, amount, date, note, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
+            window.currentEditingOrderExpenses = expenses;
+            renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory || []);
+            updateOrderExpenseSummary();
+        }
+
+        window.deleteOrderExpenseHistoryItem = async function(index) {
+            if(!(await showConfirm({ title: 'Delete Expense?', message: 'Remove this expense from the order expense history?', confirmText: 'Delete' }))) return;
+            const expenses = window.currentEditingOrderExpenses || [];
+            expenses.splice(index, 1);
+            window.currentEditingOrderExpenses = expenses;
+            renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory || []);
+            updateOrderExpenseSummary();
         }
 
         window.addOrderProductRow = function(productId = '', qty = 1, priceType = 'includingGst', unitPrice = null) {
@@ -1919,7 +1991,8 @@
             document.getElementById('order-address').value = order.address;
             document.getElementById('order-pincode').value = order.pincode;
             document.getElementById('order-location').value = order.location || '';
-            window.currentEditingOrderPaymentHistory = Array.isArray(order.paymentHistory) ? order.paymentHistory : [];
+            window.currentEditingOrderPaymentHistory = Array.isArray(order.paymentHistory) ? [...order.paymentHistory] : [];
+            window.currentEditingOrderExpenses = Array.isArray(order.orderExpenses) ? [...order.orderExpenses] : [];
             document.getElementById('order-first-payment').value = Number(order.firstPayment) || 0;
             document.getElementById('order-round-off').value = Number(order.roundOff) || 0;
             document.getElementById('order-new-payment').value = '';
@@ -2001,12 +2074,12 @@
             if(!isValid || itemsObj.length === 0) { showToast("Please select items", "error"); return; }
 
             const existingOrderForPayment = id ? orders.find(o => o.id === id) : null;
-            const existingPaymentHistory = Array.isArray(existingOrderForPayment?.paymentHistory) ? existingOrderForPayment.paymentHistory : [];
+            const existingPaymentHistory = window.currentEditingOrderPaymentHistory || (Array.isArray(existingOrderForPayment?.paymentHistory) ? existingOrderForPayment.paymentHistory : []);
             const newPaymentAmount = Number(document.getElementById('order-new-payment').value) || 0;
             const newPaymentDate = document.getElementById('order-new-payment-date').value || getTodayString();
             const newPaymentNote = document.getElementById('order-new-payment-note').value.trim();
             const paymentHistory = newPaymentAmount > 0 ? [...existingPaymentHistory, { amount: newPaymentAmount, date: newPaymentDate, note: newPaymentNote || 'Balance payment', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingPaymentHistory;
-            const existingOrderExpenses = Array.isArray(existingOrderForPayment?.orderExpenses) ? existingOrderForPayment.orderExpenses : [];
+            const existingOrderExpenses = window.currentEditingOrderExpenses || (Array.isArray(existingOrderForPayment?.orderExpenses) ? existingOrderForPayment.orderExpenses : []);
             const expenseTotal = Number(document.getElementById('order-expense-total')?.value) || 0;
             const expenseAdjustment = Number(document.getElementById('order-expense-adjustment')?.value) || 0;
             const newExpenseAmount = Number(document.getElementById('order-new-expense')?.value) || 0;
@@ -2479,12 +2552,12 @@
                 list.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">No manager loans recorded yet.</div>';
                 return;
             }
-            list.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left font-bold text-gray-600">Date</th><th class="px-4 py-3 text-left font-bold text-gray-600">Lender</th><th class="px-4 py-3 text-left font-bold text-gray-600">Purpose</th><th class="px-4 py-3 text-right font-bold text-gray-600">Amount</th><th class="px-4 py-3 text-right font-bold text-gray-600">Repaid</th><th class="px-4 py-3 text-right font-bold text-gray-600">Balance</th><th class="px-4 py-3 text-center font-bold text-gray-600">Payment History</th><th class="px-4 py-3 text-center font-bold text-gray-600">Action</th></tr></thead><tbody class="divide-y divide-gray-100 bg-white">${managerLoans.map(loan => {
+            list.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-3 py-3 text-left font-bold text-gray-600 w-36">Lender</th><th class="px-3 py-3 text-left font-bold text-gray-600">Purpose</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Amount</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Repaid</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Balance</th><th class="px-3 py-3 text-center font-bold text-gray-600 w-20">History</th><th class="px-3 py-3 text-center font-bold text-gray-600 w-44">Action</th></tr></thead><tbody class="divide-y divide-gray-100 bg-white">${managerLoans.map(loan => {
                 const repaid = getLoanRepaidTotal(loan);
                 const amount = Number(loan.amount) || 0;
                 const balance = amount - repaid;
                 const statusClass = balance <= 0 ? 'bg-green-100 text-green-800' : balance < amount ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800';
-                return `<tr><td class="px-4 py-3 whitespace-nowrap text-gray-700">${formatDisplayDate(getLoanDate(loan))}</td><td class="px-4 py-3"><div class="font-semibold text-gray-900">${escapeHtml(loan.lenderName || 'Lender')}</div>${loan.contactNumber ? `<div class="text-xs text-gray-500 mt-1">Ph: ${escapeHtml(loan.contactNumber)}</div>` : ''}</td><td class="px-4 py-3 text-gray-700">${escapeHtml(loan.purpose || '-')}</td><td class="px-4 py-3 text-right font-bold text-amber-700 whitespace-nowrap">${formatMoney(amount)}</td><td class="px-4 py-3 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(repaid)}</td><td class="px-4 py-3 text-right whitespace-nowrap"><div class="font-bold text-red-700">${formatMoney(Math.max(balance, 0))}</div><span class="inline-flex mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${statusClass}">${balance <= 0 ? 'Paid' : balance < amount ? 'Partial' : 'Pending'}</span></td><td class="px-4 py-3 text-center"><button onclick="showManagerLoanHistory('${loan.id}')" class="inline-flex items-center justify-center rounded border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100">${getIconSvg('history', 'w-4 h-4 mr-1')} History</button></td><td class="px-4 py-3 whitespace-nowrap"><div class="flex items-center justify-center gap-2 flex-nowrap"><button onclick="editManagerLoan('${loan.id}')" title="Edit" class="inline-flex items-center justify-center rounded border border-amber-200 bg-amber-50 p-2 text-amber-700 hover:bg-amber-100">${getIconSvg('edit', 'w-4 h-4')}</button><button onclick="deleteManagerLoan('${loan.id}')" title="Delete" class="inline-flex items-center justify-center rounded border border-red-200 bg-red-50 p-2 text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-4 h-4')}</button><button onclick="openManagerLoanRepaymentModal('${loan.id}')" title="Update" class="inline-flex items-center justify-center rounded border border-emerald-200 bg-emerald-50 p-2 text-emerald-700 hover:bg-emerald-100 disabled:opacity-40" ${balance <= 0 ? 'disabled' : ''}>${getIconSvg('status', 'w-4 h-4')}</button></div></td></tr>`;
+                return `<tr><td class="px-3 py-3"><div class="font-semibold text-gray-900 truncate max-w-32" title="${escapeHtml(loan.lenderName || 'Lender')}">${escapeHtml(loan.lenderName || 'Lender')}</div><div class="text-xs text-gray-500 mt-1">${loan.contactNumber ? 'Ph: ' + escapeHtml(loan.contactNumber) : 'No phone'}</div></td><td class="px-3 py-3 text-gray-700"><div class="font-semibold text-gray-900 truncate max-w-56" title="${escapeHtml(loan.purpose || '-')}">${escapeHtml(loan.purpose || '-')}</div><div class="text-xs text-gray-500 mt-1">${formatDisplayDate(getLoanDate(loan))}</div></td><td class="px-3 py-3 text-right font-bold text-amber-700 whitespace-nowrap">${formatMoney(amount)}</td><td class="px-3 py-3 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(repaid)}</td><td class="px-3 py-3 text-right whitespace-nowrap"><div class="font-bold text-red-700">${formatMoney(Math.max(balance, 0))}</div><span class="inline-flex mt-1 rounded-full px-2 py-0.5 text-xs font-bold ${statusClass}">${balance <= 0 ? 'Paid' : balance < amount ? 'Partial' : 'Pending'}</span></td><td class="px-3 py-3 text-center"><button onclick="showManagerLoanHistory('${loan.id}')" class="inline-flex w-14 flex-col items-center justify-center rounded border border-indigo-200 bg-indigo-50 p-1 text-[10px] font-bold leading-tight text-indigo-700 hover:bg-indigo-100">${getIconSvg('history', 'w-5 h-5 mb-0.5')}<span>History</span></button></td><td class="px-3 py-3 whitespace-nowrap"><div class="flex items-center justify-center gap-1 flex-nowrap"><button onclick="editManagerLoan('${loan.id}')" title="Edit" class="inline-flex w-12 flex-col items-center justify-center rounded border border-amber-200 bg-amber-50 p-1 text-[10px] font-bold leading-tight text-amber-700 hover:bg-amber-100">${getIconSvg('edit', 'w-5 h-5 mb-0.5')}<span>Edit</span></button><button onclick="deleteManagerLoan('${loan.id}')" title="Delete" class="inline-flex w-12 flex-col items-center justify-center rounded border border-red-200 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-5 h-5 mb-0.5')}<span>Delete</span></button><button onclick="openManagerLoanRepaymentModal('${loan.id}')" title="Update" class="inline-flex w-12 flex-col items-center justify-center rounded border border-emerald-200 bg-emerald-50 p-1 text-[10px] font-bold leading-tight text-emerald-700 hover:bg-emerald-100 disabled:opacity-40" ${balance <= 0 ? 'disabled' : ''}>${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Pay</span></button></div></td></tr>`;
             }).join('')}</tbody></table></div>`;
         }
 
@@ -2786,14 +2859,15 @@
                 list.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">No company finance records found for this filter.</div>';
                 return;
             }
-            list.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left font-bold text-gray-600">Date & Time</th><th class="px-4 py-3 text-left font-bold text-gray-600">Source</th><th class="px-4 py-3 text-left font-bold text-gray-600">Details</th><th class="px-4 py-3 text-right font-bold text-gray-600">Cash Received</th><th class="px-4 py-3 text-right font-bold text-gray-600">To Receive</th><th class="px-4 py-3 text-right font-bold text-gray-600">Expense</th><th class="px-4 py-3 text-right font-bold text-gray-600">Balance</th><th class="px-4 py-3 text-center font-bold text-gray-600">Action</th></tr></thead><tbody class="divide-y divide-gray-100 bg-white">${filteredAccounts.map(item => {
+            list.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-3 py-3 text-left font-bold text-gray-600">Details</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-32">Cash Received</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-32">To Receive</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Expense</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Balance</th><th class="px-3 py-3 text-center font-bold text-gray-600 w-28">Action</th></tr></thead><tbody class="divide-y divide-gray-100 bg-white">${filteredAccounts.map(item => {
                 const income = Number(item.income) || 0;
                 const expense = Number(item.expense) || 0;
                 const due = Number(item.receivableBalance) || 0;
                 const balance = income - expense;
                 const isSystem = item.source === 'order' || item.source === 'managerLoanRepayment';
-                return `<tr><td class="px-4 py-3 whitespace-nowrap font-semibold text-gray-900">${formatDisplayDateTime(item.accountDate || item.createdAt)}</td><td class="px-4 py-3 whitespace-nowrap text-gray-700">${getFinanceSourceLabel(item)}</td><td class="px-4 py-3 text-gray-600">${escapeHtml(item.note || 'Daily company account')}</td><td class="px-4 py-3 text-right font-bold text-cyan-700 whitespace-nowrap">${formatMoney(income)}</td><td class="px-4 py-3 text-right font-bold ${due > 0 ? 'text-orange-700' : 'text-gray-400'} whitespace-nowrap">${formatMoney(due)}</td><td class="px-4 py-3 text-right font-bold text-red-700 whitespace-nowrap">${formatMoney(expense)}</td><td class="px-4 py-3 text-right font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'} whitespace-nowrap">${formatMoney(balance)}</td><td class="px-4 py-3 text-center whitespace-nowrap">${isSystem ? '<span class="rounded bg-gray-100 px-2 py-1 text-xs font-bold text-gray-500">Auto</span>' : `<div class="flex justify-center gap-2"><button onclick="editCompanyDailyAccount('${item.id}')" class="rounded border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-bold text-cyan-700 hover:bg-cyan-100">Edit</button><button onclick="deleteCompanyDailyAccount('${item.id}')" class="rounded border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700 hover:bg-red-100">Delete</button></div>`}</td></tr>`;
-            }).join('')}</tbody><tfoot class="bg-gray-50"><tr><td colspan="3" class="px-4 py-3 text-right font-bold text-gray-700">Total</td><td class="px-4 py-3 text-right font-bold text-cyan-800">${formatMoney(totalIncome)}</td><td class="px-4 py-3 text-right font-bold text-orange-800">${formatMoney(totalReceivable)}</td><td class="px-4 py-3 text-right font-bold text-red-800">${formatMoney(totalExpense)}</td><td class="px-4 py-3 text-right font-bold text-emerald-800">${formatMoney(totalIncome - totalExpense)}</td><td></td></tr></tfoot></table></div>`;
+                const actionHtml = isSystem ? `<span class="inline-flex w-12 flex-col items-center justify-center rounded border border-gray-200 bg-gray-50 p-1 text-[10px] font-bold leading-tight text-gray-500">${getIconSvg('status', 'w-5 h-5 mb-0.5')}<span>Auto</span></span>` : `<div class="flex justify-center gap-1"><button onclick="editCompanyDailyAccount('${item.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded border border-cyan-200 bg-cyan-50 p-1 text-[10px] font-bold leading-tight text-cyan-700 hover:bg-cyan-100">${getIconSvg('edit', 'w-5 h-5 mb-0.5')}<span>Edit</span></button><button onclick="deleteCompanyDailyAccount('${item.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded border border-red-200 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-5 h-5 mb-0.5')}<span>Delete</span></button></div>`;
+                return `<tr><td class="px-3 py-3 text-gray-600"><div class="font-semibold text-gray-900">${escapeHtml(item.note || 'Daily company account')}</div><div class="text-xs text-gray-500 mt-1">${formatDisplayDateTime(item.accountDate || item.createdAt)}</div></td><td class="px-3 py-3 text-right font-bold text-cyan-700 whitespace-nowrap">${formatMoney(income)}</td><td class="px-3 py-3 text-right font-bold ${due > 0 ? 'text-orange-700' : 'text-gray-400'} whitespace-nowrap">${formatMoney(due)}</td><td class="px-3 py-3 text-right font-bold text-red-700 whitespace-nowrap">${formatMoney(expense)}</td><td class="px-3 py-3 text-right font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'} whitespace-nowrap">${formatMoney(balance)}</td><td class="px-3 py-3 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
+            }).join('')}</tbody><tfoot class="bg-gray-50"><tr><td class="px-3 py-3 text-right font-bold text-gray-700">Total</td><td class="px-3 py-3 text-right font-bold text-cyan-800">${formatMoney(totalIncome)}</td><td class="px-3 py-3 text-right font-bold text-orange-800">${formatMoney(totalReceivable)}</td><td class="px-3 py-3 text-right font-bold text-red-800">${formatMoney(totalExpense)}</td><td class="px-3 py-3 text-right font-bold text-emerald-800">${formatMoney(totalIncome - totalExpense)}</td><td></td></tr></tfoot></table></div>`;
         }
 
         window.resetCompanyDailyAccountForm = function() {
