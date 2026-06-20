@@ -220,6 +220,7 @@
                             <button onclick="filterOrdersByStatus('Processing')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Processing</button>
                             <button onclick="filterOrdersByStatus('Shipped')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Shipped</button>
                             <button onclick="filterOrdersByStatus('Delivered')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered</button>
+                            <button onclick="filterOrdersByStatus('Delivered Due')" data-order-filter="Delivered Due" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered - Payment Due</button>
                             <button onclick="filterOrdersByStatus('All')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">All Orders</button>
                         </nav>
                     </div>
@@ -1379,7 +1380,8 @@
             document.querySelectorAll('.order-tab').forEach(el => {
                 el.classList.remove('border-red-500', 'text-red-600');
                 el.classList.add('border-transparent', 'text-gray-500');
-                if(el.textContent.trim() === currentOrderStatusFilter || (currentOrderStatusFilter === 'All' && el.textContent.trim() === 'All Orders')) {
+                const tabFilter = el.dataset.orderFilter || el.textContent.trim();
+                if(tabFilter === currentOrderStatusFilter || (currentOrderStatusFilter === 'All' && tabFilter === 'All Orders')) {
                     el.classList.remove('border-transparent', 'text-gray-500');
                     el.classList.add('border-red-500', 'text-red-600');
                 }
@@ -1467,7 +1469,8 @@
                 if(currentOrderStatusFilter === 'Repeat Customers') return false;
                 if(isRecycle ? !o.isDeleted : o.isDeleted) return false;
                 const lifecycleTab = currentOrderStatusFilter === 'Return' || currentOrderStatusFilter === 'Order Cancelled';
-                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter);
+                const isDeliveredDue = currentOrderStatusFilter === 'Delivered Due';
+                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (isDeliveredDue ? (o.status === 'Delivered' && (Number(o.balanceDue) || 0) > 0) : (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter));
                 const matchesSearch = ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search));
                 const orderDate = normalizeDateInput(o.createdAt);
                 const matchesFrom = !fromDate || orderDate >= fromDate;
