@@ -589,6 +589,9 @@
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">New Payment ₹</label><input type="number" id="order-new-payment" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="When clearing balance"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Date</label><input type="date" id="order-new-payment-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
                                 <div class="sm:col-span-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Note</label><input id="order-new-payment-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Balance cleared by UPI"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense ₹</label><input type="number" id="order-new-expense" min="0" step="0.01" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Order expense"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Date</label><input type="date" id="order-new-expense-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
+                                <div class="sm:col-span-2"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Note</label><input id="order-new-expense-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Courier / packing"></div>
                                 <div class="sm:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm" id="order-payment-summary"></div>
                                 <div class="sm:col-span-4" id="order-payment-history"></div>
                             </div>
@@ -1238,12 +1241,13 @@
             const currentMonthKey = new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
             orders.forEach(order => {
-                if (order.status === 'Pending') pending++;
-                else if (order.status === 'Processing') processing++;
-                else if (order.status === 'Shipped') shipped++;
-                else if (order.status === 'Delivered') delivered++;
-                else if (order.status === 'Return') returned++;
-                else if (order.status === 'Order Cancelled') cancelled++;
+                const productCount = getOrderProductCount(order);
+                if (order.status === 'Pending') pending += productCount;
+                else if (order.status === 'Processing') processing += productCount;
+                else if (order.status === 'Shipped') shipped += productCount;
+                else if (order.status === 'Delivered') delivered += productCount;
+                else if (order.status === 'Return') returned += productCount;
+                else if (order.status === 'Order Cancelled') cancelled += productCount;
 
                 let dateStr = order.createdAt;
                 if (typeof dateStr === 'object' && dateStr.seconds) {
@@ -1256,10 +1260,10 @@
                 const dayStr = formatDisplayDate(dateStr);
 
                 if (!ordersByMonth[monthKey]) { ordersByMonth[monthKey] = { total: 0, days: {} }; }
-                ordersByMonth[monthKey].total++;
+                ordersByMonth[monthKey].total += productCount;
                 
                 if (!ordersByMonth[monthKey].days[dayStr]) { ordersByMonth[monthKey].days[dayStr] = 0; }
-                ordersByMonth[monthKey].days[dayStr]++;
+                ordersByMonth[monthKey].days[dayStr] += productCount;
             });
 
             document.getElementById('dashboard-status-counts').innerHTML = `
@@ -1307,7 +1311,7 @@
                     daysHTML += `
                         <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0 pl-4 hover:bg-gray-50">
                             <span class="text-sm text-gray-600 font-medium">${dayStr}</span>
-                            <span class="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">${data.days[dayStr]} Orders</span>
+                            <span class="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">${data.days[dayStr]} Products</span>
                         </div>
                     `;
                 });
@@ -1416,6 +1420,22 @@
             return order.items || '';
         }
 
+        function getOrderProductCount(order) {
+            return Array.isArray(order.itemsObj)
+                ? order.itemsObj.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)
+                : 0;
+        }
+
+        function getOrdersProductCount(orderList) {
+            return orderList.reduce((sum, order) => sum + getOrderProductCount(order), 0);
+        }
+
+        function getOrderExpenseTotal(order) {
+            return Array.isArray(order.orderExpenses)
+                ? order.orderExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+                : 0;
+        }
+
         function orderPassedThroughStatus(order, status) {
             return order.status === status || (Array.isArray(order.statusHistory) && order.statusHistory.some(entry => entry.status === status));
         }
@@ -1435,7 +1455,7 @@
                     groups[key].latestDate = order.createdAt;
                 }
             });
-            return Object.values(groups).sort((a, b) => b.orders.length - a.orders.length || String(a.name).localeCompare(String(b.name)));
+            return Object.values(groups).sort((a, b) => getOrdersProductCount(b.orders) - getOrdersProductCount(a.orders) || String(a.name).localeCompare(String(b.name)));
         }
 
         function getFilteredOrders() {
@@ -1475,6 +1495,7 @@
                             </div>
                 ` : `
                             <button onclick="printSingleOrder('${order.id}')" class="text-red-600 hover:text-red-800 mr-3" title="Print Order"><svg class="w-5 h-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg></button>
+                            <button onclick="openOrderPaymentUpdate('${order.id}')" class="inline-flex items-center text-orange-700 hover:text-orange-900 text-xs font-bold mr-3 px-2 py-1 rounded border border-orange-100 bg-orange-50" title="Update payment">Due: ${formatMoney(order.balanceDue)}</button>
                             <button onclick="showOrderHistory('${order.id}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-xs font-bold mr-3 px-2 py-1 rounded border border-indigo-100 bg-indigo-50">${getIconSvg('history', 'w-4 h-4 mr-1')} History</button>
                             <div class="relative inline-block text-left">
                                 <button onclick="toggleOrderMenu('${order.id}', this)" class="text-gray-500 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100" title="More actions"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
@@ -1564,7 +1585,7 @@
                         <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address || '-'}</div>
                         <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
                     </td>
-                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${customer.orders.length} Orders</span></td>
+                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${getOrdersProductCount(customer.orders)} Products</span></td>
                     <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open</button>
@@ -1572,10 +1593,10 @@
                 </tr>
             ` : `
                 <tr class="hover:bg-gray-50 bg-indigo-50/30">
-                    <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${customer.orders.length}</span></td>
+                    <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${getOrdersProductCount(customer.orders)}</span></td>
                     <td class="px-6 py-4">
                         <div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div>
-                        <div class="text-xs text-indigo-700 font-semibold">${customer.orders.length} total orders</div>
+                        <div class="text-xs text-indigo-700 font-semibold">${getOrdersProductCount(customer.orders)} products in ${customer.orders.length} orders</div>
                     </td>
                     <td class="px-6 py-4">
                         <div class="text-sm font-medium text-gray-900">${customer.name}</div>
@@ -1589,6 +1610,11 @@
                     </td>
                 </tr>
             `).join('');
+        }
+
+        window.openOrderPaymentUpdate = async function(id) {
+            await editOrder(id, true);
+            setTimeout(() => document.getElementById('order-new-payment')?.focus(), 50);
         }
 
         window.toggleOrderMenu = function(id, trigger = null) {
@@ -1668,6 +1694,9 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-new-expense').value = '';
+            document.getElementById('order-new-expense-date').value = getTodayString();
+            document.getElementById('order-new-expense-note').value = '';
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
             document.getElementById('customer-suggestions').classList.add('hidden');
             showToast('Customer details filled');
@@ -1679,7 +1708,7 @@
                 .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
             if(customerOrders.length === 0) return;
             const latest = customerOrders[0];
-            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${customerOrders.length} orders`;
+            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${getOrdersProductCount(customerOrders)} products in ${customerOrders.length} orders`;
             document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => `
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
@@ -1717,6 +1746,9 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-new-expense').value = '';
+            document.getElementById('order-new-expense-date').value = getTodayString();
+            document.getElementById('order-new-expense-note').value = '';
             renderOrderPaymentHistory([]);
             addOrderProductRow();
             document.getElementById('order-modal').classList.remove('hidden');
@@ -1771,7 +1803,12 @@
         function renderOrderPaymentHistory(history = []) {
             const host = document.getElementById('order-payment-history');
             if(!host) return;
-            host.innerHTML = history.length ? `<div class="rounded border border-gray-200 bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500 mb-2">Payment History</div>${history.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Payment')}</span><span class="font-bold text-emerald-700">${formatMoney(item.amount)}</span></div>`).join('')}</div>` : '<div class="text-xs text-gray-500">No balance payments recorded yet.</div>';
+            const currentOrderId = document.getElementById('order-id')?.value;
+            const order = currentOrderId ? orders.find(o => o.id === currentOrderId) : null;
+            const expenses = Array.isArray(order?.orderExpenses) ? order.orderExpenses : [];
+            const paymentHtml = history.length ? history.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Payment')}</span><span class="font-bold text-emerald-700">${formatMoney(item.amount)}</span></div>`).join('') : '<div class="text-xs text-gray-500">No balance payments recorded yet.</div>';
+            const expenseHtml = expenses.length ? expenses.map(item => `<div class="flex justify-between gap-3 border-t first:border-t-0 py-2 text-sm"><span>${formatDisplayDate(item.date)} • ${escapeHtml(item.note || 'Expense')}</span><span class="font-bold text-red-700">${formatMoney(item.amount)}</span></div>`).join('') : '<div class="text-xs text-gray-500">No expenses recorded yet.</div>';
+            host.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3"><div class="rounded border border-gray-200 bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500 mb-2">Payment History</div>${paymentHtml}</div><div class="rounded border border-red-100 bg-white p-3"><div class="text-xs font-bold uppercase text-red-500 mb-2">Expense History</div>${expenseHtml}</div></div>`;
         }
 
         window.addOrderProductRow = function(productId = '', qty = 1, priceType = 'includingGst', unitPrice = null) {
@@ -1801,10 +1838,10 @@
             updateOrderPaymentSummary();
         }
 
-        window.editOrder = async function(id) {
+        window.editOrder = async function(id, skipConfirm = false) {
             const order = orders.find(o => o.id === id);
             if(!order) return;
-            if(!(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            if(!skipConfirm && !(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('order-id').value = order.id;
             document.getElementById('order-modal-title').innerText = 'Edit Order';
             document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); 
@@ -1820,6 +1857,9 @@
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
+            document.getElementById('order-new-expense').value = '';
+            document.getElementById('order-new-expense-date').value = getTodayString();
+            document.getElementById('order-new-expense-note').value = '';
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
             
             document.getElementById('order-products-container').innerHTML = '';
@@ -1849,9 +1889,9 @@
             const payload = {
                 accountDate,
                 income,
-                expense: 0,
+                expense: getOrderExpenseTotal(orderData),
                 note,
-                balance: income,
+                balance: income - getOrderExpenseTotal(orderData),
                 receivableTotal: Number(orderData.orderTotal) || 0,
                 receivableBalance: Number(orderData.balanceDue) || 0,
                 source: 'order',
@@ -1895,6 +1935,11 @@
             const newPaymentDate = document.getElementById('order-new-payment-date').value || getTodayString();
             const newPaymentNote = document.getElementById('order-new-payment-note').value.trim();
             const paymentHistory = newPaymentAmount > 0 ? [...existingPaymentHistory, { amount: newPaymentAmount, date: newPaymentDate, note: newPaymentNote || 'Balance payment', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingPaymentHistory;
+            const existingOrderExpenses = Array.isArray(existingOrderForPayment?.orderExpenses) ? existingOrderForPayment.orderExpenses : [];
+            const newExpenseAmount = Number(document.getElementById('order-new-expense')?.value) || 0;
+            const newExpenseDate = document.getElementById('order-new-expense-date')?.value || getTodayString();
+            const newExpenseNote = document.getElementById('order-new-expense-note')?.value.trim();
+            const orderExpenses = newExpenseAmount > 0 ? [...existingOrderExpenses, { amount: newExpenseAmount, date: newExpenseDate, note: newExpenseNote || 'Order expense', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingOrderExpenses;
             const firstPayment = Number(document.getElementById('order-first-payment').value) || 0;
             const roundOff = Number(document.getElementById('order-round-off').value) || 0;
             const orderItemsTotal = itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal) || 0), 0);
@@ -1917,6 +1962,8 @@
                 roundOff,
                 firstPayment,
                 paymentHistory,
+                orderExpenses,
+                orderExpenseTotal: orderExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0),
                 paidTotal,
                 balanceDue
             };
@@ -2253,7 +2300,7 @@
                     const history = Array.isArray(investor.capitalHistory) ? investor.capitalHistory : [];
                     return `
                         <tr class="hover:bg-gray-50 align-top">
-                            <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${escapeHtml(investor.name || 'Investor')}</div><div class="text-xs text-gray-500">Capital investor</div></td>
+                            <td class="px-6 py-4"><button onclick="toggleInvestorCapitalDetails('${investor.id}')" class="text-left text-sm font-bold text-emerald-700 hover:text-emerald-900">${escapeHtml(investor.name || 'Investor')}</button><div class="text-xs text-gray-500">Click name for month/day totals</div><div id="capital-details-${investor.id}" class="hidden mt-3 text-xs"></div></td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-gray-700">${formatMoney(initial)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-emerald-700">${formatMoney(approved)}</td>
                             <td class="px-6 py-4 text-right text-sm font-bold text-indigo-700">${formatMoney(initial + approved)}</td>
@@ -2265,6 +2312,41 @@
 
         }
 
+
+
+        window.toggleInvestorCapitalDetails = function(uid) {
+            const host = document.getElementById(`capital-details-${uid}`);
+            if(!host) return;
+            if(!host.classList.contains('hidden')) { host.classList.add('hidden'); return; }
+            const investor = getInvestorByUid(uid);
+            const entries = [];
+            (Array.isArray(investor.capitalHistory) ? investor.capitalHistory : []).forEach(item => entries.push({ date: item.date || investor.createdAt || getTodayString(), amount: Number(item.amount) || 0, note: item.note || 'Base investment' }));
+            investorExpenses.filter(expense => expense.uid === uid && expense.status === 'approved').forEach(expense => entries.push({ date: expense.approvedAt || expense.createdAt || getTodayString(), amount: Number(expense.amount) || 0, note: expense.purpose || 'Approved expense' }));
+            const months = {};
+            entries.forEach(entry => {
+                const date = normalizeDateInput(entry.date);
+                const dateObj = new Date(date);
+                if(isNaN(dateObj)) return;
+                const monthKey = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                const dayKey = formatDisplayDate(date);
+                if(!months[monthKey]) months[monthKey] = { total: 0, days: {} };
+                months[monthKey].total += entry.amount;
+                if(!months[monthKey].days[dayKey]) months[monthKey].days[dayKey] = { total: 0, entries: [] };
+                months[monthKey].days[dayKey].total += entry.amount;
+                months[monthKey].days[dayKey].entries.push(entry);
+            });
+            const html = Object.keys(months).sort((a, b) => new Date(b) - new Date(a)).map(month => {
+                const monthId = `${uid}-${month}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+                const data = months[month];
+                const daysHtml = Object.keys(data.days).sort((a, b) => new Date(b.split('-').reverse().join('-')) - new Date(a.split('-').reverse().join('-'))).map(day => {
+                    const dayData = data.days[day];
+                    return `<details class="rounded border border-gray-100 bg-white px-3 py-2"><summary class="cursor-pointer font-bold text-gray-700">${day} • ${formatMoney(dayData.total)}</summary><div class="mt-2 space-y-1 pl-3">${dayData.entries.map(entry => `<div class="flex justify-between gap-2"><span>${escapeHtml(entry.note)}</span><span class="font-bold">${formatMoney(entry.amount)}</span></div>`).join('')}</div></details>`;
+                }).join('');
+                return `<details class="mb-2 rounded border border-emerald-100 bg-emerald-50 p-2"><summary class="cursor-pointer font-bold text-emerald-800">${month} • ${formatMoney(data.total)}</summary><div class="mt-2 space-y-2">${daysHtml}</div></details>`;
+            }).join('') || '<div class="rounded bg-gray-50 p-3 text-gray-500">No capital history found.</div>';
+            host.innerHTML = html;
+            host.classList.remove('hidden');
+        }
 
         function renderExpenseApprovalsDashboard() {
             const pending = investorExpenses.filter(expense => expense.status === 'pending');
