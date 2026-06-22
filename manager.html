@@ -3577,15 +3577,15 @@
                     doc.setFont("helvetica", "bold");
                     doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
 
-                    const footerY = startY + boxH - 39;
+                    const footerY = startY + boxH - 23;
                     doc.setDrawColor(150);
-                    doc.line(startX + 5, footerY - 5, startX + boxW - 5, footerY - 5);
+                    doc.line(startX + 5, footerY - 3, startX + boxW - 5, footerY - 3);
                     doc.setDrawColor(0);
 
                     const logoX = startX + 5;
                     const logoY = footerY;
-                    const logoW = 18;
-                    const logoH = 14;
+                    const logoW = 12;
+                    const logoH = 9;
                     if(companySettings.companyLogoImage) {
                         try { doc.addImage(companySettings.companyLogoImage, 'PNG', logoX, logoY, logoW, logoH); } catch(e) { console.warn('Company logo could not be added to label', e); }
                     } else {
@@ -3596,39 +3596,20 @@
                     }
 
                     doc.setFont("helvetica", "normal");
-                    doc.setFontSize(8);
-                    const descLines = doc.splitTextToSize(companySettings.companyDescription || 'Lakfa Foods', boxW - 32);
-                    if(descLines.length) doc.text(descLines.slice(0, 3), startX + 27, footerY + 4);
+                    doc.setFontSize(7);
+                    const descLines = doc.splitTextToSize(companySettings.companyDescription || 'Lakfa Foods', boxW - 22);
+                    if(descLines.length) doc.text(descLines.slice(0, 2), startX + 19, footerY + 3, { lineHeightFactor: 1 });
 
-                    const followY = startY + boxH - 16;
-                    const iconY = startY + boxH - 5.5;
-                    const iconStartX = startX + (boxW / 2) - 10;
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(7.5);
-                    doc.text('Follow and Visit for More', startX + (boxW / 2), followY, { align: 'center' });
-
+                    const instagramX = startX + 19;
+                    const instagramY = footerY + 10.5;
                     doc.setDrawColor(0);
-                    doc.setLineWidth(0.25);
-                    // Instagram outline
-                    doc.roundedRect(iconStartX, iconY - 2.4, 4.8, 4.8, 1.1, 1.1);
-                    doc.circle(iconStartX + 2.4, iconY, 0.9);
-                    doc.circle(iconStartX + 3.7, iconY - 1.35, 0.25);
-                    // Facebook outline-style mark
-                    doc.circle(iconStartX + 11, iconY, 2.4);
+                    doc.setLineWidth(0.2);
+                    doc.roundedRect(instagramX, instagramY - 1.6, 3.2, 3.2, 0.7, 0.7);
+                    doc.circle(instagramX + 1.6, instagramY, 0.55);
+                    doc.circle(instagramX + 2.45, instagramY - 0.9, 0.15);
                     doc.setFont("helvetica", "bold");
                     doc.setFontSize(7);
-                    doc.text('f', iconStartX + 11, iconY + 2.1, { align: 'center' });
-                    doc.line(iconStartX + 10, iconY - 0.2, iconStartX + 12.1, iconY - 0.2);
-                    // Twitter/X outline-style mark
-                    doc.circle(iconStartX + 19.6, iconY, 2.4);
-                    doc.setLineWidth(0.35);
-                    doc.line(iconStartX + 18.2, iconY - 1.4, iconStartX + 21, iconY + 1.4);
-                    doc.line(iconStartX + 21, iconY - 1.4, iconStartX + 18.2, iconY + 1.4);
-                    doc.setLineWidth(0.25);
-
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(8);
-                    doc.text('www.lakfafoods.com', startX + boxW - 5, startY + boxH - 4, { align: 'right' });
+                    doc.text('www.lakfafoods.com', instagramX + 5, instagramY + 1.1);
                 });
 
                 doc.save("Lakfa_Shipping_Labels.pdf");
