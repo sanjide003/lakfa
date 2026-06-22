@@ -3577,7 +3577,9 @@
                     doc.setFont("helvetica", "bold");
                     doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
 
-                    const footerY = startY + boxH - 37;
+                    const websiteY = startY + boxH - 5;
+                    const sloganY = websiteY - 5;
+                    const footerY = sloganY - 20;
                     doc.setDrawColor(150);
                     doc.line(startX + 5, footerY - 5, startX + boxW - 5, footerY - 5);
                     doc.setDrawColor(0);
@@ -3603,33 +3605,10 @@
 
                     doc.setFont("helvetica", "bold");
                     doc.setFontSize(8);
-                    doc.text('Feel the Islands.Follow our wave.', startX + (boxW / 2), footerY + 23, { align: 'center' });
-
-                    const socialY = footerY + 31;
-                    const socialStartX = startX + (boxW / 2) - 22;
-                    doc.setDrawColor(0);
-                    doc.setLineWidth(0.25);
-                    // YouTube outline
-                    doc.circle(socialStartX, socialY, 2.3);
-                    doc.triangle(socialStartX - 0.7, socialY - 1, socialStartX - 0.7, socialY + 1, socialStartX + 1, socialY, 'S');
-                    // Facebook outline
-                    doc.circle(socialStartX + 7, socialY, 2.3);
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(6.5);
-                    doc.text('f', socialStartX + 7, socialY + 2, { align: 'center' });
-                    // Instagram outline
-                    doc.roundedRect(socialStartX + 11.7, socialY - 2.3, 4.6, 4.6, 1, 1);
-                    doc.circle(socialStartX + 14, socialY, 0.8);
-                    doc.circle(socialStartX + 15.2, socialY - 1.2, 0.16);
-                    // X/Twitter outline
-                    doc.circle(socialStartX + 21, socialY, 2.3);
-                    doc.setLineWidth(0.35);
-                    doc.line(socialStartX + 19.8, socialY - 1.2, socialStartX + 22.2, socialY + 1.2);
-                    doc.line(socialStartX + 22.2, socialY - 1.2, socialStartX + 19.8, socialY + 1.2);
-                    doc.setLineWidth(0.25);
+                    doc.text('Feel the Islands.Follow our wave.', startX + (boxW / 2), sloganY, { align: 'center' });
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(8);
-                    doc.text('www.lakfafoods.com', socialStartX + 27, socialY + 1.4);
+                    doc.text('www.lakfafoods.com', startX + (boxW / 2), websiteY, { align: 'center' });
                 });
 
                 doc.save("Lakfa_Shipping_Labels.pdf");
