@@ -3577,7 +3577,11 @@
                     doc.setFont("helvetica", "bold");
                     doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
 
-                    const footerY = startY + boxH - 31;
+                    const footerY = startY + boxH - 39;
+                    doc.setDrawColor(150);
+                    doc.line(startX + 5, footerY - 5, startX + boxW - 5, footerY - 5);
+                    doc.setDrawColor(0);
+
                     const logoX = startX + 5;
                     const logoY = footerY;
                     const logoW = 18;
@@ -3596,28 +3600,31 @@
                     const descLines = doc.splitTextToSize(companySettings.companyDescription || 'Lakfa Foods', boxW - 32);
                     if(descLines.length) doc.text(descLines.slice(0, 3), startX + 27, footerY + 4);
 
-                    const socialY = footerY + 17;
+                    const followY = startY + boxH - 18;
+                    const iconY = startY + boxH - 8;
+                    const iconStartX = startX + (boxW / 2) - 12;
                     doc.setFont("helvetica", "bold");
                     doc.setFontSize(7.5);
-                    doc.text('Follow and Visit', startX + 5, socialY);
-                    const socialIcons = [
-                        { label: 'f', color: [24, 119, 242] },
-                        { label: '◎', color: [225, 48, 108] },
-                        { label: '▶', color: [255, 0, 0] },
-                        { label: '☎', color: [37, 211, 102] }
-                    ];
-                    socialIcons.forEach((icon, iconIndex) => {
-                        const iconX = startX + 5 + (iconIndex * 8);
-                        doc.setFillColor(...icon.color);
-                        doc.circle(iconX, socialY + 7, 3, 'F');
-                        doc.setTextColor(255);
-                        doc.setFontSize(5.5);
-                        doc.text(icon.label, iconX, socialY + 8.7, { align: 'center' });
-                        doc.setTextColor(0);
-                    });
+                    doc.text('Follow and Visit for More', startX + (boxW / 2), followY, { align: 'center' });
+
+                    doc.setDrawColor(0);
+                    doc.setLineWidth(0.25);
+                    // Instagram outline
+                    doc.roundedRect(iconStartX, iconY - 3, 6, 6, 1.5, 1.5);
+                    doc.circle(iconStartX + 3, iconY, 1.2);
+                    doc.circle(iconStartX + 4.7, iconY - 1.8, 0.35);
+                    // Facebook outline-style mark
                     doc.setFont("helvetica", "bold");
                     doc.setFontSize(8);
-                    doc.text('www.lakfafoods.com', startX + 40, socialY + 8.5);
+                    doc.text('f', iconStartX + 12, iconY + 2.5, { align: 'center' });
+                    doc.line(iconStartX + 10.3, iconY - 0.4, iconStartX + 13.3, iconY - 0.4);
+                    // Twitter/X outline-style mark
+                    doc.line(iconStartX + 19, iconY - 3, iconStartX + 25, iconY + 3);
+                    doc.line(iconStartX + 25, iconY - 3, iconStartX + 19, iconY + 3);
+
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(8);
+                    doc.text('www.lakfafoods.com', startX + boxW - 5, startY + boxH - 4, { align: 'right' });
                 });
 
                 doc.save("Lakfa_Shipping_Labels.pdf");
