@@ -2522,6 +2522,13 @@
             return `₹${(Number(amount) || 0).toLocaleString('en-IN')}`;
         }
 
+        function formatPdfMoney(amount) {
+            return (Number(amount) || 0).toLocaleString('en-IN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+        }
+
         function formatQuantity(qty) {
             const value = Number(qty) || 0;
             return Number.isInteger(value) ? String(value) : value.toFixed(2);
@@ -3604,13 +3611,21 @@
             return { logo, width: Math.min(maxWidth, fixedHeight * ratio), height: fixedHeight };
         }
 
-        function addLogoToPdf(doc, x = 20, y = 28, height = 24) {
+        function getUploadedLogoDimensions(fixedHeight = 24, maxWidth = 70) {
+            const previewLogo = document.querySelector('#company-logo-preview img');
+            const ratio = (previewLogo?.naturalWidth && previewLogo?.naturalHeight) ? (previewLogo.naturalWidth / previewLogo.naturalHeight) : 1;
+            const width = Math.min(maxWidth, fixedHeight * ratio);
+            return { width, height: fixedHeight };
+        }
+
+        function addLogoToPdf(doc, x = 20, y = 28, height = 24, maxWidth = 70) {
             try {
                 if(companySettings.companyLogoImage) {
-                    doc.addImage(companySettings.companyLogoImage, 'PNG', x, y, height, height);
-                    return { width: height, height };
+                    const dims = getUploadedLogoDimensions(height, maxWidth);
+                    doc.addImage(companySettings.companyLogoImage, 'PNG', x, y, dims.width, dims.height);
+                    return dims;
                 }
-                const { logo, width } = getLogoDimensions(height, 70);
+                const { logo, width } = getLogoDimensions(height, maxWidth);
                 if(logo && logo.complete) doc.addImage(logo, 'PNG', x, y, width, height);
                 return { width, height };
             } catch (e) { console.warn('Logo could not be added to invoice', e); return { width: height, height }; }
@@ -3634,7 +3649,7 @@
             doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
             doc.text(`# ${invoiceNo}`, 192, 43, { align: 'right' });
             doc.setFontSize(8); doc.text('Balance Due', 192, 55, { align: 'right' });
-            doc.setFontSize(11); doc.text(formatMoney(balanceDue), 192, 62, { align: 'right' });
+            doc.setFontSize(11); doc.text(formatPdfMoney(balanceDue), 192, 62, { align: 'right' });
 
             doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
             doc.text('Bill To', 20, 96);
@@ -3643,14 +3658,13 @@
             const billLines = [customer.shopName ? `Shop: ${customer.shopName}` : '', customer.address || '', customer.pincode ? `PIN: ${customer.pincode}` : '', customer.phone ? `Ph: ${customer.phone}` : '', customer.gstin ? `GSTIN ${customer.gstin}` : ''].filter(Boolean);
             doc.text(doc.splitTextToSize(billLines.join('\n'), 78), 20, 110);
             doc.text('Ship To', 20, 132);
-            const shipLines = [customer.shopName ? `Shop: ${customer.shopName}` : '', customer.address || '', customer.pincode ? `PIN: ${customer.pincode}` : ''].filter(Boolean);
-            doc.text(doc.splitTextToSize(shipLines.join('\n') || '-', 78), 20, 139);
+            doc.text(customer.gstin ? `GSTIN ${customer.gstin}` : '', 20, 139);
 
             const details = [
                 ['Invoice Date :', formatDisplayDate(invoiceDate)],
                 ['Terms :', 'Custom'],
                 ['Due Date :', formatDisplayDate(invoiceDate)],
-                ['Discount Allowed :', formatMoney(0)]
+                ['Discount Allowed :', formatPdfMoney(0)]
             ];
             let y = 108;
             details.forEach(([label, value]) => {
@@ -3685,19 +3699,19 @@
             let y = startY;
             doc.setFillColor(55, 55, 55); doc.rect(20, y, 172, 9, 'F');
             doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-            doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 92, y + 6); doc.text('Qty', 112, y + 6); doc.text('Rate', 132, y + 6, { align: 'right' }); doc.text('CGST', 151, y + 6, { align: 'right' }); doc.text('SGST', 171, y + 6, { align: 'right' }); doc.text('Amount', 190, y + 6, { align: 'right' });
+            doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 91, y + 6); doc.text('Qty', 109, y + 6); doc.text('Rate', 128, y + 6, { align: 'right' }); doc.text('CGST', 149, y + 6, { align: 'right' }); doc.text('SGST', 170, y + 6, { align: 'right' }); doc.text('Amount', 190, y + 6, { align: 'right' });
             doc.setTextColor(0); doc.setFont('helvetica', 'normal'); y += 16;
             orderRows.forEach((row, index) => {
                 if(y > 236) { doc.addPage(); y = 25; }
-                const itemLines = doc.splitTextToSize(row.name, 50);
+                const itemLines = doc.splitTextToSize(row.name, 48);
                 doc.text(String(index + 1), 24, y);
                 doc.text(itemLines, 34, y);
-                doc.text(row.hsnSac || '-', 92, y);
-                doc.text(formatQuantity(row.qty), 116, y, { align: 'right' });
-                doc.text(formatMoney(row.rate), 132, y, { align: 'right' });
-                doc.text(`${formatMoney(row.cgst)}\n${row.gstPercent / 2}%`, 151, y, { align: 'right' });
-                doc.text(`${formatMoney(row.sgst)}\n${row.gstPercent / 2}%`, 171, y, { align: 'right' });
-                doc.text(formatMoney(row.amount), 190, y, { align: 'right' });
+                doc.text(row.hsnSac || '-', 91, y);
+                doc.text(formatQuantity(row.qty), 113, y, { align: 'right' });
+                doc.text(formatPdfMoney(row.rate), 128, y, { align: 'right' });
+                doc.text(`${formatPdfMoney(row.cgst)}\n${row.gstPercent / 2}%`, 149, y, { align: 'right' });
+                doc.text(`${formatPdfMoney(row.sgst)}\n${row.gstPercent / 2}%`, 170, y, { align: 'right' });
+                doc.text(formatPdfMoney(row.amount), 190, y, { align: 'right' });
                 y += Math.max(12, itemLines.length * 4.5 + 7);
             });
             doc.line(20, y, 192, y); return y + 8;
@@ -3726,15 +3740,19 @@
             const subTotalY = y;
             doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
             doc.text('Sub Total', 132, subTotalY, { align: 'right' });
-            doc.text(formatMoney(cgst), 151, subTotalY, { align: 'right' });
-            doc.text(formatMoney(sgst), 171, subTotalY, { align: 'right' });
-            doc.text(formatMoney(total), 190, subTotalY, { align: 'right' });
+            doc.text(formatPdfMoney(cgst), 149, subTotalY, { align: 'right' });
+            doc.text(formatPdfMoney(sgst), 170, subTotalY, { align: 'right' });
+            doc.text(formatPdfMoney(total), 190, subTotalY, { align: 'right' });
             y += 10; doc.line(20, y - 5, 192, y - 5);
             doc.setFont('helvetica', 'normal');
-            doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatMoney(taxable), 190, y, { align: 'right' }); y += 9;
-            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatMoney(total), 190, y, { align: 'right' }); y += 11;
+            const totalGst = cgst + sgst;
+            doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
+            doc.text('Total SGST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(sgst), 190, y, { align: 'right' }); y += 8;
+            doc.text('Total CGST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(cgst), 190, y, { align: 'right' }); y += 8;
+            doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
+            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatPdfMoney(total), 190, y, { align: 'right' }); y += 11;
             doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
-            doc.text('Balance Due', 156, y, { align: 'right' }); doc.text(formatMoney(due), 190, y, { align: 'right' }); y += 11;
+            doc.text('Balance Due', 156, y, { align: 'right' }); doc.text(formatPdfMoney(due), 190, y, { align: 'right' }); y += 11;
             doc.setFont('helvetica', 'normal'); doc.text('Total In Words:', 134, y, { align: 'right' });
             doc.setFont('helvetica', 'bolditalic'); doc.text(doc.splitTextToSize(amountToWords(total), 42), 140, y);
             doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
