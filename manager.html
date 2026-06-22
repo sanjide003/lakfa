@@ -417,25 +417,25 @@
                     <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
                         <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
                             <h3 class="text-lg leading-6 font-medium text-gray-900">Company Settings</h3>
-                            <p class="mt-1 max-w-2xl text-sm text-gray-500">Provide company details for shipping labels.</p>
+                            <p class="mt-1 max-w-2xl text-sm text-gray-500">Provide full business details for shipping labels and A4 invoices.</p>
                         </div>
                         <div class="p-6">
                             <form id="settings-form" class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Company Name</label>
-                                    <input type="text" id="set-company-name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Address Line 1 (Street, Building)</label>
-                                    <input type="text" id="set-address1" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Address Line 2 (City, State, Pincode)</label>
-                                    <input type="text" id="set-address2" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                    <input type="text" id="set-phone" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div><label class="block text-sm font-medium text-gray-700">Business Name</label><input type="text" id="set-company-name" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Phone Number</label><input type="text" id="set-phone" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">GSTIN</label><input type="text" id="set-gstin" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="32AAMFL9451G1Z5"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Email ID</label><input type="email" id="set-email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="lakfaofficial@gmail.com"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Business Type</label><input type="text" id="set-business-type" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Manufacturing"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Business Category</label><input type="text" id="set-business-category" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Lakshadweep Products"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">State</label><input type="text" id="set-state" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Kerala"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Pincode</label><input type="text" id="set-pincode" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="673634"></div>
+                                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Business Address</label><textarea id="set-business-address" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="SP GODOWN, ROTTIPEEDIKA..."></textarea></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Address Line 1 (Shipping Label)</label><input type="text" id="set-address1" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Address Line 2 (Shipping Label)</label><input type="text" id="set-address2" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Signature Name</label><input type="text" id="set-signature-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Authorized Signatory"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Signature Image</label><input type="file" id="set-signature-file" accept="image/*" onchange="handleSignatureUpload(event)" class="mt-1 block w-full text-sm text-gray-600"><input type="hidden" id="set-signature-image"><div id="signature-preview" class="mt-2 text-xs text-gray-500"></div></div>
+                                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Payment Details</label><textarea id="set-payment-details" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Account No: ...&#10;Bank Name: ...&#10;IFSC: ..."></textarea></div>
                                 </div>
                                 <div class="pt-4 flex justify-end">
                                     <button type="button" onclick="saveSettings()" class="bg-red-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Save Settings</button>
@@ -656,6 +656,10 @@
                         <input type="text" id="product-name" required placeholder="eg. Tuna Pickle 350g" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700">HSN/SAC</label>
+                        <input type="text" id="product-hsn-sac" placeholder="eg. 998314" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700">Including GST Price (₹)</label>
                         <input type="number" id="product-price" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
                     </div>
@@ -666,6 +670,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Promotion Price (₹)</label>
                         <input type="number" id="product-promotion-price" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">GST %</label>
+                        <input type="number" id="product-gst-percent" min="0" step="0.01" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="eg. 5">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700" id="initial-stock-label">Initial Stock Qty</label>
@@ -799,7 +807,7 @@
             <div class="px-6 py-4 border-b flex justify-between items-center bg-indigo-50">
                 <div>
                     <h2 class="text-lg font-bold text-indigo-900">Repeat Customer Orders</h2>
-                    <p id="repeat-customer-subtitle" class="text-xs text-indigo-700 mt-1"></p>
+                    <p id="repeat-customer-subtitle" class="text-xs text-indigo-700 mt-1"></p><div id="repeat-customer-actions" class="mt-3 flex flex-wrap gap-2"></div>
                 </div>
                 <button onclick="closeModal('repeat-customer-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
@@ -811,6 +819,16 @@
 
 
     <!-- Confirmation Modal -->
+    <div id="invoice-preview-modal" class="hidden fixed inset-0 z-[88] flex items-center justify-center p-4 bg-gray-900 bg-opacity-70">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[92vh] overflow-hidden flex flex-col">
+            <div class="px-4 py-3 border-b bg-gray-50 flex justify-between items-center">
+                <div><h2 class="font-bold text-gray-900">A4 Bill Preview</h2><p class="text-xs text-gray-500">Preview the invoice before downloading.</p></div>
+                <button onclick="closeModal('invoice-preview-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+            <iframe id="invoice-preview-frame" class="flex-1 w-full bg-gray-100" title="Invoice Preview"></iframe>
+        </div>
+    </div>
+
     <div id="confirm-modal" class="hidden fixed inset-0 z-[90] flex items-center justify-center p-4 bg-gray-900 bg-opacity-60">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
             <div class="px-5 py-4 border-b bg-red-50">
@@ -905,10 +923,20 @@
             repeat: { title: 'Repeat Customers', statusFilter: 'Repeat Customers', icon: 'users', color: 'indigo' }
         };
         let companySettings = {
-            name: "Lakfa Foods",
-            address1: "Sp. Godown, Rottipeedika",
-            address2: "Pullisherikund, PO, Pallikal, Kerala 673634",
-            phone: "079073 45458"
+            name: "LAKFA FOODS",
+            address1: "SP GODOWN, ROTTIPEEDIKA",
+            address2: "PULLISHERIKUND, (PO) PALLIKKAL BAZAR, KONDOTTY CIRCLE, MALAPPURAM, KERALA-673634",
+            businessAddress: "SP GODOWN, ROTTIPEEDIKA\nPULLISHERIKUND, (PO) PALLIKKAL BAZAR,\nKONDOTTY CIRCLE, MALAPPURAM, KERALA-673634",
+            phone: "7907345458",
+            gstin: "32AAMFL9451G1Z5",
+            email: "lakfaofficial@gmail.com",
+            businessType: "Manufacturing",
+            businessCategory: "Lakshadweep Products",
+            state: "Kerala",
+            pincode: "673634",
+            signatureName: "Authorized Signatory",
+            signatureImage: "",
+            paymentDetails: ""
         };
 
         // Utility: Show Toast (English)
@@ -1082,7 +1110,7 @@
             Object.keys(orderUtilityTabs).forEach(tabKey => {
                 if(tabKey !== nextTabId) document.getElementById('tab-' + tabKey).innerHTML = '';
             });
-            ['order-modal', 'product-modal', 'stock-modal', 'history-modal', 'status-modal', 'order-history-modal', 'repeat-customer-modal', 'manager-loan-repayment-modal', 'manager-loan-edit-modal', 'manager-loan-history-modal'].forEach(modalId => {
+            ['order-modal', 'product-modal', 'stock-modal', 'history-modal', 'status-modal', 'order-history-modal', 'repeat-customer-modal', 'invoice-preview-modal', 'manager-loan-repayment-modal', 'manager-loan-edit-modal', 'manager-loan-history-modal'].forEach(modalId => {
                 const modal = document.getElementById(modalId);
                 if(modal) modal.classList.add('hidden');
             });
@@ -1479,6 +1507,36 @@
             return Number(order.orderExpenseTotal) || getOrderExpensePaidTotal(order);
         }
 
+        function orderHasPromotionPrice(order) {
+            return Array.isArray(order?.itemsObj) && order.itemsObj.some(item => item.priceType === 'promotion');
+        }
+
+        function getOrderItemsTotal(order) {
+            return Number(order?.itemsTotal) || (Array.isArray(order?.itemsObj) ? order.itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal ?? item.price) || 0), 0) : 0) || Number(order?.orderTotal) || 0;
+        }
+
+        function getOrderPaidTotal(order) {
+            return Number(order?.paidTotal) || ((Number(order?.firstPayment) || 0) + (Array.isArray(order?.paymentHistory) ? order.paymentHistory.reduce((sum, item) => sum + (Number(item.amount) || 0), 0) : 0));
+        }
+
+        function getOrderBalanceDue(order) {
+            return Math.max(0, (Number(order?.orderTotal) || getOrderItemsTotal(order)) - getOrderPaidTotal(order));
+        }
+
+        function getCustomerFinancialSummary(customerOrders = []) {
+            return customerOrders.reduce((summary, order) => {
+                const total = Number(order.orderTotal) || getOrderItemsTotal(order);
+                const paid = getOrderPaidTotal(order);
+                const due = getOrderBalanceDue(order);
+                summary.total += total;
+                summary.paid += paid;
+                summary.due += due;
+                summary.products += getOrdersProductCount([order]);
+                if(orderHasPromotionPrice(order)) summary.promotions += 1;
+                return summary;
+            }, { total: 0, paid: 0, due: 0, products: 0, promotions: 0 });
+        }
+
         function getOrderExpenseBalance(order) {
             const expensePayable = Math.max(0, getOrderExpenseTotal(order) + (Number(order.orderExpenseAdjustment) || 0));
             return Math.max(0, expensePayable - getOrderExpensePaidTotal(order));
@@ -1538,9 +1596,9 @@
                 const statusColor = getOrderStatusColor(order.status);
                 const itemsText = getOrderItemsText(order);
                 const checkboxHtml = isRecycle ? '' : `<input type="checkbox" onchange="toggleSelectOrder('${order.id}')" ${selectedOrders.has(order.id) ? 'checked' : ''} class="order-checkbox rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">`;
-                const itemsAmount = Number(order.itemsTotal) || (Array.isArray(order.itemsObj) ? order.itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal ?? item.price) || 0), 0) : 0) || Number(order.orderTotal) || 0;
-                const paidAmount = Number(order.paidTotal) || 0;
-                const dueAmount = Math.max(0, itemsAmount - paidAmount);
+                const itemsAmount = getOrderItemsTotal(order);
+                const paidAmount = getOrderPaidTotal(order);
+                const dueAmount = getOrderBalanceDue(order);
                 const expenseTotal = getOrderExpenseTotal(order);
                 const expensePaid = getOrderExpensePaidTotal(order);
                 const expenseDue = getOrderExpenseBalance(order);
@@ -1551,7 +1609,10 @@
                         ${summaryLine('Paid', expensePaid, 'text-emerald-600', 'text-emerald-700')}
                         ${summaryLine('Balance', expenseDue, 'text-red-600', 'text-red-700')}
                     </div>`;
-                const paymentSummaryHtml = `
+                const paymentSummaryHtml = orderHasPromotionPrice(order) ? `
+                    <div class="rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-center">
+                        <div class="text-xs font-extrabold uppercase tracking-wide text-purple-700">Promotion</div>
+                    </div>` : `
                     <div class="space-y-1 text-xs leading-5">
                         ${summaryLine('Total', itemsAmount, 'text-gray-500', 'text-gray-900')}
                         ${summaryLine('Paid', paidAmount, 'text-emerald-600', 'text-emerald-700')}
@@ -1613,7 +1674,7 @@
             const host = document.getElementById(hostId);
             if(!host) return;
             if(currentOrderStatusFilter === 'Repeat Customers') {
-                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
+                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Paid</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
                 renderRepeatCustomers('utility-repeat-list');
                 return;
             }
@@ -1639,10 +1700,12 @@
             updateBulkActions();
             const isUtilityList = targetId === 'utility-repeat-list';
             if(customers.length === 0) {
-                list.innerHTML = `<tr><td colspan="${isUtilityList ? 5 : 6}" class="px-6 py-10 text-center text-gray-500">No customers found</td></tr>`;
+                list.innerHTML = `<tr><td colspan="${isUtilityList ? 7 : 8}" class="px-6 py-10 text-center text-gray-500">No customers found</td></tr>`;
                 return;
             }
-            list.innerHTML = customers.map((customer, index) => isUtilityList ? `
+            list.innerHTML = customers.map((customer, index) => {
+                const summary = getCustomerFinancialSummary(customer.orders);
+                return isUtilityList ? `
                 <tr class="hover:bg-gray-50 bg-indigo-50/30">
                     <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${index + 1}</span></td>
                     <td class="px-6 py-4">
@@ -1650,10 +1713,12 @@
                         <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address || '-'}</div>
                         <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
                     </td>
-                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${getOrdersProductCount(customer.orders)} Products</span></td>
-                    <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div></td>
+                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${summary.products} Products / ${customer.orders.length} Bills</span></td>
+                    <td class="px-6 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(summary.paid)}</td>
+                    <td class="px-6 py-4 text-right font-bold ${summary.due > 0 ? 'text-red-700' : 'text-gray-500'} whitespace-nowrap">${formatMoney(summary.due)}</td>
+                    <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div><div class="text-xs text-gray-500">Total purchase: ${formatMoney(summary.total)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open</button>
+                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open / Bills</button>
                     </td>
                 </tr>
             ` : `
@@ -1669,12 +1734,15 @@
                         <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
                     </td>
                     <td class="px-6 py-4"><div class="text-sm text-gray-700">Customer order history</div></td>
-                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Repeat</span></td>
+                    <td class="px-6 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(summary.paid)}</td>
+                    <td class="px-6 py-4 text-right font-bold ${summary.due > 0 ? 'text-red-700' : 'text-gray-500'} whitespace-nowrap">${formatMoney(summary.due)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div><div class="text-xs text-gray-500">Total: ${formatMoney(summary.total)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open</button>
+                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open / Bills</button>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         window.openOrderPaymentUpdate = async function(id) {
@@ -1735,7 +1803,7 @@
                             <div>
                                 <div class="text-sm font-semibold text-gray-900">${order.name || 'Customer'} • ${order.phone}</div>
                                 <div class="text-xs text-gray-600">${order.address || ''} ${order.pincode ? '| PIN: ' + order.pincode : ''}</div>
-                                <div class="text-xs text-red-600 font-medium">Previous order: ${formatDisplayDate(order.createdAt)}</div>
+                                <div class="text-xs text-red-600 font-medium">Previous order: ${formatDisplayDate(order.createdAt)} • Balance due: ${formatMoney(getCustomerFinancialSummary(orders.filter(o => !o.isDeleted && o.phone === order.phone)).due)}</div>
                             </div>
                             <button type="button" onclick="fillCustomerDetails('${order.id}')" class="px-3 py-2 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700">Fill Details</button>
                         </div>
@@ -1777,21 +1845,33 @@
                 .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
             if(customerOrders.length === 0) return;
             const latest = customerOrders[0];
-            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${getOrdersProductCount(customerOrders)} products in ${customerOrders.length} orders`;
-            document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => `
+            const summary = getCustomerFinancialSummary(customerOrders);
+            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${summary.products} products in ${customerOrders.length} orders • Paid ${formatMoney(summary.paid)} • Balance ${formatMoney(summary.due)}`;
+            document.getElementById('repeat-customer-actions').innerHTML = `<button onclick="previewCustomerStatement('${phone}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Open Total Bill</button><button onclick="downloadCustomerStatement('${phone}')" class="rounded-md bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">Download Total Bill</button><button onclick="prefillCustomerFromRepeat('${phone}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Add New Order</button>`;
+            document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => {
+                const total = Number(order.orderTotal) || getOrderItemsTotal(order);
+                const paid = getOrderPaidTotal(order);
+                const due = getOrderBalanceDue(order);
+                return `
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                         <div>
                             <div class="text-sm font-bold text-gray-900">${formatDisplayDate(order.createdAt)}</div>
                             <div class="text-xs text-gray-500">Accepted: ${formatDisplayDate(order.createdAt)} • Last update: ${formatDisplayDate(order.updatedAt || order.createdAt)}</div>
+                            <div class="mt-2 grid grid-cols-3 gap-2 text-xs">
+                                <span class="rounded bg-gray-50 px-2 py-1 font-bold text-gray-700">Total: ${formatMoney(total)}</span>
+                                <span class="rounded bg-emerald-50 px-2 py-1 font-bold text-emerald-700">Paid: ${formatMoney(paid)}</span>
+                                <span class="rounded bg-red-50 px-2 py-1 font-bold text-red-700">Balance: ${formatMoney(due)}</span>
+                            </div>
                         </div>
-                        <span class="self-start sm:self-auto px-2 py-1 rounded-full text-xs font-bold ${getOrderStatusColor(order.status)}">${order.status}</span>
+                        <div class="flex flex-wrap items-center justify-end gap-2">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${getOrderStatusColor(order.status)}">${order.status}</span>
+                            <button onclick="previewOrderInvoice('${order.id}')" class="rounded-md border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-50">Open Bill</button><button onclick="downloadOrderInvoice('${order.id}')" class="rounded-md bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700">Download Bill</button>
+                        </div>
                     </div>
-                    <div class="text-sm text-gray-700">
-                        <span class="font-semibold">Products:</span> ${getOrderItemsText(order) || 'No items found'}
-                    </div>
-                </div>
-            `).join('');
+                    <div class="text-sm text-gray-700"><span class="font-semibold">Products:</span> ${getOrderItemsText(order) || 'No items found'}</div>
+                </div>`;
+            }).join('');
             document.getElementById('repeat-customer-modal').classList.remove('hidden');
         }
 
@@ -1956,7 +2036,7 @@
             const rowId = 'item-' + Date.now() + Math.random();
             let options = '<option value="">-- Select Product --</option>';
             products.forEach(p => {
-                options += `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name} (₹${p.price})</option>`;
+                options += `<option value="${p.id}" ${p.id === productId ? 'selected' : ''}>${p.name} (₹${p.price}${Number(p.gstPercent) ? ' / GST ' + Number(p.gstPercent) + '%' : ''})</option>`;
             });
             const selectedUnitPrice = unitPrice ?? getProductSalePrice(productId, priceType);
             const selectedLineAmount = (Number(selectedUnitPrice) || 0) * (Number(qty) || 1);
@@ -2067,7 +2147,8 @@
                     const qty = parseInt(qtys[index].value) || 1;
                     const lineTotal = Number(prices[index].value) || 0;
                     const unitPrice = qty > 0 ? lineTotal / qty : lineTotal;
-                    itemsObj.push({ productId: select.value, qty, priceType: priceTypes[index].value || 'includingGst', unitPrice, lineTotal });
+                    const product = products.find(p => p.id === select.value) || {};
+                    itemsObj.push({ productId: select.value, qty, priceType: priceTypes[index].value || 'includingGst', unitPrice, lineTotal, gstPercent: Number(product.gstPercent) || 0, hsnSac: product.hsnSac || '' });
                 } else { isValid = false; }
             });
 
@@ -2237,7 +2318,7 @@
                         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-start bg-gray-50">
                             <div>
                                 <h3 class="text-lg font-bold text-gray-900">${p.name}</h3>
-                                <p class="text-red-600 font-bold mt-1">GST ₹${p.price}</p><p class="text-xs text-gray-500">No GST ₹${p.withoutGstPrice ?? p.price} • Promo ₹${p.promotionPrice ?? p.price}</p>
+                                <p class="text-red-600 font-bold mt-1">GST ₹${p.price}</p><p class="text-xs text-gray-500">No GST ₹${p.withoutGstPrice ?? p.price} • Promo ₹${p.promotionPrice ?? p.price} • GST ${Number(p.gstPercent) || 0}%</p>
                             </div>
                             <div class="flex space-x-2">
                                 <button onclick="editProduct('${p.id}')" class="text-gray-400 hover:text-gray-700 bg-white p-1.5 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></button>
@@ -2271,6 +2352,7 @@
             document.getElementById('product-modal-title').innerText = 'Add Product';
             document.getElementById('product-date').value = getTodayString();
             document.getElementById('product-stock').disabled = false;
+            document.getElementById('product-gst-percent').value = 0;
             document.getElementById('product-modal').classList.remove('hidden');
         }
 
@@ -2281,9 +2363,11 @@
             document.getElementById('product-id').value = p.id;
             document.getElementById('product-modal-title').innerText = 'Edit Product';
             document.getElementById('product-name').value = p.name;
+            document.getElementById('product-hsn-sac').value = p.hsnSac || '';
             document.getElementById('product-price').value = p.price;
             document.getElementById('product-without-gst-price').value = p.withoutGstPrice ?? p.price ?? 0;
             document.getElementById('product-promotion-price').value = p.promotionPrice ?? p.price ?? 0;
+            document.getElementById('product-gst-percent').value = Number(p.gstPercent) || 0;
             document.getElementById('product-stock').value = p.initialStock || 0;
             document.getElementById('product-stock').disabled = false;
             document.getElementById('product-date').value = formatDisplayDate(p.createdAt).split('-').reverse().join('-');
@@ -2294,9 +2378,11 @@
             const id = document.getElementById('product-id').value;
             const data = {
                 name: document.getElementById('product-name').value,
+                hsnSac: document.getElementById('product-hsn-sac').value,
                 price: parseFloat(document.getElementById('product-price').value) || 0,
                 withoutGstPrice: parseFloat(document.getElementById('product-without-gst-price').value) || 0,
                 promotionPrice: parseFloat(document.getElementById('product-promotion-price').value) || 0,
+                gstPercent: parseFloat(document.getElementById('product-gst-percent').value) || 0,
                 initialStock: parseFloat(document.getElementById('product-stock').value) || 0,
                 createdAt: document.getElementById('product-date').value
             };
@@ -3262,21 +3348,53 @@
             if(input) input.type = input.type === 'password' ? 'text' : 'password';
         }
 
+        window.handleSignatureUpload = function(event) {
+            const file = event.target.files?.[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                document.getElementById('set-signature-image').value = reader.result;
+                document.getElementById('signature-preview').innerHTML = '<span class="font-semibold text-emerald-700">Signature image ready to save</span>';
+            };
+            reader.readAsDataURL(file);
+        }
+
         window.populateSettingsForm = function() {
             document.getElementById('set-company-name').value = companySettings.name || '';
             document.getElementById('set-address1').value = companySettings.address1 || '';
             document.getElementById('set-address2').value = companySettings.address2 || '';
+            document.getElementById('set-business-address').value = companySettings.businessAddress || [companySettings.address1, companySettings.address2].filter(Boolean).join('\n');
             document.getElementById('set-phone').value = companySettings.phone || '';
+            document.getElementById('set-gstin').value = companySettings.gstin || '';
+            document.getElementById('set-email').value = companySettings.email || '';
+            document.getElementById('set-business-type').value = companySettings.businessType || '';
+            document.getElementById('set-business-category').value = companySettings.businessCategory || '';
+            document.getElementById('set-state').value = companySettings.state || '';
+            document.getElementById('set-pincode').value = companySettings.pincode || '';
+            document.getElementById('set-signature-name').value = companySettings.signatureName || '';
+            document.getElementById('set-signature-image').value = companySettings.signatureImage || '';
+            document.getElementById('set-payment-details').value = companySettings.paymentDetails || '';
+            document.getElementById('signature-preview').innerHTML = companySettings.signatureImage ? '<span class="font-semibold text-emerald-700">Saved signature available</span>' : '<span>No signature uploaded</span>';
             renderSettingsInvestorAccessList();
         }
 
         window.saveSettings = async function() {
-            if(!(await showConfirm({ title: 'Save Settings?', message: 'Update company details used on shipping labels and login screen?', confirmText: 'Save Settings', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
+            if(!(await showConfirm({ title: 'Save Settings?', message: 'Update company details used on shipping labels, login screen, and A4 bills?', confirmText: 'Save Settings', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             const data = {
                 name: document.getElementById('set-company-name').value,
                 address1: document.getElementById('set-address1').value,
                 address2: document.getElementById('set-address2').value,
+                businessAddress: document.getElementById('set-business-address').value,
                 phone: document.getElementById('set-phone').value,
+                gstin: document.getElementById('set-gstin').value,
+                email: document.getElementById('set-email').value,
+                businessType: document.getElementById('set-business-type').value,
+                businessCategory: document.getElementById('set-business-category').value,
+                state: document.getElementById('set-state').value,
+                pincode: document.getElementById('set-pincode').value,
+                signatureName: document.getElementById('set-signature-name').value,
+                signatureImage: document.getElementById('set-signature-image').value,
+                paymentDetails: document.getElementById('set-payment-details').value,
             };
             try {
                 await setDoc(doc(db, "settings", "config"), data);
@@ -3426,6 +3544,232 @@
                 console.error(err);
                 showToast('PDF Error: ' + err.message, 'error');
             }
+        }
+
+
+        function getCompanyAddressLines() {
+            return String(companySettings.businessAddress || [companySettings.address1, companySettings.address2].filter(Boolean).join('\n')).split(/\n/).filter(Boolean);
+        }
+
+        function getInvoiceNumber(order) {
+            return `INV-LF-${String(order.id || Date.now()).slice(0, 6).toUpperCase()}`;
+        }
+
+        function getLogoDimensions(fixedHeight = 24, maxWidth = 70) {
+            const logo = document.querySelector('img[src="assets/logo.png"]');
+            if(!logo || !logo.complete) return { logo, width: fixedHeight, height: fixedHeight };
+            const ratio = (logo.naturalWidth && logo.naturalHeight) ? (logo.naturalWidth / logo.naturalHeight) : 1;
+            return { logo, width: Math.min(maxWidth, fixedHeight * ratio), height: fixedHeight };
+        }
+
+        function addLogoToPdf(doc, x = 20, y = 28, height = 24) {
+            try {
+                const { logo, width } = getLogoDimensions(height, 70);
+                if(logo && logo.complete) doc.addImage(logo, 'PNG', x, y, width, height);
+                return { width, height };
+            } catch (e) { console.warn('Logo could not be added to invoice', e); return { width: height, height }; }
+        }
+
+        function drawInvoiceHeader(doc, title, invoiceNo, customer, balanceDue, invoiceDate = getTodayString()) {
+            const logoBox = addLogoToPdf(doc, 20, 28, 24);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+            doc.text(companySettings.name || 'Lakfa Foods', 20, 60);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+            const companyLines = [
+                ...getCompanyAddressLines(),
+                companySettings.state || '',
+                companySettings.gstin ? `GSTIN ${companySettings.gstin}` : '',
+                companySettings.phone || '',
+                companySettings.email || ''
+            ].filter(Boolean);
+            doc.text(companyLines.slice(0, 7), 20, 66);
+
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(22);
+            doc.text(title, 192, 36, { align: 'right' });
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+            doc.text(`# ${invoiceNo}`, 192, 43, { align: 'right' });
+            doc.setFontSize(8); doc.text('Balance Due', 192, 55, { align: 'right' });
+            doc.setFontSize(11); doc.text(formatMoney(balanceDue), 192, 62, { align: 'right' });
+
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            doc.text('Bill To', 20, 96);
+            doc.setFont('helvetica', 'bold'); doc.text(customer.name || 'Customer', 20, 103);
+            doc.setFont('helvetica', 'normal');
+            const billLines = [customer.address || '', customer.pincode ? `PIN: ${customer.pincode}` : '', customer.phone ? `Ph: ${customer.phone}` : '', customer.gstin ? `GSTIN ${customer.gstin}` : ''].filter(Boolean);
+            doc.text(doc.splitTextToSize(billLines.join('\n'), 78), 20, 110);
+            doc.text('Ship To', 20, 132);
+            doc.text(customer.gstin ? `GSTIN ${customer.gstin}` : (companySettings.gstin ? `GSTIN ${companySettings.gstin}` : customer.address || ''), 20, 139);
+
+            const details = [
+                ['Invoice Date :', formatDisplayDate(invoiceDate)],
+                ['Terms :', 'Custom'],
+                ['Due Date :', formatDisplayDate(invoiceDate)],
+                ['Discount Allowed :', formatMoney(0)]
+            ];
+            let y = 108;
+            details.forEach(([label, value]) => {
+                doc.setFont('helvetica', 'normal'); doc.text(label, 136, y, { align: 'right' });
+                doc.setFont('helvetica', 'bold'); doc.text(value, 192, y, { align: 'right' });
+                y += 9;
+            });
+        }
+
+        function getOrderInvoiceRows(order) {
+            return (order.itemsObj || []).map(item => {
+                const product = products.find(p => p.id === item.productId) || {};
+                const amount = Number(item.lineTotal) || 0;
+                const gstPercent = Number(item.gstPercent ?? product.gstPercent) || 0;
+                const taxable = gstPercent > 0 ? amount / (1 + (gstPercent / 100)) : amount;
+                const tax = Math.max(0, amount - taxable);
+                return {
+                    name: `${product.name || 'Product'}${item.priceType === 'promotion' ? ' (Promotion)' : ''}`,
+                    hsnSac: item.hsnSac || product.hsnSac || '',
+                    qty: Number(item.qty) || 1,
+                    rate: Number(item.unitPrice) || (amount / (Number(item.qty) || 1)),
+                    taxable,
+                    gstPercent,
+                    cgst: tax / 2,
+                    sgst: tax / 2,
+                    amount
+                };
+            });
+        }
+
+        function addInvoiceTable(doc, orderRows, startY = 150) {
+            let y = startY;
+            doc.setFillColor(55, 55, 55); doc.rect(20, y, 172, 9, 'F');
+            doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+            doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 92, y + 6); doc.text('Qty', 112, y + 6); doc.text('Rate', 132, y + 6, { align: 'right' }); doc.text('CGST', 151, y + 6, { align: 'right' }); doc.text('SGST', 171, y + 6, { align: 'right' }); doc.text('Amount', 190, y + 6, { align: 'right' });
+            doc.setTextColor(0); doc.setFont('helvetica', 'normal'); y += 16;
+            orderRows.forEach((row, index) => {
+                if(y > 236) { doc.addPage(); y = 25; }
+                const itemLines = doc.splitTextToSize(row.name, 50);
+                doc.text(String(index + 1), 24, y);
+                doc.text(itemLines, 34, y);
+                doc.text(row.hsnSac || '-', 92, y);
+                doc.text(String(row.qty.toFixed ? row.qty.toFixed(2) : row.qty), 116, y, { align: 'right' });
+                doc.text(formatMoney(row.rate), 132, y, { align: 'right' });
+                doc.text(`${formatMoney(row.cgst)}\n${row.gstPercent / 2}%`, 151, y, { align: 'right' });
+                doc.text(`${formatMoney(row.sgst)}\n${row.gstPercent / 2}%`, 171, y, { align: 'right' });
+                doc.text(formatMoney(row.amount), 190, y, { align: 'right' });
+                y += Math.max(12, itemLines.length * 4.5 + 7);
+            });
+            doc.line(20, y, 192, y); return y + 8;
+        }
+
+        function amountToWords(amount) {
+            const n = Math.round(Number(amount) || 0);
+            if(n === 0) return 'Indian Rupee Zero Only';
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const twoDigits = num => num < 20 ? ones[num] : `${tens[Math.floor(num / 10)]}${num % 10 ? ' ' + ones[num % 10] : ''}`;
+            const threeDigits = num => `${num >= 100 ? ones[Math.floor(num / 100)] + ' Hundred' : ''}${num >= 100 && num % 100 ? ' ' : ''}${num % 100 ? twoDigits(num % 100) : ''}`.trim();
+            const parts = [];
+            const crore = Math.floor(n / 10000000);
+            const lakh = Math.floor((n % 10000000) / 100000);
+            const thousand = Math.floor((n % 100000) / 1000);
+            const rest = n % 1000;
+            if(crore) parts.push(`${threeDigits(crore)} Crore`);
+            if(lakh) parts.push(`${threeDigits(lakh)} Lakh`);
+            if(thousand) parts.push(`${threeDigits(thousand)} Thousand`);
+            if(rest) parts.push(threeDigits(rest));
+            return `Indian Rupee ${parts.join(' ')} Only`;
+        }
+
+        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst }) {
+            const subTotalY = y;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+            doc.text('Sub Total', 132, subTotalY, { align: 'right' });
+            doc.text(formatMoney(cgst), 151, subTotalY, { align: 'right' });
+            doc.text(formatMoney(sgst), 171, subTotalY, { align: 'right' });
+            doc.text(formatMoney(total), 190, subTotalY, { align: 'right' });
+            y += 10; doc.line(20, y - 5, 192, y - 5);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatMoney(taxable), 190, y, { align: 'right' }); y += 9;
+            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatMoney(total), 190, y, { align: 'right' }); y += 11;
+            doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
+            doc.text('Balance Due', 156, y, { align: 'right' }); doc.text(formatMoney(due), 190, y, { align: 'right' }); y += 11;
+            doc.setFont('helvetica', 'normal'); doc.text('Total In Words:', 134, y, { align: 'right' });
+            doc.setFont('helvetica', 'bolditalic'); doc.text(doc.splitTextToSize(amountToWords(total), 42), 140, y);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+            doc.text('Notes', 20, 254); doc.text('Thanks for your business.', 20, 261);
+            if(companySettings.paymentDetails) {
+                doc.setFont('helvetica', 'bold'); doc.text('Payment Details:', 20, 270);
+                doc.setFont('helvetica', 'normal'); doc.text(String(companySettings.paymentDetails).split(/\n/).slice(0, 5), 20, 276);
+            }
+            if(companySettings.signatureImage) {
+                try { doc.addImage(companySettings.signatureImage, 'PNG', 151, 250, 28, 15); } catch(e) { console.warn('Signature could not be added', e); }
+            }
+            doc.setFont('helvetica', 'bold'); doc.text(companySettings.signatureName || 'Authorized Signatory', 192, 270, { align: 'right' });
+            doc.line(18, 286, 192, 286);
+        }
+
+        function buildOrderInvoicePdf(order) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const rows = getOrderInvoiceRows(order);
+            const total = Number(order.orderTotal) || getOrderItemsTotal(order);
+            const paid = getOrderPaidTotal(order);
+            const due = getOrderBalanceDue(order);
+            const taxable = rows.reduce((sum, row) => sum + row.taxable, 0);
+            const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
+            const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
+            drawInvoiceHeader(doc, 'TAX INVOICE', getInvoiceNumber(order), order, due, order.createdAt);
+            const y = addInvoiceTable(doc, rows);
+            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst });
+            return doc;
+        }
+
+        window.previewOrderInvoice = function(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(!order) return;
+            document.getElementById('invoice-preview-frame').src = buildOrderInvoicePdf(order).output('datauristring');
+            document.getElementById('invoice-preview-modal').classList.remove('hidden');
+        }
+
+        window.downloadOrderInvoice = function(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(!order) return;
+            buildOrderInvoicePdf(order).save(`Lakfa_Invoice_${order.phone || 'customer'}_${normalizeDateInput(order.createdAt)}.pdf`);
+        }
+
+        function buildCustomerStatementPdf(phone) {
+            const customerOrders = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(a.createdAt)) - new Date(normalizeDateInput(b.createdAt)));
+            if(!customerOrders.length) return null;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            const latest = customerOrders[customerOrders.length - 1];
+            const summary = getCustomerFinancialSummary(customerOrders);
+            drawInvoiceHeader(doc, 'CUSTOMER STATEMENT', `TOTAL-${phone}`, latest, summary.due, getTodayString());
+            let y = 150;
+            doc.setFillColor(55, 55, 55); doc.rect(20, y - 6, 172, 9, 'F'); doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+            doc.text('Order Date', 24, y); doc.text('Products', 58, y); doc.text('Total', 126, y, { align: 'right' }); doc.text('Paid', 158, y, { align: 'right' }); doc.text('Balance', 190, y, { align: 'right' }); y += 9; doc.setTextColor(0); doc.setFont('helvetica', 'normal');
+            customerOrders.forEach(order => {
+                if(y > 248) { doc.addPage(); y = 25; }
+                const lines = doc.splitTextToSize(getOrderItemsText(order) || 'Order items', 60);
+                doc.text(formatDisplayDate(order.createdAt), 24, y);
+                doc.text(lines, 58, y);
+                doc.text(formatMoney(Number(order.orderTotal) || getOrderItemsTotal(order)), 126, y, { align: 'right' });
+                doc.text(formatMoney(getOrderPaidTotal(order)), 158, y, { align: 'right' });
+                doc.text(formatMoney(getOrderBalanceDue(order)), 190, y, { align: 'right' });
+                y += Math.max(9, lines.length * 4.5 + 4);
+            });
+            doc.line(20, y, 192, y); y += 8; doc.setFont('helvetica', 'bold');
+            doc.text(`Total Purchase: ${formatMoney(summary.total)}`, 20, y); doc.text(`Total Paid: ${formatMoney(summary.paid)}`, 88, y); doc.text(`Balance: ${formatMoney(summary.due)}`, 190, y, { align: 'right' });
+            return doc;
+        }
+
+        window.previewCustomerStatement = function(phone) {
+            const doc = buildCustomerStatementPdf(phone);
+            if(!doc) return;
+            document.getElementById('invoice-preview-frame').src = doc.output('datauristring');
+            document.getElementById('invoice-preview-modal').classList.remove('hidden');
+        }
+
+        window.downloadCustomerStatement = function(phone) {
+            const doc = buildCustomerStatementPdf(phone);
+            if(!doc) return;
+            doc.save(`Lakfa_Total_Bill_${phone}_${getTodayString()}.pdf`);
         }
 
         window.closeModal = function(id) { 
