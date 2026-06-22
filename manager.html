@@ -799,7 +799,7 @@
             <div class="px-6 py-4 border-b flex justify-between items-center bg-indigo-50">
                 <div>
                     <h2 class="text-lg font-bold text-indigo-900">Repeat Customer Orders</h2>
-                    <p id="repeat-customer-subtitle" class="text-xs text-indigo-700 mt-1"></p>
+                    <p id="repeat-customer-subtitle" class="text-xs text-indigo-700 mt-1"></p><div id="repeat-customer-actions" class="mt-3 flex flex-wrap gap-2"></div>
                 </div>
                 <button onclick="closeModal('repeat-customer-modal')" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
@@ -1479,6 +1479,36 @@
             return Number(order.orderExpenseTotal) || getOrderExpensePaidTotal(order);
         }
 
+        function orderHasPromotionPrice(order) {
+            return Array.isArray(order?.itemsObj) && order.itemsObj.some(item => item.priceType === 'promotion');
+        }
+
+        function getOrderItemsTotal(order) {
+            return Number(order?.itemsTotal) || (Array.isArray(order?.itemsObj) ? order.itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal ?? item.price) || 0), 0) : 0) || Number(order?.orderTotal) || 0;
+        }
+
+        function getOrderPaidTotal(order) {
+            return Number(order?.paidTotal) || ((Number(order?.firstPayment) || 0) + (Array.isArray(order?.paymentHistory) ? order.paymentHistory.reduce((sum, item) => sum + (Number(item.amount) || 0), 0) : 0));
+        }
+
+        function getOrderBalanceDue(order) {
+            return Math.max(0, (Number(order?.orderTotal) || getOrderItemsTotal(order)) - getOrderPaidTotal(order));
+        }
+
+        function getCustomerFinancialSummary(customerOrders = []) {
+            return customerOrders.reduce((summary, order) => {
+                const total = Number(order.orderTotal) || getOrderItemsTotal(order);
+                const paid = getOrderPaidTotal(order);
+                const due = getOrderBalanceDue(order);
+                summary.total += total;
+                summary.paid += paid;
+                summary.due += due;
+                summary.products += getOrdersProductCount([order]);
+                if(orderHasPromotionPrice(order)) summary.promotions += 1;
+                return summary;
+            }, { total: 0, paid: 0, due: 0, products: 0, promotions: 0 });
+        }
+
         function getOrderExpenseBalance(order) {
             const expensePayable = Math.max(0, getOrderExpenseTotal(order) + (Number(order.orderExpenseAdjustment) || 0));
             return Math.max(0, expensePayable - getOrderExpensePaidTotal(order));
@@ -1538,9 +1568,9 @@
                 const statusColor = getOrderStatusColor(order.status);
                 const itemsText = getOrderItemsText(order);
                 const checkboxHtml = isRecycle ? '' : `<input type="checkbox" onchange="toggleSelectOrder('${order.id}')" ${selectedOrders.has(order.id) ? 'checked' : ''} class="order-checkbox rounded border-gray-300 text-red-600 focus:ring-red-500 h-4 w-4">`;
-                const itemsAmount = Number(order.itemsTotal) || (Array.isArray(order.itemsObj) ? order.itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal ?? item.price) || 0), 0) : 0) || Number(order.orderTotal) || 0;
-                const paidAmount = Number(order.paidTotal) || 0;
-                const dueAmount = Math.max(0, itemsAmount - paidAmount);
+                const itemsAmount = getOrderItemsTotal(order);
+                const paidAmount = getOrderPaidTotal(order);
+                const dueAmount = getOrderBalanceDue(order);
                 const expenseTotal = getOrderExpenseTotal(order);
                 const expensePaid = getOrderExpensePaidTotal(order);
                 const expenseDue = getOrderExpenseBalance(order);
@@ -1551,7 +1581,10 @@
                         ${summaryLine('Paid', expensePaid, 'text-emerald-600', 'text-emerald-700')}
                         ${summaryLine('Balance', expenseDue, 'text-red-600', 'text-red-700')}
                     </div>`;
-                const paymentSummaryHtml = `
+                const paymentSummaryHtml = orderHasPromotionPrice(order) ? `
+                    <div class="rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-center">
+                        <div class="text-xs font-extrabold uppercase tracking-wide text-purple-700">Promotion</div>
+                    </div>` : `
                     <div class="space-y-1 text-xs leading-5">
                         ${summaryLine('Total', itemsAmount, 'text-gray-500', 'text-gray-900')}
                         ${summaryLine('Paid', paidAmount, 'text-emerald-600', 'text-emerald-700')}
@@ -1613,7 +1646,7 @@
             const host = document.getElementById(hostId);
             if(!host) return;
             if(currentOrderStatusFilter === 'Repeat Customers') {
-                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
+                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Paid</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
                 renderRepeatCustomers('utility-repeat-list');
                 return;
             }
@@ -1639,10 +1672,12 @@
             updateBulkActions();
             const isUtilityList = targetId === 'utility-repeat-list';
             if(customers.length === 0) {
-                list.innerHTML = `<tr><td colspan="${isUtilityList ? 5 : 6}" class="px-6 py-10 text-center text-gray-500">No customers found</td></tr>`;
+                list.innerHTML = `<tr><td colspan="${isUtilityList ? 7 : 8}" class="px-6 py-10 text-center text-gray-500">No customers found</td></tr>`;
                 return;
             }
-            list.innerHTML = customers.map((customer, index) => isUtilityList ? `
+            list.innerHTML = customers.map((customer, index) => {
+                const summary = getCustomerFinancialSummary(customer.orders);
+                return isUtilityList ? `
                 <tr class="hover:bg-gray-50 bg-indigo-50/30">
                     <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${index + 1}</span></td>
                     <td class="px-6 py-4">
@@ -1650,10 +1685,12 @@
                         <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address || '-'}</div>
                         <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
                     </td>
-                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${getOrdersProductCount(customer.orders)} Products</span></td>
-                    <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div></td>
+                    <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${summary.products} Products / ${customer.orders.length} Bills</span></td>
+                    <td class="px-6 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(summary.paid)}</td>
+                    <td class="px-6 py-4 text-right font-bold ${summary.due > 0 ? 'text-red-700' : 'text-gray-500'} whitespace-nowrap">${formatMoney(summary.due)}</td>
+                    <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div><div class="text-xs text-gray-500">Total purchase: ${formatMoney(summary.total)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open</button>
+                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open / Bills</button>
                     </td>
                 </tr>
             ` : `
@@ -1669,12 +1706,15 @@
                         <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
                     </td>
                     <td class="px-6 py-4"><div class="text-sm text-gray-700">Customer order history</div></td>
-                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">Repeat</span></td>
+                    <td class="px-6 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(summary.paid)}</td>
+                    <td class="px-6 py-4 text-right font-bold ${summary.due > 0 ? 'text-red-700' : 'text-gray-500'} whitespace-nowrap">${formatMoney(summary.due)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div><div class="text-xs text-gray-500">Total: ${formatMoney(summary.total)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open</button>
+                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open / Bills</button>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
         }
 
         window.openOrderPaymentUpdate = async function(id) {
@@ -1735,7 +1775,7 @@
                             <div>
                                 <div class="text-sm font-semibold text-gray-900">${order.name || 'Customer'} • ${order.phone}</div>
                                 <div class="text-xs text-gray-600">${order.address || ''} ${order.pincode ? '| PIN: ' + order.pincode : ''}</div>
-                                <div class="text-xs text-red-600 font-medium">Previous order: ${formatDisplayDate(order.createdAt)}</div>
+                                <div class="text-xs text-red-600 font-medium">Previous order: ${formatDisplayDate(order.createdAt)} • Balance due: ${formatMoney(getCustomerFinancialSummary(orders.filter(o => !o.isDeleted && o.phone === order.phone)).due)}</div>
                             </div>
                             <button type="button" onclick="fillCustomerDetails('${order.id}')" class="px-3 py-2 rounded-md bg-red-600 text-white text-xs font-bold hover:bg-red-700">Fill Details</button>
                         </div>
@@ -1777,21 +1817,33 @@
                 .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
             if(customerOrders.length === 0) return;
             const latest = customerOrders[0];
-            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${getOrdersProductCount(customerOrders)} products in ${customerOrders.length} orders`;
-            document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => `
+            const summary = getCustomerFinancialSummary(customerOrders);
+            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${summary.products} products in ${customerOrders.length} orders • Paid ${formatMoney(summary.paid)} • Balance ${formatMoney(summary.due)}`;
+            document.getElementById('repeat-customer-actions').innerHTML = `<button onclick="downloadCustomerStatement('${phone}')" class="rounded-md bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">Download Total Bill</button><button onclick="prefillCustomerFromRepeat('${phone}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Add New Order</button>`;
+            document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => {
+                const total = Number(order.orderTotal) || getOrderItemsTotal(order);
+                const paid = getOrderPaidTotal(order);
+                const due = getOrderBalanceDue(order);
+                return `
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                         <div>
                             <div class="text-sm font-bold text-gray-900">${formatDisplayDate(order.createdAt)}</div>
                             <div class="text-xs text-gray-500">Accepted: ${formatDisplayDate(order.createdAt)} • Last update: ${formatDisplayDate(order.updatedAt || order.createdAt)}</div>
+                            <div class="mt-2 grid grid-cols-3 gap-2 text-xs">
+                                <span class="rounded bg-gray-50 px-2 py-1 font-bold text-gray-700">Total: ${formatMoney(total)}</span>
+                                <span class="rounded bg-emerald-50 px-2 py-1 font-bold text-emerald-700">Paid: ${formatMoney(paid)}</span>
+                                <span class="rounded bg-red-50 px-2 py-1 font-bold text-red-700">Balance: ${formatMoney(due)}</span>
+                            </div>
                         </div>
-                        <span class="self-start sm:self-auto px-2 py-1 rounded-full text-xs font-bold ${getOrderStatusColor(order.status)}">${order.status}</span>
+                        <div class="flex flex-wrap items-center justify-end gap-2">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${getOrderStatusColor(order.status)}">${order.status}</span>
+                            <button onclick="downloadOrderInvoice('${order.id}')" class="rounded-md bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700">Download Bill</button>
+                        </div>
                     </div>
-                    <div class="text-sm text-gray-700">
-                        <span class="font-semibold">Products:</span> ${getOrderItemsText(order) || 'No items found'}
-                    </div>
-                </div>
-            `).join('');
+                    <div class="text-sm text-gray-700"><span class="font-semibold">Products:</span> ${getOrderItemsText(order) || 'No items found'}</div>
+                </div>`;
+            }).join('');
             document.getElementById('repeat-customer-modal').classList.remove('hidden');
         }
 
@@ -3426,6 +3478,89 @@
                 console.error(err);
                 showToast('PDF Error: ' + err.message, 'error');
             }
+        }
+
+
+        function drawInvoiceHeader(doc, title, invoiceNo, customer, balanceDue) {
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.text(companySettings.name || 'Lakfa Foods', 14, 22);
+            doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+            doc.text([companySettings.address1 || '', companySettings.address2 || '', `Ph: ${companySettings.phone || ''}`].filter(Boolean), 14, 30);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text(title, 196, 22, { align: 'right' });
+            doc.setFontSize(10); doc.text(`# ${invoiceNo}`, 196, 29, { align: 'right' });
+            doc.setFontSize(9); doc.text('Balance Due', 196, 40, { align: 'right' });
+            doc.setFontSize(13); doc.text(formatMoney(balanceDue), 196, 47, { align: 'right' });
+            doc.setFontSize(10); doc.text('Bill To', 14, 62);
+            doc.setFont('helvetica', 'bold'); doc.text(customer.name || 'Customer', 14, 69);
+            doc.setFont('helvetica', 'normal'); doc.text([customer.address || '', customer.pincode ? `PIN: ${customer.pincode}` : '', customer.phone ? `Ph: ${customer.phone}` : ''].filter(Boolean), 14, 76);
+        }
+
+        function addInvoiceTable(doc, orderRows, startY = 102) {
+            let y = startY;
+            doc.setFillColor(55, 55, 55); doc.rect(14, y, 182, 10, 'F');
+            doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+            doc.text('#', 18, y + 7); doc.text('Item & Description', 30, y + 7); doc.text('Qty', 118, y + 7); doc.text('Rate', 138, y + 7, { align: 'right' }); doc.text('Amount', 190, y + 7, { align: 'right' });
+            doc.setTextColor(0); doc.setFont('helvetica', 'normal'); y += 17;
+            orderRows.forEach((row, index) => {
+                if(y > 260) { doc.addPage(); y = 20; }
+                doc.text(String(index + 1), 18, y);
+                doc.text(doc.splitTextToSize(row.name, 78), 30, y);
+                doc.text(String(row.qty), 118, y);
+                doc.text(formatMoney(row.rate), 138, y, { align: 'right' });
+                doc.text(formatMoney(row.amount), 190, y, { align: 'right' });
+                y += 12;
+            });
+            doc.line(14, y, 196, y); return y + 8;
+        }
+
+        function getOrderInvoiceRows(order) {
+            return (order.itemsObj || []).map(item => {
+                const product = products.find(p => p.id === item.productId);
+                return { name: `${product?.name || 'Product'}${item.priceType === 'promotion' ? ' (Promotion)' : ''}`, qty: Number(item.qty) || 1, rate: Number(item.unitPrice) || 0, amount: Number(item.lineTotal) || 0 };
+            });
+        }
+
+        window.downloadOrderInvoice = function(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if(!order) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const total = Number(order.orderTotal) || getOrderItemsTotal(order);
+            const paid = getOrderPaidTotal(order);
+            const due = getOrderBalanceDue(order);
+            drawInvoiceHeader(doc, 'TAX INVOICE', `LF-${formatDisplayDate(order.createdAt).replaceAll('-', '')}-${String(order.id || '').slice(0, 5)}`, order, due);
+            doc.setFontSize(10); doc.text(`Invoice Date: ${formatDisplayDate(order.createdAt)}`, 196, 76, { align: 'right' });
+            let y = addInvoiceTable(doc, getOrderInvoiceRows(order));
+            doc.setFont('helvetica', 'bold');
+            doc.text('Total', 150, y, { align: 'right' }); doc.text(formatMoney(total), 190, y, { align: 'right' }); y += 8;
+            doc.text('Paid', 150, y, { align: 'right' }); doc.text(formatMoney(paid), 190, y, { align: 'right' }); y += 8;
+            doc.setFillColor(245, 245, 245); doc.rect(110, y - 6, 86, 10, 'F'); doc.text('Balance Due', 150, y, { align: 'right' }); doc.text(formatMoney(due), 190, y, { align: 'right' });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.text('Notes: Thanks for your business.', 14, 276);
+            doc.save(`Lakfa_Invoice_${order.phone || 'customer'}_${normalizeDateInput(order.createdAt)}.pdf`);
+        }
+
+        window.downloadCustomerStatement = function(phone) {
+            const customerOrders = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(a.createdAt)) - new Date(normalizeDateInput(b.createdAt)));
+            if(!customerOrders.length) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const latest = customerOrders[customerOrders.length - 1];
+            const summary = getCustomerFinancialSummary(customerOrders);
+            drawInvoiceHeader(doc, 'CUSTOMER STATEMENT', `TOTAL-${phone}`, latest, summary.due);
+            let y = 104;
+            doc.setFont('helvetica', 'bold'); doc.text('Order Date', 16, y); doc.text('Products', 52, y); doc.text('Total', 126, y, { align: 'right' }); doc.text('Paid', 158, y, { align: 'right' }); doc.text('Balance', 194, y, { align: 'right' }); y += 7;
+            doc.setFont('helvetica', 'normal');
+            customerOrders.forEach(order => {
+                if(y > 260) { doc.addPage(); y = 20; }
+                doc.text(formatDisplayDate(order.createdAt), 16, y);
+                doc.text(doc.splitTextToSize(getOrderItemsText(order) || 'Order items', 62), 52, y);
+                doc.text(formatMoney(Number(order.orderTotal) || getOrderItemsTotal(order)), 126, y, { align: 'right' });
+                doc.text(formatMoney(getOrderPaidTotal(order)), 158, y, { align: 'right' });
+                doc.text(formatMoney(getOrderBalanceDue(order)), 194, y, { align: 'right' });
+                y += 12;
+            });
+            doc.line(14, y, 196, y); y += 8; doc.setFont('helvetica', 'bold');
+            doc.text(`Total Purchase: ${formatMoney(summary.total)}`, 14, y); doc.text(`Total Paid: ${formatMoney(summary.paid)}`, 85, y); doc.text(`Balance: ${formatMoney(summary.due)}`, 194, y, { align: 'right' });
+            doc.save(`Lakfa_Total_Bill_${phone}_${getTodayString()}.pdf`);
         }
 
         window.closeModal = function(id) { 
