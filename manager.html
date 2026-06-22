@@ -3540,24 +3540,27 @@
                     doc.setFont("helvetica", "normal");
                     const fromAddress = doc.splitTextToSize(getCompanyAddressLines().join('\n'), boxW - 10);
                     doc.text(fromAddress, startX + 5, startY + 32);
+                    const fromEndY = startY + 32 + (fromAddress.length * 5);
                     
-                    // Divider Line
+                    // Divider Line: automatically stays between From and To content.
+                    const dividerY = Math.min(fromEndY + 3, startY + 52);
                     doc.setDrawColor(150);
-                    doc.line(startX + 5, startY + 48, startX + boxW - 5, startY + 48);
+                    doc.line(startX + 5, dividerY, startX + boxW - 5, dividerY);
                     doc.setDrawColor(0);
 
                     // --- TO SECTION ---
+                    const toStartY = dividerY + 8;
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
-                    doc.text("To:", startX + 5, startY + 56);
+                    doc.text("To:", startX + 5, toStartY);
                     
                     // Name: Bold & Larger (Same as From)
                     doc.setFontSize(14);
                     const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
-                    doc.text(splitName, startX + 5, startY + 64);
+                    doc.text(splitName, startX + 5, toStartY + 8);
                     
                     // Calculate Y based on name length
-                    let nextY = startY + 64 + (splitName.length * 6);
+                    let nextY = toStartY + 8 + (splitName.length * 6);
                     
                     // Address: Normal & Medium Size (Same as From)
                     doc.setFontSize(12);
@@ -3574,14 +3577,14 @@
                     doc.setFont("helvetica", "bold");
                     doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
 
-                    const footerY = startY + boxH - 18;
+                    const footerY = startY + boxH - 22;
                     if(companySettings.companyLogoImage) {
-                        try { doc.addImage(companySettings.companyLogoImage, 'PNG', startX + 5, footerY - 2, 18, 12); } catch(e) { console.warn('Company logo could not be added to label', e); }
+                        try { doc.addImage(companySettings.companyLogoImage, 'PNG', startX + 5, footerY, 18, 14); } catch(e) { console.warn('Company logo could not be added to label', e); }
                     }
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(8);
                     const descLines = doc.splitTextToSize(companySettings.companyDescription || '', boxW - 32);
-                    if(descLines.length) doc.text(descLines.slice(0, 3), startX + 27, footerY + 2);
+                    if(descLines.length) doc.text(descLines.slice(0, 5), startX + 27, footerY + 4);
                 });
 
                 doc.save("Lakfa_Shipping_Labels.pdf");
@@ -3631,10 +3634,29 @@
             } catch (e) { console.warn('Logo could not be added to invoice', e); return { width: height, height }; }
         }
 
+        function drawInvoicePageFrame(doc) {
+            doc.setDrawColor(80);
+            doc.setLineWidth(0.2);
+            doc.rect(14, 14, 182, 269);
+            doc.setDrawColor(0);
+        }
+
+        function addInvoicePageNumbers(doc) {
+            const pageCount = doc.internal.getNumberOfPages();
+            for(let page = 1; page <= pageCount; page++) {
+                doc.setPage(page);
+                drawInvoicePageFrame(doc);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.text(`Page ${page} of ${pageCount}`, 190, 278, { align: 'right' });
+            }
+        }
+
         function drawInvoiceHeader(doc, title, invoiceNo, customer, balanceDue, invoiceDate = getTodayString()) {
-            const logoBox = addLogoToPdf(doc, 20, 28, 24);
+            drawInvoicePageFrame(doc);
+            const logoBox = addLogoToPdf(doc, 20, 22, 24);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
-            doc.text(companySettings.name || 'Lakfa Foods', 20, 60);
+            doc.text(companySettings.name || 'Lakfa Foods', 20, 51);
             doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
             const companyLines = [
                 ...getCompanyAddressLines(),
@@ -3642,7 +3664,7 @@
                 companySettings.phone ? `Ph: ${companySettings.phone}` : '',
                 companySettings.email ? `Email: ${companySettings.email}` : ''
             ].filter(Boolean);
-            doc.text(companyLines.slice(0, 7), 20, 66);
+            doc.text(companyLines.slice(0, 7), 20, 56, { lineHeightFactor: 1.05 });
 
             doc.setFont('helvetica', 'normal'); doc.setFontSize(22);
             doc.text(title, 192, 36, { align: 'right' });
@@ -3652,13 +3674,13 @@
             doc.setFontSize(11); doc.text(formatPdfMoney(balanceDue), 192, 62, { align: 'right' });
 
             doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-            doc.text('Bill To', 20, 96);
-            doc.setFont('helvetica', 'bold'); doc.text(customer.name || 'Customer', 20, 103);
+            doc.text('Bill To', 20, 88);
+            doc.setFont('helvetica', 'bold'); doc.text(customer.name || 'Customer', 20, 94);
             doc.setFont('helvetica', 'normal');
             const billLines = [customer.shopName ? `Shop: ${customer.shopName}` : '', customer.address || '', customer.pincode ? `PIN: ${customer.pincode}` : '', customer.phone ? `Ph: ${customer.phone}` : '', customer.gstin ? `GSTIN ${customer.gstin}` : ''].filter(Boolean);
-            doc.text(doc.splitTextToSize(billLines.join('\n'), 78), 20, 110);
-            doc.text('Ship To', 20, 132);
-            doc.text(customer.gstin ? `GSTIN ${customer.gstin}` : '', 20, 139);
+            doc.text(doc.splitTextToSize(billLines.join('\n'), 78), 20, 99, { lineHeightFactor: 1.05 });
+            doc.text('Ship To', 20, 124);
+            doc.text(customer.gstin ? `GSTIN ${customer.gstin}` : '', 20, 129);
 
             const details = [
                 ['Invoice Date :', formatDisplayDate(invoiceDate)],
@@ -3666,7 +3688,7 @@
                 ['Due Date :', formatDisplayDate(invoiceDate)],
                 ['Discount Allowed :', formatPdfMoney(0)]
             ];
-            let y = 108;
+            let y = 101;
             details.forEach(([label, value]) => {
                 doc.setFont('helvetica', 'normal'); doc.text(label, 136, y, { align: 'right' });
                 doc.setFont('helvetica', 'bold'); doc.text(value, 192, y, { align: 'right' });
@@ -3695,14 +3717,19 @@
             });
         }
 
-        function addInvoiceTable(doc, orderRows, startY = 150) {
-            let y = startY;
+        function drawInvoiceTableHeader(doc, y) {
             doc.setFillColor(55, 55, 55); doc.rect(20, y, 172, 9, 'F');
             doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
             doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 91, y + 6); doc.text('Qty', 109, y + 6); doc.text('Rate', 128, y + 6, { align: 'right' }); doc.text('CGST', 149, y + 6, { align: 'right' }); doc.text('SGST', 170, y + 6, { align: 'right' }); doc.text('Amount', 190, y + 6, { align: 'right' });
-            doc.setTextColor(0); doc.setFont('helvetica', 'normal'); y += 16;
+            doc.setTextColor(0); doc.setFont('helvetica', 'normal');
+            return y + 16;
+        }
+
+        function addInvoiceTable(doc, orderRows, startY = 142) {
+            let y = startY;
+            y = drawInvoiceTableHeader(doc, y);
             orderRows.forEach((row, index) => {
-                if(y > 236) { doc.addPage(); y = 25; }
+                if(y > 246) { doc.addPage(); drawInvoicePageFrame(doc); y = drawInvoiceTableHeader(doc, 24); }
                 const itemLines = doc.splitTextToSize(row.name, 48);
                 doc.text(String(index + 1), 24, y);
                 doc.text(itemLines, 34, y);
@@ -3737,6 +3764,11 @@
         }
 
         function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst }) {
+            if(y > 204) {
+                doc.addPage();
+                drawInvoicePageFrame(doc);
+                y = 28;
+            }
             const subTotalY = y;
             doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
             doc.text('Sub Total', 132, subTotalY, { align: 'right' });
@@ -3766,6 +3798,7 @@
             }
             doc.setFont('helvetica', 'bold'); doc.text(companySettings.signatureName || 'Authorized Signatory', 192, 270, { align: 'right' });
             doc.line(18, 286, 192, 286);
+            addInvoicePageNumbers(doc);
         }
 
         function buildOrderInvoicePdf(order) {
