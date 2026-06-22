@@ -3614,41 +3614,50 @@
             return { logo, width: Math.min(maxWidth, fixedHeight * ratio), height: fixedHeight };
         }
 
-        function getUploadedLogoDimensions(fixedHeight = 24, maxWidth = 70) {
-            const previewLogo = document.querySelector('#company-logo-preview img');
-            const ratio = (previewLogo?.naturalWidth && previewLogo?.naturalHeight) ? (previewLogo.naturalWidth / previewLogo.naturalHeight) : 1;
-            const width = Math.min(maxWidth, fixedHeight * ratio);
-            return { width, height: fixedHeight };
+        function getImagePdfDimensions(doc, imageData, fallbackHeight = 24, maxWidth = 70, maxHeight = 34) {
+            try {
+                const props = doc.getImageProperties(imageData);
+                const pxToMm = 25.4 / 96;
+                let width = (props.width || fallbackHeight) * pxToMm;
+                let height = (props.height || fallbackHeight) * pxToMm;
+                const scale = Math.min(1, maxWidth / width, maxHeight / height);
+                width *= scale;
+                height *= scale;
+                return { width, height };
+            } catch(e) {
+                const ratio = 1;
+                return { width: Math.min(maxWidth, fallbackHeight * ratio), height: fallbackHeight };
+            }
         }
 
-        function addLogoToPdf(doc, x = 20, y = 28, height = 24, maxWidth = 70) {
+        function addLogoToPdf(doc, x = 20, y = 22, height = 24, maxWidth = 70) {
             try {
                 if(companySettings.companyLogoImage) {
-                    const dims = getUploadedLogoDimensions(height, maxWidth);
+                    const dims = getImagePdfDimensions(doc, companySettings.companyLogoImage, height, maxWidth, 34);
                     doc.addImage(companySettings.companyLogoImage, 'PNG', x, y, dims.width, dims.height);
                     return dims;
                 }
-                const { logo, width } = getLogoDimensions(height, maxWidth);
-                if(logo && logo.complete) doc.addImage(logo, 'PNG', x, y, width, height);
-                return { width, height };
+                const { logo } = getLogoDimensions(height, maxWidth);
+                if(logo && logo.complete) {
+                    const dims = getImagePdfDimensions(doc, logo, height, maxWidth, 34);
+                    doc.addImage(logo, 'PNG', x, y, dims.width, dims.height);
+                    return dims;
+                }
+                return { width: height, height };
             } catch (e) { console.warn('Logo could not be added to invoice', e); return { width: height, height }; }
         }
 
         function drawInvoicePageFrame(doc) {
-            doc.setDrawColor(80);
-            doc.setLineWidth(0.2);
-            doc.rect(14, 14, 182, 269);
-            doc.setDrawColor(0);
+            // Keep invoice content border-free; table separators/signature lines are drawn where needed for printing.
         }
 
         function addInvoicePageNumbers(doc) {
             const pageCount = doc.internal.getNumberOfPages();
             for(let page = 1; page <= pageCount; page++) {
                 doc.setPage(page);
-                drawInvoicePageFrame(doc);
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(8);
-                doc.text(`Page ${page} of ${pageCount}`, 190, 278, { align: 'right' });
+                doc.text(`Page ${page} of ${pageCount}`, 200, 292, { align: 'right' });
             }
         }
 
@@ -3725,7 +3734,7 @@
             return y + 16;
         }
 
-        function addInvoiceTable(doc, orderRows, startY = 142) {
+        function addInvoiceTable(doc, orderRows, startY = 134) {
             let y = startY;
             y = drawInvoiceTableHeader(doc, y);
             orderRows.forEach((row, index) => {
@@ -3817,11 +3826,20 @@
             return doc;
         }
 
+        function showInvoicePreview(doc) {
+            const frame = document.getElementById('invoice-preview-frame');
+            if(!frame || !doc) return;
+            if(frame.dataset.objectUrl) URL.revokeObjectURL(frame.dataset.objectUrl);
+            const blobUrl = URL.createObjectURL(doc.output('blob'));
+            frame.dataset.objectUrl = blobUrl;
+            frame.src = blobUrl;
+            document.getElementById('invoice-preview-modal').classList.remove('hidden');
+        }
+
         window.previewOrderInvoice = function(orderId) {
             const order = orders.find(o => o.id === orderId);
             if(!order) return;
-            document.getElementById('invoice-preview-frame').src = buildOrderInvoicePdf(order).output('datauristring');
-            document.getElementById('invoice-preview-modal').classList.remove('hidden');
+            showInvoicePreview(buildOrderInvoicePdf(order));
         }
 
         window.downloadOrderInvoice = function(orderId) {
@@ -3837,30 +3855,20 @@
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
             const latest = customerOrders[customerOrders.length - 1];
             const summary = getCustomerFinancialSummary(customerOrders);
-            drawInvoiceHeader(doc, 'CUSTOMER STATEMENT', `TOTAL-${phone}`, latest, summary.due, getTodayString());
-            let y = 150;
-            doc.setFillColor(55, 55, 55); doc.rect(20, y - 6, 172, 9, 'F'); doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-            doc.text('Order Date', 24, y); doc.text('Products', 58, y); doc.text('Total', 126, y, { align: 'right' }); doc.text('Paid', 158, y, { align: 'right' }); doc.text('Balance', 190, y, { align: 'right' }); y += 9; doc.setTextColor(0); doc.setFont('helvetica', 'normal');
-            customerOrders.forEach(order => {
-                if(y > 248) { doc.addPage(); y = 25; }
-                const lines = doc.splitTextToSize(getOrderItemsText(order) || 'Order items', 60);
-                doc.text(formatDisplayDate(order.createdAt), 24, y);
-                doc.text(lines, 58, y);
-                doc.text(formatMoney(Number(order.orderTotal) || getOrderItemsTotal(order)), 126, y, { align: 'right' });
-                doc.text(formatMoney(getOrderPaidTotal(order)), 158, y, { align: 'right' });
-                doc.text(formatMoney(getOrderBalanceDue(order)), 190, y, { align: 'right' });
-                y += Math.max(9, lines.length * 4.5 + 4);
-            });
-            doc.line(20, y, 192, y); y += 8; doc.setFont('helvetica', 'bold');
-            doc.text(`Total Purchase: ${formatMoney(summary.total)}`, 20, y); doc.text(`Total Paid: ${formatMoney(summary.paid)}`, 88, y); doc.text(`Balance: ${formatMoney(summary.due)}`, 190, y, { align: 'right' });
+            const rows = customerOrders.flatMap(order => getOrderInvoiceRows(order).map(row => ({ ...row, name: `${formatDisplayDate(order.createdAt)} - ${row.name}` })));
+            const taxable = rows.reduce((sum, row) => sum + row.taxable, 0);
+            const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
+            const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
+            drawInvoiceHeader(doc, 'TAX INVOICE', `TOTAL-${phone}`, latest, summary.due, getTodayString());
+            const y = addInvoiceTable(doc, rows);
+            finishInvoicePdf(doc, y, { total: summary.total, paid: summary.paid, due: summary.due, taxable, cgst, sgst });
             return doc;
         }
 
         window.previewCustomerStatement = function(phone) {
             const doc = buildCustomerStatementPdf(phone);
             if(!doc) return;
-            document.getElementById('invoice-preview-frame').src = doc.output('datauristring');
-            document.getElementById('invoice-preview-modal').classList.remove('hidden');
+            showInvoicePreview(doc);
         }
 
         window.downloadCustomerStatement = function(phone) {
@@ -3871,6 +3879,11 @@
 
         window.closeModal = function(id) { 
             document.getElementById(id).classList.add('hidden'); 
+            if(id === 'invoice-preview-modal') {
+                const frame = document.getElementById('invoice-preview-frame');
+                if(frame?.dataset.objectUrl) { URL.revokeObjectURL(frame.dataset.objectUrl); delete frame.dataset.objectUrl; }
+                if(frame) frame.removeAttribute('src');
+            }
             if(id === 'history-modal') document.getElementById('history-modal').removeAttribute('data-product-id');
         }
     </script>
