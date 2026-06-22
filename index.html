@@ -77,7 +77,7 @@
             if(docSnap.exists()) {
                 const data = docSnap.data();
                 document.getElementById('login-company-name').innerText = data.name || 'Lakfa Foods';
-                document.getElementById('login-company-address').innerText = data.address1 || 'Manager / Investor Login';
+                document.getElementById('login-company-address').innerText = data.businessAddress || data.address1 || 'Manager / Investor Login';
             }
         }).catch(() => {});
     </script>
