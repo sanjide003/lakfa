@@ -435,6 +435,7 @@
                                     <div><label class="block text-sm font-medium text-gray-700">Address Line 2 (Shipping Label)</label><input type="text" id="set-address2" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"></div>
                                     <div><label class="block text-sm font-medium text-gray-700">Signature Name</label><input type="text" id="set-signature-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Authorized Signatory"></div>
                                     <div><label class="block text-sm font-medium text-gray-700">Signature Image</label><input type="file" id="set-signature-file" accept="image/*" onchange="handleSignatureUpload(event)" class="mt-1 block w-full text-sm text-gray-600"><input type="hidden" id="set-signature-image"><div id="signature-preview" class="mt-2 text-xs text-gray-500"></div></div>
+                                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700">Payment Details</label><textarea id="set-payment-details" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm" placeholder="Account No: ...&#10;Bank Name: ...&#10;IFSC: ..."></textarea></div>
                                 </div>
                                 <div class="pt-4 flex justify-end">
                                     <button type="button" onclick="saveSettings()" class="bg-red-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Save Settings</button>
@@ -653,6 +654,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Product Name</label>
                         <input type="text" id="product-name" required placeholder="eg. Tuna Pickle 350g" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">HSN/SAC</label>
+                        <input type="text" id="product-hsn-sac" placeholder="eg. 998314" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-red-500 focus:border-red-500 sm:text-sm">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Including GST Price (₹)</label>
@@ -930,7 +935,8 @@
             state: "Kerala",
             pincode: "673634",
             signatureName: "Authorized Signatory",
-            signatureImage: ""
+            signatureImage: "",
+            paymentDetails: ""
         };
 
         // Utility: Show Toast (English)
@@ -2142,7 +2148,7 @@
                     const lineTotal = Number(prices[index].value) || 0;
                     const unitPrice = qty > 0 ? lineTotal / qty : lineTotal;
                     const product = products.find(p => p.id === select.value) || {};
-                    itemsObj.push({ productId: select.value, qty, priceType: priceTypes[index].value || 'includingGst', unitPrice, lineTotal, gstPercent: Number(product.gstPercent) || 0 });
+                    itemsObj.push({ productId: select.value, qty, priceType: priceTypes[index].value || 'includingGst', unitPrice, lineTotal, gstPercent: Number(product.gstPercent) || 0, hsnSac: product.hsnSac || '' });
                 } else { isValid = false; }
             });
 
@@ -2357,6 +2363,7 @@
             document.getElementById('product-id').value = p.id;
             document.getElementById('product-modal-title').innerText = 'Edit Product';
             document.getElementById('product-name').value = p.name;
+            document.getElementById('product-hsn-sac').value = p.hsnSac || '';
             document.getElementById('product-price').value = p.price;
             document.getElementById('product-without-gst-price').value = p.withoutGstPrice ?? p.price ?? 0;
             document.getElementById('product-promotion-price').value = p.promotionPrice ?? p.price ?? 0;
@@ -2371,6 +2378,7 @@
             const id = document.getElementById('product-id').value;
             const data = {
                 name: document.getElementById('product-name').value,
+                hsnSac: document.getElementById('product-hsn-sac').value,
                 price: parseFloat(document.getElementById('product-price').value) || 0,
                 withoutGstPrice: parseFloat(document.getElementById('product-without-gst-price').value) || 0,
                 promotionPrice: parseFloat(document.getElementById('product-promotion-price').value) || 0,
@@ -3365,6 +3373,7 @@
             document.getElementById('set-pincode').value = companySettings.pincode || '';
             document.getElementById('set-signature-name').value = companySettings.signatureName || '';
             document.getElementById('set-signature-image').value = companySettings.signatureImage || '';
+            document.getElementById('set-payment-details').value = companySettings.paymentDetails || '';
             document.getElementById('signature-preview').innerHTML = companySettings.signatureImage ? '<span class="font-semibold text-emerald-700">Saved signature available</span>' : '<span>No signature uploaded</span>';
             renderSettingsInvestorAccessList();
         }
@@ -3385,6 +3394,7 @@
                 pincode: document.getElementById('set-pincode').value,
                 signatureName: document.getElementById('set-signature-name').value,
                 signatureImage: document.getElementById('set-signature-image').value,
+                paymentDetails: document.getElementById('set-payment-details').value,
             };
             try {
                 await setDoc(doc(db, "settings", "config"), data);
@@ -3542,38 +3552,66 @@
         }
 
         function getInvoiceNumber(order) {
-            return `LF-${normalizeDateInput(order.createdAt).replaceAll('-', '')}-${String(order.id || '').slice(0, 5).toUpperCase()}`;
+            return `INV-LF-${String(order.id || Date.now()).slice(0, 6).toUpperCase()}`;
         }
 
-        function addLogoToPdf(doc) {
+        function getLogoDimensions(fixedHeight = 24, maxWidth = 70) {
+            const logo = document.querySelector('img[src="assets/logo.png"]');
+            if(!logo || !logo.complete) return { logo, width: fixedHeight, height: fixedHeight };
+            const ratio = (logo.naturalWidth && logo.naturalHeight) ? (logo.naturalWidth / logo.naturalHeight) : 1;
+            return { logo, width: Math.min(maxWidth, fixedHeight * ratio), height: fixedHeight };
+        }
+
+        function addLogoToPdf(doc, x = 20, y = 28, height = 24) {
             try {
-                const logo = document.querySelector('img[src="assets/logo.png"]');
-                if(logo && logo.complete) doc.addImage(logo, 'PNG', 14, 14, 24, 24);
-            } catch (e) { console.warn('Logo could not be added to invoice', e); }
+                const { logo, width } = getLogoDimensions(height, 70);
+                if(logo && logo.complete) doc.addImage(logo, 'PNG', x, y, width, height);
+                return { width, height };
+            } catch (e) { console.warn('Logo could not be added to invoice', e); return { width: height, height }; }
         }
 
         function drawInvoiceHeader(doc, title, invoiceNo, customer, balanceDue, invoiceDate = getTodayString()) {
-            addLogoToPdf(doc);
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text(companySettings.name || 'Lakfa Foods', 42, 20);
-            doc.setFontSize(8.5); doc.setFont('helvetica', 'normal');
+            const logoBox = addLogoToPdf(doc, 20, 28, 24);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+            doc.text(companySettings.name || 'Lakfa Foods', 20, 60);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
             const companyLines = [
                 ...getCompanyAddressLines(),
-                companySettings.state || companySettings.pincode ? `${companySettings.state || ''}${companySettings.pincode ? ' - ' + companySettings.pincode : ''}` : '',
-                companySettings.gstin ? `GSTIN: ${companySettings.gstin}` : '',
-                companySettings.phone ? `Ph: ${companySettings.phone}` : '',
-                companySettings.email ? `Email: ${companySettings.email}` : '',
-                companySettings.businessType || companySettings.businessCategory ? `${companySettings.businessType || ''}${companySettings.businessCategory ? ' • ' + companySettings.businessCategory : ''}` : ''
+                companySettings.state || '',
+                companySettings.gstin ? `GSTIN ${companySettings.gstin}` : '',
+                companySettings.phone || '',
+                companySettings.email || ''
             ].filter(Boolean);
-            doc.text(companyLines.slice(0, 7), 42, 26);
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text(title, 196, 20, { align: 'right' });
-            doc.setFontSize(9); doc.text(`# ${invoiceNo}`, 196, 27, { align: 'right' });
-            doc.setFontSize(8); doc.text('Balance Due', 196, 36, { align: 'right' });
-            doc.setFontSize(12); doc.text(formatMoney(balanceDue), 196, 43, { align: 'right' });
-            doc.setDrawColor(220); doc.line(14, 48, 196, 48);
-            doc.setFontSize(9); doc.text('Bill To', 14, 58);
-            doc.setFont('helvetica', 'bold'); doc.text(customer.name || 'Customer', 14, 65);
-            doc.setFont('helvetica', 'normal'); doc.text(doc.splitTextToSize([customer.address || '', customer.pincode ? `PIN: ${customer.pincode}` : '', customer.phone ? `Ph: ${customer.phone}` : ''].filter(Boolean).join('\n'), 82), 14, 72);
-            doc.setFont('helvetica', 'normal'); doc.text(`Invoice Date: ${formatDisplayDate(invoiceDate)}`, 196, 65, { align: 'right' });
+            doc.text(companyLines.slice(0, 7), 20, 66);
+
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(22);
+            doc.text(title, 192, 36, { align: 'right' });
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+            doc.text(`# ${invoiceNo}`, 192, 43, { align: 'right' });
+            doc.setFontSize(8); doc.text('Balance Due', 192, 55, { align: 'right' });
+            doc.setFontSize(11); doc.text(formatMoney(balanceDue), 192, 62, { align: 'right' });
+
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            doc.text('Bill To', 20, 96);
+            doc.setFont('helvetica', 'bold'); doc.text(customer.name || 'Customer', 20, 103);
+            doc.setFont('helvetica', 'normal');
+            const billLines = [customer.address || '', customer.pincode ? `PIN: ${customer.pincode}` : '', customer.phone ? `Ph: ${customer.phone}` : '', customer.gstin ? `GSTIN ${customer.gstin}` : ''].filter(Boolean);
+            doc.text(doc.splitTextToSize(billLines.join('\n'), 78), 20, 110);
+            doc.text('Ship To', 20, 132);
+            doc.text(customer.gstin ? `GSTIN ${customer.gstin}` : (companySettings.gstin ? `GSTIN ${companySettings.gstin}` : customer.address || ''), 20, 139);
+
+            const details = [
+                ['Invoice Date :', formatDisplayDate(invoiceDate)],
+                ['Terms :', 'Custom'],
+                ['Due Date :', formatDisplayDate(invoiceDate)],
+                ['Discount Allowed :', formatMoney(0)]
+            ];
+            let y = 108;
+            details.forEach(([label, value]) => {
+                doc.setFont('helvetica', 'normal'); doc.text(label, 136, y, { align: 'right' });
+                doc.setFont('helvetica', 'bold'); doc.text(value, 192, y, { align: 'right' });
+                y += 9;
+            });
         }
 
         function getOrderInvoiceRows(order) {
@@ -3585,6 +3623,7 @@
                 const tax = Math.max(0, amount - taxable);
                 return {
                     name: `${product.name || 'Product'}${item.priceType === 'promotion' ? ' (Promotion)' : ''}`,
+                    hsnSac: item.hsnSac || product.hsnSac || '',
                     qty: Number(item.qty) || 1,
                     rate: Number(item.unitPrice) || (amount / (Number(item.qty) || 1)),
                     taxable,
@@ -3596,51 +3635,73 @@
             });
         }
 
-        function addInvoiceTable(doc, orderRows, startY = 96) {
+        function addInvoiceTable(doc, orderRows, startY = 150) {
             let y = startY;
-            doc.setFillColor(55, 55, 55); doc.rect(14, y, 182, 9, 'F');
-            doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-            doc.text('#', 17, y + 6); doc.text('Item & Description', 25, y + 6); doc.text('Qty', 86, y + 6); doc.text('Rate', 107, y + 6, { align: 'right' }); doc.text('Taxable', 130, y + 6, { align: 'right' }); doc.text('GST', 146, y + 6, { align: 'right' }); doc.text('CGST', 164, y + 6, { align: 'right' }); doc.text('SGST', 181, y + 6, { align: 'right' }); doc.text('Amount', 195, y + 6, { align: 'right' });
-            doc.setTextColor(0); doc.setFont('helvetica', 'normal'); y += 15;
+            doc.setFillColor(55, 55, 55); doc.rect(20, y, 172, 9, 'F');
+            doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+            doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 92, y + 6); doc.text('Qty', 112, y + 6); doc.text('Rate', 132, y + 6, { align: 'right' }); doc.text('CGST', 151, y + 6, { align: 'right' }); doc.text('SGST', 171, y + 6, { align: 'right' }); doc.text('Amount', 190, y + 6, { align: 'right' });
+            doc.setTextColor(0); doc.setFont('helvetica', 'normal'); y += 16;
             orderRows.forEach((row, index) => {
-                if(y > 248) { doc.addPage(); y = 18; }
-                const itemLines = doc.splitTextToSize(row.name, 55);
-                doc.text(String(index + 1), 17, y);
-                doc.text(itemLines, 25, y);
-                doc.text(String(row.qty), 88, y, { align: 'right' });
-                doc.text(formatMoney(row.rate), 107, y, { align: 'right' });
-                doc.text(formatMoney(row.taxable), 130, y, { align: 'right' });
-                doc.text(`${row.gstPercent}%`, 146, y, { align: 'right' });
-                doc.text(formatMoney(row.cgst), 164, y, { align: 'right' });
-                doc.text(formatMoney(row.sgst), 181, y, { align: 'right' });
-                doc.text(formatMoney(row.amount), 195, y, { align: 'right' });
-                y += Math.max(10, itemLines.length * 4.5 + 4);
+                if(y > 236) { doc.addPage(); y = 25; }
+                const itemLines = doc.splitTextToSize(row.name, 50);
+                doc.text(String(index + 1), 24, y);
+                doc.text(itemLines, 34, y);
+                doc.text(row.hsnSac || '-', 92, y);
+                doc.text(String(row.qty.toFixed ? row.qty.toFixed(2) : row.qty), 116, y, { align: 'right' });
+                doc.text(formatMoney(row.rate), 132, y, { align: 'right' });
+                doc.text(`${formatMoney(row.cgst)}\n${row.gstPercent / 2}%`, 151, y, { align: 'right' });
+                doc.text(`${formatMoney(row.sgst)}\n${row.gstPercent / 2}%`, 171, y, { align: 'right' });
+                doc.text(formatMoney(row.amount), 190, y, { align: 'right' });
+                y += Math.max(12, itemLines.length * 4.5 + 7);
             });
-            doc.line(14, y, 196, y); return y + 7;
+            doc.line(20, y, 192, y); return y + 8;
+        }
+
+        function amountToWords(amount) {
+            const n = Math.round(Number(amount) || 0);
+            if(n === 0) return 'Indian Rupee Zero Only';
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const twoDigits = num => num < 20 ? ones[num] : `${tens[Math.floor(num / 10)]}${num % 10 ? ' ' + ones[num % 10] : ''}`;
+            const threeDigits = num => `${num >= 100 ? ones[Math.floor(num / 100)] + ' Hundred' : ''}${num >= 100 && num % 100 ? ' ' : ''}${num % 100 ? twoDigits(num % 100) : ''}`.trim();
+            const parts = [];
+            const crore = Math.floor(n / 10000000);
+            const lakh = Math.floor((n % 10000000) / 100000);
+            const thousand = Math.floor((n % 100000) / 1000);
+            const rest = n % 1000;
+            if(crore) parts.push(`${threeDigits(crore)} Crore`);
+            if(lakh) parts.push(`${threeDigits(lakh)} Lakh`);
+            if(thousand) parts.push(`${threeDigits(thousand)} Thousand`);
+            if(rest) parts.push(threeDigits(rest));
+            return `Indian Rupee ${parts.join(' ')} Only`;
         }
 
         function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst }) {
-            const boxX = 112;
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-            const rows = [
-                ['Total Taxable Amount', taxable],
-                ['CGST', cgst],
-                ['SGST', sgst],
-                ['Total', total],
-                ['Paid', paid],
-                ['Balance Due', due]
-            ];
-            rows.forEach(([label, value], index) => {
-                if(index === rows.length - 1) { doc.setFillColor(245, 245, 245); doc.rect(boxX, y - 5, 84, 9, 'F'); doc.setFont('helvetica', 'bold'); }
-                else doc.setFont('helvetica', index === 3 ? 'bold' : 'normal');
-                doc.text(label, 154, y, { align: 'right' }); doc.text(formatMoney(value), 194, y, { align: 'right' }); y += 8;
-            });
+            const subTotalY = y;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+            doc.text('Sub Total', 132, subTotalY, { align: 'right' });
+            doc.text(formatMoney(cgst), 151, subTotalY, { align: 'right' });
+            doc.text(formatMoney(sgst), 171, subTotalY, { align: 'right' });
+            doc.text(formatMoney(total), 190, subTotalY, { align: 'right' });
+            y += 10; doc.line(20, y - 5, 192, y - 5);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatMoney(taxable), 190, y, { align: 'right' }); y += 9;
+            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatMoney(total), 190, y, { align: 'right' }); y += 11;
+            doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
+            doc.text('Balance Due', 156, y, { align: 'right' }); doc.text(formatMoney(due), 190, y, { align: 'right' }); y += 11;
+            doc.setFont('helvetica', 'normal'); doc.text('Total In Words:', 134, y, { align: 'right' });
+            doc.setFont('helvetica', 'bolditalic'); doc.text(doc.splitTextToSize(amountToWords(total), 42), 140, y);
             doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-            doc.text('Notes: Thanks for your business.', 14, 267);
-            if(companySettings.signatureImage) {
-                try { doc.addImage(companySettings.signatureImage, 'PNG', 150, 246, 32, 16); } catch(e) { console.warn('Signature could not be added', e); }
+            doc.text('Notes', 20, 254); doc.text('Thanks for your business.', 20, 261);
+            if(companySettings.paymentDetails) {
+                doc.setFont('helvetica', 'bold'); doc.text('Payment Details:', 20, 270);
+                doc.setFont('helvetica', 'normal'); doc.text(String(companySettings.paymentDetails).split(/\n/).slice(0, 5), 20, 276);
             }
-            doc.setFont('helvetica', 'bold'); doc.text(companySettings.signatureName || 'Authorized Signatory', 196, 267, { align: 'right' });
+            if(companySettings.signatureImage) {
+                try { doc.addImage(companySettings.signatureImage, 'PNG', 151, 250, 28, 15); } catch(e) { console.warn('Signature could not be added', e); }
+            }
+            doc.setFont('helvetica', 'bold'); doc.text(companySettings.signatureName || 'Authorized Signatory', 192, 270, { align: 'right' });
+            doc.line(18, 286, 192, 286);
         }
 
         function buildOrderInvoicePdf(order) {
@@ -3680,21 +3741,21 @@
             const latest = customerOrders[customerOrders.length - 1];
             const summary = getCustomerFinancialSummary(customerOrders);
             drawInvoiceHeader(doc, 'CUSTOMER STATEMENT', `TOTAL-${phone}`, latest, summary.due, getTodayString());
-            let y = 98;
-            doc.setFillColor(55, 55, 55); doc.rect(14, y - 6, 182, 9, 'F'); doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-            doc.text('Order Date', 16, y); doc.text('Products', 50, y); doc.text('Total', 126, y, { align: 'right' }); doc.text('Paid', 158, y, { align: 'right' }); doc.text('Balance', 194, y, { align: 'right' }); y += 9; doc.setTextColor(0); doc.setFont('helvetica', 'normal');
+            let y = 150;
+            doc.setFillColor(55, 55, 55); doc.rect(20, y - 6, 172, 9, 'F'); doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+            doc.text('Order Date', 24, y); doc.text('Products', 58, y); doc.text('Total', 126, y, { align: 'right' }); doc.text('Paid', 158, y, { align: 'right' }); doc.text('Balance', 190, y, { align: 'right' }); y += 9; doc.setTextColor(0); doc.setFont('helvetica', 'normal');
             customerOrders.forEach(order => {
-                if(y > 252) { doc.addPage(); y = 20; }
-                const lines = doc.splitTextToSize(getOrderItemsText(order) || 'Order items', 68);
-                doc.text(formatDisplayDate(order.createdAt), 16, y);
-                doc.text(lines, 50, y);
+                if(y > 248) { doc.addPage(); y = 25; }
+                const lines = doc.splitTextToSize(getOrderItemsText(order) || 'Order items', 60);
+                doc.text(formatDisplayDate(order.createdAt), 24, y);
+                doc.text(lines, 58, y);
                 doc.text(formatMoney(Number(order.orderTotal) || getOrderItemsTotal(order)), 126, y, { align: 'right' });
                 doc.text(formatMoney(getOrderPaidTotal(order)), 158, y, { align: 'right' });
-                doc.text(formatMoney(getOrderBalanceDue(order)), 194, y, { align: 'right' });
+                doc.text(formatMoney(getOrderBalanceDue(order)), 190, y, { align: 'right' });
                 y += Math.max(9, lines.length * 4.5 + 4);
             });
-            doc.line(14, y, 196, y); y += 8; doc.setFont('helvetica', 'bold');
-            doc.text(`Total Purchase: ${formatMoney(summary.total)}`, 14, y); doc.text(`Total Paid: ${formatMoney(summary.paid)}`, 85, y); doc.text(`Balance: ${formatMoney(summary.due)}`, 194, y, { align: 'right' });
+            doc.line(20, y, 192, y); y += 8; doc.setFont('helvetica', 'bold');
+            doc.text(`Total Purchase: ${formatMoney(summary.total)}`, 20, y); doc.text(`Total Paid: ${formatMoney(summary.paid)}`, 88, y); doc.text(`Balance: ${formatMoney(summary.due)}`, 190, y, { align: 'right' });
             return doc;
         }
 
