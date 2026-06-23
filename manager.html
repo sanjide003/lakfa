@@ -115,7 +115,7 @@
                 </button>
                 <button onclick="switchTab('repeat')" id="nav-repeat" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m10-4.13a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    Repeat Customers
+                    Parties
                 </button>
                 <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-purple-700 bg-purple-50 border border-purple-100 hover:bg-purple-100 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
@@ -572,6 +572,10 @@
                             <label class="block text-sm font-medium text-gray-700">Shop Name (Optional)</label>
                             <input type="text" id="order-shop-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Landmark (Optional)</label>
+                            <input type="text" id="order-landmark" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
+                        </div>
                         <div id="customer-suggestions" class="hidden sm:col-span-2 rounded-lg border border-red-100 bg-red-50 p-3"></div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Full Address</label>
@@ -926,7 +930,7 @@
             recycle: { title: 'Recycle Bin', statusFilter: 'Recycle Bin', icon: 'trash', color: 'red' },
             returns: { title: 'Return', statusFilter: 'Return', icon: 'return', color: 'orange' },
             cancelled: { title: 'Order Cancelled', statusFilter: 'Order Cancelled', icon: 'cancel', color: 'red' },
-            repeat: { title: 'Repeat Customers', statusFilter: 'Repeat Customers', icon: 'users', color: 'indigo' }
+            repeat: { title: 'Parties', statusFilter: 'Repeat Customers', icon: 'users', color: 'indigo' }
         };
         let companySettings = {
             name: "LAKFA FOODS",
@@ -1552,18 +1556,39 @@
             return order.status === status || (Array.isArray(order.statusHistory) && order.statusHistory.some(entry => entry.status === status));
         }
 
+
+        function getPartyKey(order) {
+            const phone = String(order?.phone || '').trim();
+            if(phone) return `phone:${phone}`;
+            const identity = [order?.name, order?.shopName, order?.landmark, order?.address, order?.pincode, order?.gstin]
+                .map(value => String(value || '').trim().toLowerCase())
+                .filter(Boolean)
+                .join('|');
+            return identity ? `party:${identity}` : `order:${order?.id || ''}`;
+        }
+
+        function getPartyDisplayContact(party) {
+            return [party.phone ? `Ph: ${party.phone}` : '', party.pincode ? `PIN: ${party.pincode}` : ''].filter(Boolean).join(' | ') || 'No phone / PIN';
+        }
+
         function getRepeatCustomers() {
             const groups = {};
-            orders.filter(o => !o.isDeleted && o.phone).forEach(order => {
-                const key = String(order.phone).trim();
-                if(!groups[key]) groups[key] = { phone: key, name: order.name || '', address: order.address || '', pincode: order.pincode || '', orders: [] };
+            orders.filter(o => !o.isDeleted).forEach(order => {
+                const key = getPartyKey(order);
+                const orderName = String(order.name || '').trim();
+                if(!groups[key]) groups[key] = { key, phone: String(order.phone || '').trim(), name: orderName, address: order.address || '', pincode: order.pincode || '', orders: [] };
                 groups[key].orders.push(order);
+                if(orderName && !groups[key].name) groups[key].name = orderName;
+                if(order.phone && !groups[key].phone) groups[key].phone = String(order.phone).trim();
+                if(order.address && !groups[key].address) groups[key].address = order.address;
+                if(order.pincode && !groups[key].pincode) groups[key].pincode = order.pincode;
                 const currentDate = normalizeDateInput(order.createdAt);
                 const savedDate = normalizeDateInput(groups[key].latestDate);
                 if(!savedDate || currentDate >= savedDate) {
-                    groups[key].name = order.name || groups[key].name;
+                    if(orderName) groups[key].name = orderName;
                     groups[key].address = order.address || groups[key].address;
                     groups[key].pincode = order.pincode || groups[key].pincode;
+                    groups[key].phone = String(order.phone || '').trim() || groups[key].phone;
                     groups[key].latestDate = order.createdAt;
                 }
             });
@@ -1680,7 +1705,7 @@
             const host = document.getElementById(hostId);
             if(!host) return;
             if(currentOrderStatusFilter === 'Repeat Customers') {
-                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Paid</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
+                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Party</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Paid</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
                 renderRepeatCustomers('utility-repeat-list');
                 return;
             }
@@ -1706,7 +1731,7 @@
             updateBulkActions();
             const isUtilityList = targetId === 'utility-repeat-list';
             if(customers.length === 0) {
-                list.innerHTML = `<tr><td colspan="${isUtilityList ? 7 : 8}" class="px-6 py-10 text-center text-gray-500">No customers found</td></tr>`;
+                list.innerHTML = `<tr><td colspan="${isUtilityList ? 7 : 8}" class="px-6 py-10 text-center text-gray-500">No parties found</td></tr>`;
                 return;
             }
             list.innerHTML = customers.map((customer, index) => {
@@ -1715,16 +1740,16 @@
                 <tr class="hover:bg-gray-50 bg-indigo-50/30">
                     <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${index + 1}</span></td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900">${customer.name || 'Customer'}</div>
-                        <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address || '-'}</div>
-                        <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
+                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words">${escapeHtml(customer.name || 'Party')}</div>
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${escapeHtml(customer.address || '-')}</div>
+                        <div class="text-xs text-gray-600 font-bold">${getPartyDisplayContact(customer)}</div>
                     </td>
                     <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${summary.products} Products / ${customer.orders.length} Bills</span></td>
                     <td class="px-6 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(summary.paid)}</td>
                     <td class="px-6 py-4 text-right font-bold ${summary.due > 0 ? 'text-red-700' : 'text-gray-500'} whitespace-nowrap">${formatMoney(summary.due)}</td>
                     <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div><div class="text-xs text-gray-500">Total purchase: ${formatMoney(summary.total)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open / Bills</button>
+                        <button onclick="showRepeatCustomerOrders('${encodeURIComponent(customer.key)}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open / Bills</button>
                     </td>
                 </tr>
             ` : `
@@ -1735,16 +1760,16 @@
                         <div class="text-xs text-indigo-700 font-semibold">${getOrdersProductCount(customer.orders)} products in ${customer.orders.length} orders</div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900">${customer.name}</div>
-                        <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address}</div>
-                        <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
+                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words">${escapeHtml(customer.name || 'Party')}</div>
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${escapeHtml(customer.address || '-')}</div>
+                        <div class="text-xs text-gray-600 font-bold">${getPartyDisplayContact(customer)}</div>
                     </td>
-                    <td class="px-6 py-4"><div class="text-sm text-gray-700">Customer order history</div></td>
+                    <td class="px-6 py-4"><div class="text-sm text-gray-700">Party order history</div></td>
                     <td class="px-6 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(summary.paid)}</td>
                     <td class="px-6 py-4 text-right font-bold ${summary.due > 0 ? 'text-red-700' : 'text-gray-500'} whitespace-nowrap">${formatMoney(summary.due)}</td>
                     <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div><div class="text-xs text-gray-500">Total: ${formatMoney(summary.total)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open / Bills</button>
+                        <button onclick="showRepeatCustomerOrders('${encodeURIComponent(customer.key)}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open / Bills</button>
                     </td>
                 </tr>
             `;
@@ -1827,6 +1852,7 @@
             document.getElementById('order-address').value = order.address || '';
             document.getElementById('order-gstin').value = order.gstin || '';
             document.getElementById('order-shop-name').value = order.shopName || '';
+            document.getElementById('order-landmark').value = order.landmark || '';
             document.getElementById('order-pincode').value = order.pincode || '';
             document.getElementById('order-location').value = order.location || '';
             window.currentEditingOrderPaymentHistory = Array.isArray(order.paymentHistory) ? [...order.paymentHistory] : [];
@@ -1847,15 +1873,17 @@
             showToast('Customer details filled');
         }
 
-        window.showRepeatCustomerOrders = function(phone) {
+        window.showRepeatCustomerOrders = function(encodedPartyKey) {
+            const partyKey = decodeURIComponent(encodedPartyKey);
             const customerOrders = orders
-                .filter(o => !o.isDeleted && o.phone === phone)
+                .filter(o => !o.isDeleted && getPartyKey(o) === partyKey)
                 .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
             if(customerOrders.length === 0) return;
             const latest = customerOrders[0];
             const summary = getCustomerFinancialSummary(customerOrders);
-            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${summary.products} products in ${customerOrders.length} orders • Paid ${formatMoney(summary.paid)} • Balance ${formatMoney(summary.due)}`;
-            document.getElementById('repeat-customer-actions').innerHTML = `<button onclick="previewCustomerStatement('${phone}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Open Total Bill</button><button onclick="downloadCustomerStatement('${phone}')" class="rounded-md bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">Download Total Bill</button><button onclick="prefillCustomerFromRepeat('${phone}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Add New Order</button>`;
+            const partyContact = getPartyDisplayContact({ phone: latest.phone || '', pincode: latest.pincode || '' });
+            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || latest.shopName || 'Party'} • ${partyContact} • ${summary.products} products in ${customerOrders.length} orders • Paid ${formatMoney(summary.paid)} • Balance ${formatMoney(summary.due)}`;
+            document.getElementById('repeat-customer-actions').innerHTML = `<button onclick="previewCustomerStatement('${encodedPartyKey}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Open Total Bill</button><button onclick="downloadCustomerStatement('${encodedPartyKey}')" class="rounded-md bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">Download Total Bill</button><button onclick="prefillCustomerFromRepeat('${encodedPartyKey}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Add New Order</button>`;
             document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => {
                 const total = Number(order.orderTotal) || getOrderItemsTotal(order);
                 const paid = getOrderPaidTotal(order);
@@ -1883,8 +1911,9 @@
             document.getElementById('repeat-customer-modal').classList.remove('hidden');
         }
 
-        window.prefillCustomerFromRepeat = function(phone) {
-            const customerOrder = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))[0];
+        window.prefillCustomerFromRepeat = function(encodedPartyKey) {
+            const partyKey = decodeURIComponent(encodedPartyKey);
+            const customerOrder = orders.filter(o => !o.isDeleted && getPartyKey(o) === partyKey).sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))[0];
             openOrderModal();
             if(customerOrder) fillCustomerDetails(customerOrder.id);
         }
@@ -2079,6 +2108,7 @@
             document.getElementById('order-address').value = order.address;
             document.getElementById('order-gstin').value = order.gstin || '';
             document.getElementById('order-shop-name').value = order.shopName || '';
+            document.getElementById('order-landmark').value = order.landmark || '';
             document.getElementById('order-pincode').value = order.pincode;
             document.getElementById('order-location').value = order.location || '';
             window.currentEditingOrderPaymentHistory = Array.isArray(order.paymentHistory) ? [...order.paymentHistory] : [];
@@ -2196,6 +2226,7 @@
                 phone: document.getElementById('order-phone').value,
                 gstin: document.getElementById('order-gstin').value,
                 shopName: document.getElementById('order-shop-name').value,
+                landmark: document.getElementById('order-landmark').value,
                 address: document.getElementById('order-address').value,
                 pincode: document.getElementById('order-pincode').value,
                 location: document.getElementById('order-location').value,
@@ -3456,7 +3487,7 @@
                 .filter(order => !order.isDeleted)
                 .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
             if(exportOrders.length === 0) { showToast('No orders available to download', 'error'); return; }
-            const headers = ['Order Date', 'Accepted Date', 'Last Updated Date', 'Status', 'Customer Name', 'Phone', 'Address', 'Pincode', 'Products'];
+            const headers = ['Order Date', 'Accepted Date', 'Last Updated Date', 'Status', 'Customer Name', 'Phone', 'Landmark', 'Address', 'Pincode', 'Products'];
             const rows = exportOrders.map(order => [
                 formatDisplayDate(order.createdAt),
                 formatDisplayDate(order.createdAt),
@@ -3464,6 +3495,7 @@
                 order.status || '',
                 order.name || '',
                 order.phone || '',
+                order.landmark || '',
                 order.address || '',
                 order.pincode || '',
                 getOrderItemsText(order) || ''
@@ -3524,70 +3556,78 @@
                     doc.setLineWidth(0.3);
                     doc.rect(startX, startY, boxW, boxH);
 
-                    // --- FROM SECTION ---
-                    doc.setFontSize(12);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("From:", startX + 5, startY + 10);
-                    
-                    // Name and phone: Bold & Larger
-                    doc.setFontSize(14);
-                    doc.text(companySettings.name || 'Lakfa Foods', startX + 5, startY + 18);
-                    doc.setFontSize(12);
-                    doc.text(`Ph: ${companySettings.phone || ''}`, startX + 5, startY + 25);
-                    
-                    // Address: Normal & Medium Size
-                    doc.setFontSize(11);
-                    doc.setFont("helvetica", "normal");
-                    const fromAddress = doc.splitTextToSize(getCompanyAddressLines().join('\n'), boxW - 10);
-                    doc.text(fromAddress, startX + 5, startY + 32);
-                    const fromEndY = startY + 32 + (fromAddress.length * 5);
-                    
-                    // Divider Line: automatically stays between From and To content.
-                    const dividerY = Math.min(fromEndY + 3, startY + 52);
-                    doc.setDrawColor(150);
-                    doc.line(startX + 5, dividerY, startX + boxW - 5, dividerY);
-                    doc.setDrawColor(0);
-
                     // --- TO SECTION ---
-                    const toStartY = dividerY + 8;
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
-                    doc.text("To:", startX + 5, toStartY);
-                    
-                    // Name: Bold & Larger (Same as From)
-                    doc.setFontSize(14);
-                    const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
-                    doc.text(splitName, startX + 5, toStartY + 8);
-                    
-                    // Calculate Y based on name length
-                    let nextY = toStartY + 8 + (splitName.length * 6);
-                    
-                    // Address: Normal & Medium Size (Same as From)
+                    doc.text("To:", startX + 5, startY + 10);
+
+                    const landmark = String(order.landmark || '').trim();
+                    let nextY = startY + 18;
+                    if(landmark) {
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        const splitLandmark = doc.splitTextToSize(landmark, boxW - 10);
+                        doc.text(splitLandmark, startX + 5, nextY);
+                        nextY += splitLandmark.length * 6;
+
+                        doc.setFontSize(12);
+                        doc.setFont("helvetica", "normal");
+                        const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                        doc.text(splitName, startX + 5, nextY);
+                        nextY += splitName.length * 5;
+                    } else {
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                        doc.text(splitName, startX + 5, nextY);
+                        nextY += splitName.length * 6;
+                    }
+
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "normal");
                     const customerExtra = [order.shopName ? `Shop: ${order.shopName}` : '', order.gstin ? `GSTIN: ${order.gstin}` : ''].filter(Boolean).join('\n');
                     const addrText = `${customerExtra ? customerExtra + '\n' : ''}${order.address || ""}\nPIN: ${order.pincode || ""}`;
                     const splitAddress = doc.splitTextToSize(addrText, boxW - 10);
                     doc.text(splitAddress, startX + 5, nextY);
-                    
-                    nextY = nextY + (splitAddress.length * 6) + 3;
-                    
-                    // Bold Phone Number
+
+                    nextY = nextY + (splitAddress.length * 5);
+
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
                     doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
 
-                    const websiteY = startY + boxH - 5;
-                    const sloganY = websiteY - 5;
-                    const footerY = sloganY - 20;
+                    const toDividerY = nextY + 5;
                     doc.setDrawColor(150);
-                    doc.line(startX + 5, footerY - 5, startX + boxW - 5, footerY - 5);
+                    doc.line(startX + 5, toDividerY, startX + boxW - 5, toDividerY);
+                    doc.setDrawColor(0);
+
+                    // --- FROM SECTION ---
+                    const fromStartY = toDividerY + 8;
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("From:", startX + 5, fromStartY);
+
+                    doc.setFontSize(14);
+                    doc.text(companySettings.name || 'Lakfa Foods', startX + 5, fromStartY + 8);
+                    doc.setFontSize(12);
+                    doc.text(`Ph: ${companySettings.phone || ''}`, startX + 5, fromStartY + 15);
+
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "normal");
+                    const fromAddress = doc.splitTextToSize(getCompanyAddressLines().join('\n'), boxW - 10);
+                    doc.text(fromAddress, startX + 5, fromStartY + 22);
+                    const fromEndY = fromStartY + 22 + (fromAddress.length * 5);
+
+                    const fromDividerY = fromEndY + 3;
+                    doc.setDrawColor(150);
+                    doc.line(startX + 5, fromDividerY, startX + boxW - 5, fromDividerY);
                     doc.setDrawColor(0);
 
                     const logoX = startX + 5;
-                    const logoY = footerY;
                     const logoW = 20;
                     const logoH = 13;
+                    const logoY = startY + boxH - logoH - 7;
+                    const descY = fromDividerY + 5;
                     if(companySettings.companyLogoImage) {
                         try { doc.addImage(companySettings.companyLogoImage, 'PNG', logoX, logoY, logoW, logoH); } catch(e) { console.warn('Company logo could not be added to label', e); }
                     } else {
@@ -3600,15 +3640,18 @@
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(7);
                     const labelDescription = companySettings.companyDescription || 'Thank you for bringing a taste of island life into your home! LAKFA is more than just a pickle—it is a piece of Lakshadweep coastal heritage.';
-                    const descLines = doc.splitTextToSize(labelDescription, boxW - 34);
-                    if(descLines.length) doc.text(descLines.slice(0, 3), startX + 29, footerY + 3, { lineHeightFactor: 1.05 });
+                    const descLines = doc.splitTextToSize(labelDescription, boxW - 10);
+                    if(descLines.length) doc.text(descLines, startX + 5, descY, { lineHeightFactor: 1.05 });
 
+                    const brandTextX = logoX + logoW + 3;
+                    const brandTextWidth = boxW - logoW - 13;
+                    const brandCenterX = brandTextX + (brandTextWidth / 2);
                     doc.setFont("helvetica", "bold");
                     doc.setFontSize(8);
-                    doc.text('Feel the Islands.Follow our wave.', startX + (boxW / 2), sloganY, { align: 'center' });
+                    doc.text('Feel the Islands. Follow our wave.', brandCenterX, logoY + 5, { align: 'center', maxWidth: brandTextWidth });
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(8);
-                    doc.text('www.lakfafoods.com', startX + (boxW / 2), websiteY, { align: 'center' });
+                    doc.text('www.lakfafoods.com', brandCenterX, logoY + 11, { align: 'center', maxWidth: brandTextWidth });
                 });
 
                 doc.save("Lakfa_Shipping_Labels.pdf");
@@ -3687,7 +3730,7 @@
 
         function drawInvoiceHeader(doc, title, invoiceNo, customer, balanceDue, invoiceDate = getTodayString()) {
             drawInvoicePageFrame(doc);
-            const logoBox = addLogoToPdf(doc, 20, 22, 24);
+            const logoBox = addLogoToPdf(doc, 20, 16, 24);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
             doc.text(companySettings.name || 'Lakfa Foods', 20, 51);
             doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
@@ -3699,12 +3742,12 @@
             ].filter(Boolean);
             doc.text(companyLines.slice(0, 7), 20, 56, { lineHeightFactor: 1.05 });
 
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(22);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(26);
             doc.text(title, 192, 36, { align: 'right' });
             doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
-            doc.text(`# ${invoiceNo}`, 192, 43, { align: 'right' });
-            doc.setFontSize(8); doc.text('Balance Due', 192, 55, { align: 'right' });
-            doc.setFontSize(11); doc.text(formatPdfMoney(balanceDue), 192, 62, { align: 'right' });
+            doc.text(`# ${invoiceNo}`, 192, 45, { align: 'right' });
+            doc.setFontSize(8); doc.text('Balance Due', 192, 53, { align: 'right' });
+            doc.setFontSize(11); doc.text(formatPdfMoney(balanceDue), 192, 60, { align: 'right' });
 
             doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
             doc.text('Bill To', 20, 88);
@@ -3736,41 +3779,50 @@
                 const gstPercent = Number(item.gstPercent ?? product.gstPercent) || 0;
                 const taxable = gstPercent > 0 ? amount / (1 + (gstPercent / 100)) : amount;
                 const tax = Math.max(0, amount - taxable);
+                const priceType = item.priceType || 'includingGst';
+                const isWithoutGst = priceType === 'withoutGst';
                 return {
-                    name: `${product.name || 'Product'}${item.priceType === 'promotion' ? ' (Promotion)' : ''}`,
+                    name: `${product.name || 'Product'}${priceType === 'promotion' ? ' (Promotion)' : ''}`,
                     hsnSac: item.hsnSac || product.hsnSac || '',
                     qty: Number(item.qty) || 1,
                     rate: Number(item.unitPrice) || (amount / (Number(item.qty) || 1)),
-                    taxable,
-                    gstPercent,
-                    cgst: tax / 2,
-                    sgst: tax / 2,
-                    amount
+                    taxable: isWithoutGst ? amount : taxable,
+                    gstPercent: isWithoutGst ? 0 : gstPercent,
+                    cgst: isWithoutGst ? 0 : (tax / 2),
+                    sgst: isWithoutGst ? 0 : (tax / 2),
+                    amount,
+                    priceType
                 };
             });
         }
 
-        function drawInvoiceTableHeader(doc, y) {
+        function drawInvoiceTableHeader(doc, y, showGst = true) {
             doc.setFillColor(55, 55, 55); doc.rect(20, y, 172, 9, 'F');
             doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-            doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 91, y + 6); doc.text('Qty', 109, y + 6); doc.text('Rate', 128, y + 6, { align: 'right' }); doc.text('CGST', 149, y + 6, { align: 'right' }); doc.text('SGST', 170, y + 6, { align: 'right' }); doc.text('Amount', 190, y + 6, { align: 'right' });
+            doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 91, y + 6); doc.text('Qty', 109, y + 6); doc.text('Rate', 128, y + 6, { align: 'right' });
+            if(showGst) {
+                doc.text('CGST', 149, y + 6, { align: 'right' }); doc.text('SGST', 170, y + 6, { align: 'right' });
+            }
+            doc.text('Amount', 190, y + 6, { align: 'right' });
             doc.setTextColor(0); doc.setFont('helvetica', 'normal');
             return y + 16;
         }
 
-        function addInvoiceTable(doc, orderRows, startY = 134) {
+        function addInvoiceTable(doc, orderRows, startY = 134, showGst = true) {
             let y = startY;
-            y = drawInvoiceTableHeader(doc, y);
+            y = drawInvoiceTableHeader(doc, y, showGst);
             orderRows.forEach((row, index) => {
-                if(y > 246) { doc.addPage(); drawInvoicePageFrame(doc); y = drawInvoiceTableHeader(doc, 24); }
+                if(y > 246) { doc.addPage(); drawInvoicePageFrame(doc); y = drawInvoiceTableHeader(doc, 24, showGst); }
                 const itemLines = doc.splitTextToSize(row.name, 48);
                 doc.text(String(index + 1), 24, y);
                 doc.text(itemLines, 34, y);
                 doc.text(row.hsnSac || '-', 91, y);
                 doc.text(formatQuantity(row.qty), 113, y, { align: 'right' });
                 doc.text(formatPdfMoney(row.rate), 128, y, { align: 'right' });
-                doc.text(`${formatPdfMoney(row.cgst)}\n${row.gstPercent / 2}%`, 149, y, { align: 'right' });
-                doc.text(`${formatPdfMoney(row.sgst)}\n${row.gstPercent / 2}%`, 170, y, { align: 'right' });
+                if(showGst) {
+                    doc.text(`${formatPdfMoney(row.cgst)}\n${row.gstPercent / 2}%`, 149, y, { align: 'right' });
+                    doc.text(`${formatPdfMoney(row.sgst)}\n${row.gstPercent / 2}%`, 170, y, { align: 'right' });
+                }
                 doc.text(formatPdfMoney(row.amount), 190, y, { align: 'right' });
                 y += Math.max(12, itemLines.length * 4.5 + 7);
             });
@@ -3796,7 +3848,7 @@
             return `Indian Rupee ${parts.join(' ')} Only`;
         }
 
-        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst }) {
+        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst = true }) {
             if(y > 204) {
                 doc.addPage();
                 drawInvoicePageFrame(doc);
@@ -3805,18 +3857,21 @@
             const subTotalY = y;
             doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
             doc.text('Sub Total', 132, subTotalY, { align: 'right' });
-            doc.text(formatPdfMoney(cgst), 149, subTotalY, { align: 'right' });
-            doc.text(formatPdfMoney(sgst), 170, subTotalY, { align: 'right' });
+            if(showGst) {
+                doc.text(formatPdfMoney(cgst), 149, subTotalY, { align: 'right' });
+                doc.text(formatPdfMoney(sgst), 170, subTotalY, { align: 'right' });
+            }
             doc.text(formatPdfMoney(total), 190, subTotalY, { align: 'right' });
             y += 10; doc.line(20, y - 5, 192, y - 5);
             doc.setFont('helvetica', 'normal');
             const totalGst = cgst + sgst;
-            doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
-            doc.text('Total SGST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(sgst), 190, y, { align: 'right' }); y += 8;
-            doc.text('Total CGST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(cgst), 190, y, { align: 'right' }); y += 8;
-            doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
-            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatPdfMoney(total), 190, y, { align: 'right' }); y += 11;
-            doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
+            if(showGst) {
+                doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
+                doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
+            }
+            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatPdfMoney(total), 190, y, { align: 'right' }); y += 9;
+            doc.setFont('helvetica', 'normal'); doc.text('Payment Received', 156, y, { align: 'right' }); doc.text(formatPdfMoney(paid), 190, y, { align: 'right' }); y += 11;
+            doc.setFont('helvetica', 'bold'); doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
             doc.text('Balance Due', 156, y, { align: 'right' }); doc.text(formatPdfMoney(due), 190, y, { align: 'right' }); y += 11;
             doc.setFont('helvetica', 'normal'); doc.text('Total In Words:', 134, y, { align: 'right' });
             doc.setFont('helvetica', 'bolditalic'); doc.text(doc.splitTextToSize(amountToWords(total), 42), 140, y);
@@ -3845,8 +3900,9 @@
             const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
             const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
             drawInvoiceHeader(doc, 'TAX INVOICE', getInvoiceNumber(order), order, due, order.createdAt);
-            const y = addInvoiceTable(doc, rows);
-            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst });
+            const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
+            const y = addInvoiceTable(doc, rows, 134, showGst);
+            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst });
             return doc;
         }
 
@@ -3872,8 +3928,9 @@
             buildOrderInvoicePdf(order).save(`Lakfa_Invoice_${order.phone || 'customer'}_${normalizeDateInput(order.createdAt)}.pdf`);
         }
 
-        function buildCustomerStatementPdf(phone) {
-            const customerOrders = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(a.createdAt)) - new Date(normalizeDateInput(b.createdAt)));
+        function buildCustomerStatementPdf(encodedPartyKey) {
+            const partyKey = decodeURIComponent(encodedPartyKey);
+            const customerOrders = orders.filter(o => !o.isDeleted && getPartyKey(o) === partyKey).sort((a, b) => new Date(normalizeDateInput(a.createdAt)) - new Date(normalizeDateInput(b.createdAt)));
             if(!customerOrders.length) return null;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
@@ -3883,22 +3940,24 @@
             const taxable = rows.reduce((sum, row) => sum + row.taxable, 0);
             const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
             const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
-            drawInvoiceHeader(doc, 'TAX INVOICE', `TOTAL-${phone}`, latest, summary.due, getTodayString());
-            const y = addInvoiceTable(doc, rows);
-            finishInvoicePdf(doc, y, { total: summary.total, paid: summary.paid, due: summary.due, taxable, cgst, sgst });
+            drawInvoiceHeader(doc, 'TAX INVOICE', `TOTAL-${String(partyKey).slice(0, 18).toUpperCase()}`, latest, summary.due, getTodayString());
+            const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
+            const y = addInvoiceTable(doc, rows, 134, showGst);
+            finishInvoicePdf(doc, y, { total: summary.total, paid: summary.paid, due: summary.due, taxable, cgst, sgst, showGst });
             return doc;
         }
 
-        window.previewCustomerStatement = function(phone) {
-            const doc = buildCustomerStatementPdf(phone);
+        window.previewCustomerStatement = function(encodedPartyKey) {
+            const doc = buildCustomerStatementPdf(encodedPartyKey);
             if(!doc) return;
             showInvoicePreview(doc);
         }
 
-        window.downloadCustomerStatement = function(phone) {
-            const doc = buildCustomerStatementPdf(phone);
+        window.downloadCustomerStatement = function(encodedPartyKey) {
+            const doc = buildCustomerStatementPdf(encodedPartyKey);
             if(!doc) return;
-            doc.save(`Lakfa_Total_Bill_${phone}_${getTodayString()}.pdf`);
+            const partyKey = decodeURIComponent(encodedPartyKey).replace(/[^a-z0-9]+/gi, '_').slice(0, 30) || 'party';
+            doc.save(`Lakfa_Total_Bill_${partyKey}_${getTodayString()}.pdf`);
         }
 
         window.closeModal = function(id) { 
