@@ -2530,6 +2530,28 @@
             });
         }
 
+
+        function drawPdfRupeeAmount(doc, amount, x, y, options = {}) {
+            const formattedAmount = formatPdfMoney(amount);
+            const align = options.align || 'right';
+            const gap = options.gap ?? 2.2;
+            const fontSize = doc.getFontSize();
+            doc.text(formattedAmount, x, y, { align });
+            const amountWidth = doc.getTextWidth(formattedAmount);
+            const symbolRight = align === 'right' ? x - amountWidth - gap : x;
+            const symbolX = symbolRight - (fontSize * 0.22);
+            doc.text('R', symbolX, y);
+            const lineLeft = symbolX + (fontSize * 0.03);
+            const lineRight = symbolX + (fontSize * 0.34);
+            const topY = y - (fontSize * 0.23);
+            const midY = y - (fontSize * 0.11);
+            const previousLineWidth = doc.getLineWidth();
+            doc.setLineWidth(0.25);
+            doc.line(lineLeft, topY, lineRight, topY);
+            doc.line(lineLeft, midY, lineRight, midY);
+            doc.setLineWidth(previousLineWidth);
+        }
+
         function formatQuantity(qty) {
             const value = Number(qty) || 0;
             return Number.isInteger(value) ? String(value) : value.toFixed(2);
@@ -3703,12 +3725,12 @@
             ].filter(Boolean);
             doc.text(companyLines.slice(0, 7), 20, 56, { lineHeightFactor: 1.05 });
 
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(22);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(26);
             doc.text(title, 192, 36, { align: 'right' });
             doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
-            doc.text(`# ${invoiceNo}`, 192, 43, { align: 'right' });
-            doc.setFontSize(8); doc.text('Balance Due', 192, 55, { align: 'right' });
-            doc.setFontSize(11); doc.text(`₹ ${formatPdfMoney(balanceDue)}`, 192, 62, { align: 'right' });
+            doc.text(`# ${invoiceNo}`, 192, 45, { align: 'right' });
+            doc.setFontSize(8); doc.text('Balance Due', 192, 53, { align: 'right' });
+            doc.setFontSize(11); drawPdfRupeeAmount(doc, balanceDue, 192, 60, { align: 'right' });
 
             doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
             doc.text('Bill To', 20, 88);
@@ -3830,10 +3852,10 @@
                 doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
                 doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
             }
-            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(`₹ ${formatPdfMoney(total)}`, 190, y, { align: 'right' }); y += 9;
-            doc.setFont('helvetica', 'normal'); doc.text('Payment Received', 156, y, { align: 'right' }); doc.text(`₹ ${formatPdfMoney(paid)}`, 190, y, { align: 'right' }); y += 11;
+            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); drawPdfRupeeAmount(doc, total, 190, y, { align: 'right' }); y += 9;
+            doc.setFont('helvetica', 'normal'); doc.text('Payment Received', 156, y, { align: 'right' }); drawPdfRupeeAmount(doc, paid, 190, y, { align: 'right' }); y += 11;
             doc.setFont('helvetica', 'bold'); doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
-            doc.text('Balance Due', 156, y, { align: 'right' }); doc.text(`₹ ${formatPdfMoney(due)}`, 190, y, { align: 'right' }); y += 11;
+            doc.text('Balance Due', 156, y, { align: 'right' }); drawPdfRupeeAmount(doc, due, 190, y, { align: 'right' }); y += 11;
             doc.setFont('helvetica', 'normal'); doc.text('Total In Words:', 134, y, { align: 'right' });
             doc.setFont('helvetica', 'bolditalic'); doc.text(doc.splitTextToSize(amountToWords(total), 42), 140, y);
             doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
