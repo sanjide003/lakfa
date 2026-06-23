@@ -3548,70 +3548,62 @@
                     doc.setLineWidth(0.3);
                     doc.rect(startX, startY, boxW, boxH);
 
-                    // --- FROM SECTION ---
-                    doc.setFontSize(12);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("From:", startX + 5, startY + 10);
-                    
-                    // Name and phone: Bold & Larger
-                    doc.setFontSize(14);
-                    doc.text(companySettings.name || 'Lakfa Foods', startX + 5, startY + 18);
-                    doc.setFontSize(12);
-                    doc.text(`Ph: ${companySettings.phone || ''}`, startX + 5, startY + 25);
-                    
-                    // Address: Normal & Medium Size
-                    doc.setFontSize(11);
-                    doc.setFont("helvetica", "normal");
-                    const fromAddress = doc.splitTextToSize(getCompanyAddressLines().join('\n'), boxW - 10);
-                    doc.text(fromAddress, startX + 5, startY + 32);
-                    const fromEndY = startY + 32 + (fromAddress.length * 5);
-                    
-                    // Divider Line: automatically stays between From and To content.
-                    const dividerY = Math.min(fromEndY + 3, startY + 52);
-                    doc.setDrawColor(150);
-                    doc.line(startX + 5, dividerY, startX + boxW - 5, dividerY);
-                    doc.setDrawColor(0);
-
                     // --- TO SECTION ---
-                    const toStartY = dividerY + 8;
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
-                    doc.text("To:", startX + 5, toStartY);
-                    
-                    // Name: Bold & Larger (Same as From)
+                    doc.text("To:", startX + 5, startY + 10);
+
                     doc.setFontSize(14);
                     const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
-                    doc.text(splitName, startX + 5, toStartY + 8);
-                    
-                    // Calculate Y based on name length
-                    let nextY = toStartY + 8 + (splitName.length * 6);
-                    
-                    // Address: Normal & Medium Size (Same as From)
+                    doc.text(splitName, startX + 5, startY + 18);
+
+                    let nextY = startY + 18 + (splitName.length * 6);
+
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "normal");
                     const customerExtra = [order.shopName ? `Shop: ${order.shopName}` : '', order.gstin ? `GSTIN: ${order.gstin}` : ''].filter(Boolean).join('\n');
                     const addrText = `${customerExtra ? customerExtra + '\n' : ''}${order.address || ""}\nPIN: ${order.pincode || ""}`;
                     const splitAddress = doc.splitTextToSize(addrText, boxW - 10);
                     doc.text(splitAddress, startX + 5, nextY);
-                    
+
                     nextY = nextY + (splitAddress.length * 5);
-                    
-                    // Phone number sits on the very next line after the pincode without an extra blank line.
+
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
                     doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
 
-                    // Completion divider below the To address block.
                     const toDividerY = nextY + 5;
                     doc.setDrawColor(150);
                     doc.line(startX + 5, toDividerY, startX + boxW - 5, toDividerY);
+                    doc.setDrawColor(0);
+
+                    // --- FROM SECTION ---
+                    const fromStartY = toDividerY + 8;
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("From:", startX + 5, fromStartY);
+
+                    doc.setFontSize(14);
+                    doc.text(companySettings.name || 'Lakfa Foods', startX + 5, fromStartY + 8);
+                    doc.setFontSize(12);
+                    doc.text(`Ph: ${companySettings.phone || ''}`, startX + 5, fromStartY + 15);
+
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "normal");
+                    const fromAddress = doc.splitTextToSize(getCompanyAddressLines().join('\n'), boxW - 10);
+                    doc.text(fromAddress, startX + 5, fromStartY + 22);
+                    const fromEndY = fromStartY + 22 + (fromAddress.length * 5);
+
+                    const fromDividerY = fromEndY + 3;
+                    doc.setDrawColor(150);
+                    doc.line(startX + 5, fromDividerY, startX + boxW - 5, fromDividerY);
                     doc.setDrawColor(0);
 
                     const logoX = startX + 5;
                     const logoW = 20;
                     const logoH = 13;
                     const logoY = startY + boxH - logoH - 7;
-                    const descY = toDividerY + 5;
+                    const descY = fromDividerY + 5;
                     if(companySettings.companyLogoImage) {
                         try { doc.addImage(companySettings.companyLogoImage, 'PNG', logoX, logoY, logoW, logoH); } catch(e) { console.warn('Company logo could not be added to label', e); }
                     } else {
