@@ -572,6 +572,10 @@
                             <label class="block text-sm font-medium text-gray-700">Shop Name (Optional)</label>
                             <input type="text" id="order-shop-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Landmark (Optional)</label>
+                            <input type="text" id="order-landmark" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
+                        </div>
                         <div id="customer-suggestions" class="hidden sm:col-span-2 rounded-lg border border-red-100 bg-red-50 p-3"></div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Full Address</label>
@@ -1556,7 +1560,7 @@
         function getPartyKey(order) {
             const phone = String(order?.phone || '').trim();
             if(phone) return `phone:${phone}`;
-            const identity = [order?.name, order?.shopName, order?.address, order?.pincode, order?.gstin]
+            const identity = [order?.name, order?.shopName, order?.landmark, order?.address, order?.pincode, order?.gstin]
                 .map(value => String(value || '').trim().toLowerCase())
                 .filter(Boolean)
                 .join('|');
@@ -1848,6 +1852,7 @@
             document.getElementById('order-address').value = order.address || '';
             document.getElementById('order-gstin').value = order.gstin || '';
             document.getElementById('order-shop-name').value = order.shopName || '';
+            document.getElementById('order-landmark').value = order.landmark || '';
             document.getElementById('order-pincode').value = order.pincode || '';
             document.getElementById('order-location').value = order.location || '';
             window.currentEditingOrderPaymentHistory = Array.isArray(order.paymentHistory) ? [...order.paymentHistory] : [];
@@ -2103,6 +2108,7 @@
             document.getElementById('order-address').value = order.address;
             document.getElementById('order-gstin').value = order.gstin || '';
             document.getElementById('order-shop-name').value = order.shopName || '';
+            document.getElementById('order-landmark').value = order.landmark || '';
             document.getElementById('order-pincode').value = order.pincode;
             document.getElementById('order-location').value = order.location || '';
             window.currentEditingOrderPaymentHistory = Array.isArray(order.paymentHistory) ? [...order.paymentHistory] : [];
@@ -2220,6 +2226,7 @@
                 phone: document.getElementById('order-phone').value,
                 gstin: document.getElementById('order-gstin').value,
                 shopName: document.getElementById('order-shop-name').value,
+                landmark: document.getElementById('order-landmark').value,
                 address: document.getElementById('order-address').value,
                 pincode: document.getElementById('order-pincode').value,
                 location: document.getElementById('order-location').value,
@@ -3480,7 +3487,7 @@
                 .filter(order => !order.isDeleted)
                 .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
             if(exportOrders.length === 0) { showToast('No orders available to download', 'error'); return; }
-            const headers = ['Order Date', 'Accepted Date', 'Last Updated Date', 'Status', 'Customer Name', 'Phone', 'Address', 'Pincode', 'Products'];
+            const headers = ['Order Date', 'Accepted Date', 'Last Updated Date', 'Status', 'Customer Name', 'Phone', 'Landmark', 'Address', 'Pincode', 'Products'];
             const rows = exportOrders.map(order => [
                 formatDisplayDate(order.createdAt),
                 formatDisplayDate(order.createdAt),
@@ -3488,6 +3495,7 @@
                 order.status || '',
                 order.name || '',
                 order.phone || '',
+                order.landmark || '',
                 order.address || '',
                 order.pincode || '',
                 getOrderItemsText(order) || ''
@@ -3553,11 +3561,27 @@
                     doc.setFont("helvetica", "bold");
                     doc.text("To:", startX + 5, startY + 10);
 
-                    doc.setFontSize(14);
-                    const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
-                    doc.text(splitName, startX + 5, startY + 18);
+                    const landmark = String(order.landmark || '').trim();
+                    let nextY = startY + 18;
+                    if(landmark) {
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        const splitLandmark = doc.splitTextToSize(landmark, boxW - 10);
+                        doc.text(splitLandmark, startX + 5, nextY);
+                        nextY += splitLandmark.length * 6;
 
-                    let nextY = startY + 18 + (splitName.length * 6);
+                        doc.setFontSize(12);
+                        doc.setFont("helvetica", "normal");
+                        const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                        doc.text(splitName, startX + 5, nextY);
+                        nextY += splitName.length * 5;
+                    } else {
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                        doc.text(splitName, startX + 5, nextY);
+                        nextY += splitName.length * 6;
+                    }
 
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "normal");
