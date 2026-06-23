@@ -1556,12 +1556,13 @@
             const groups = {};
             orders.filter(o => !o.isDeleted && o.phone).forEach(order => {
                 const key = String(order.phone).trim();
-                if(!groups[key]) groups[key] = { phone: key, name: order.name || '', address: order.address || '', pincode: order.pincode || '', orders: [] };
+                if(!groups[key]) groups[key] = { phone: key, name: String(order.name || '').trim(), address: order.address || '', pincode: order.pincode || '', orders: [] };
                 groups[key].orders.push(order);
                 const currentDate = normalizeDateInput(order.createdAt);
                 const savedDate = normalizeDateInput(groups[key].latestDate);
                 if(!savedDate || currentDate >= savedDate) {
-                    groups[key].name = order.name || groups[key].name;
+                    const orderName = String(order.name || '').trim();
+                    if(orderName) groups[key].name = orderName;
                     groups[key].address = order.address || groups[key].address;
                     groups[key].pincode = order.pincode || groups[key].pincode;
                     groups[key].latestDate = order.createdAt;
@@ -1715,8 +1716,8 @@
                 <tr class="hover:bg-gray-50 bg-indigo-50/30">
                     <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${index + 1}</span></td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900">${customer.name || 'Customer'}</div>
-                        <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address || '-'}</div>
+                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words">${escapeHtml(customer.name || 'Customer')}</div>
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${escapeHtml(customer.address || '-')}</div>
                         <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
                     </td>
                     <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${summary.products} Products / ${customer.orders.length} Bills</span></td>
@@ -1735,8 +1736,8 @@
                         <div class="text-xs text-indigo-700 font-semibold">${getOrdersProductCount(customer.orders)} products in ${customer.orders.length} orders</div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900">${customer.name}</div>
-                        <div class="text-sm text-gray-500 max-w-xs truncate">${customer.address}</div>
+                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words">${escapeHtml(customer.name || 'Customer')}</div>
+                        <div class="text-sm text-gray-500 max-w-xs truncate">${escapeHtml(customer.address || '-')}</div>
                         <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
                     </td>
                     <td class="px-6 py-4"><div class="text-sm text-gray-700">Customer order history</div></td>
@@ -3690,7 +3691,7 @@
 
         function drawInvoiceHeader(doc, title, invoiceNo, customer, balanceDue, invoiceDate = getTodayString()) {
             drawInvoicePageFrame(doc);
-            const logoBox = addLogoToPdf(doc, 20, 22, 24);
+            const logoBox = addLogoToPdf(doc, 20, 16, 24);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
             doc.text(companySettings.name || 'Lakfa Foods', 20, 51);
             doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
@@ -3707,7 +3708,7 @@
             doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
             doc.text(`# ${invoiceNo}`, 192, 43, { align: 'right' });
             doc.setFontSize(8); doc.text('Balance Due', 192, 55, { align: 'right' });
-            doc.setFontSize(11); doc.text(formatPdfMoney(balanceDue), 192, 62, { align: 'right' });
+            doc.setFontSize(11); doc.text(`₹ ${formatPdfMoney(balanceDue)}`, 192, 62, { align: 'right' });
 
             doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
             doc.text('Bill To', 20, 88);
@@ -3739,41 +3740,50 @@
                 const gstPercent = Number(item.gstPercent ?? product.gstPercent) || 0;
                 const taxable = gstPercent > 0 ? amount / (1 + (gstPercent / 100)) : amount;
                 const tax = Math.max(0, amount - taxable);
+                const priceType = item.priceType || 'includingGst';
+                const isWithoutGst = priceType === 'withoutGst';
                 return {
-                    name: `${product.name || 'Product'}${item.priceType === 'promotion' ? ' (Promotion)' : ''}`,
+                    name: `${product.name || 'Product'}${priceType === 'promotion' ? ' (Promotion)' : ''}`,
                     hsnSac: item.hsnSac || product.hsnSac || '',
                     qty: Number(item.qty) || 1,
                     rate: Number(item.unitPrice) || (amount / (Number(item.qty) || 1)),
-                    taxable,
-                    gstPercent,
-                    cgst: tax / 2,
-                    sgst: tax / 2,
-                    amount
+                    taxable: isWithoutGst ? amount : taxable,
+                    gstPercent: isWithoutGst ? 0 : gstPercent,
+                    cgst: isWithoutGst ? 0 : (tax / 2),
+                    sgst: isWithoutGst ? 0 : (tax / 2),
+                    amount,
+                    priceType
                 };
             });
         }
 
-        function drawInvoiceTableHeader(doc, y) {
+        function drawInvoiceTableHeader(doc, y, showGst = true) {
             doc.setFillColor(55, 55, 55); doc.rect(20, y, 172, 9, 'F');
             doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-            doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 91, y + 6); doc.text('Qty', 109, y + 6); doc.text('Rate', 128, y + 6, { align: 'right' }); doc.text('CGST', 149, y + 6, { align: 'right' }); doc.text('SGST', 170, y + 6, { align: 'right' }); doc.text('Amount', 190, y + 6, { align: 'right' });
+            doc.text('#', 24, y + 6); doc.text('Item & Description', 34, y + 6); doc.text('HSN/SAC', 91, y + 6); doc.text('Qty', 109, y + 6); doc.text('Rate', 128, y + 6, { align: 'right' });
+            if(showGst) {
+                doc.text('CGST', 149, y + 6, { align: 'right' }); doc.text('SGST', 170, y + 6, { align: 'right' });
+            }
+            doc.text('Amount', 190, y + 6, { align: 'right' });
             doc.setTextColor(0); doc.setFont('helvetica', 'normal');
             return y + 16;
         }
 
-        function addInvoiceTable(doc, orderRows, startY = 134) {
+        function addInvoiceTable(doc, orderRows, startY = 134, showGst = true) {
             let y = startY;
-            y = drawInvoiceTableHeader(doc, y);
+            y = drawInvoiceTableHeader(doc, y, showGst);
             orderRows.forEach((row, index) => {
-                if(y > 246) { doc.addPage(); drawInvoicePageFrame(doc); y = drawInvoiceTableHeader(doc, 24); }
+                if(y > 246) { doc.addPage(); drawInvoicePageFrame(doc); y = drawInvoiceTableHeader(doc, 24, showGst); }
                 const itemLines = doc.splitTextToSize(row.name, 48);
                 doc.text(String(index + 1), 24, y);
                 doc.text(itemLines, 34, y);
                 doc.text(row.hsnSac || '-', 91, y);
                 doc.text(formatQuantity(row.qty), 113, y, { align: 'right' });
                 doc.text(formatPdfMoney(row.rate), 128, y, { align: 'right' });
-                doc.text(`${formatPdfMoney(row.cgst)}\n${row.gstPercent / 2}%`, 149, y, { align: 'right' });
-                doc.text(`${formatPdfMoney(row.sgst)}\n${row.gstPercent / 2}%`, 170, y, { align: 'right' });
+                if(showGst) {
+                    doc.text(`${formatPdfMoney(row.cgst)}\n${row.gstPercent / 2}%`, 149, y, { align: 'right' });
+                    doc.text(`${formatPdfMoney(row.sgst)}\n${row.gstPercent / 2}%`, 170, y, { align: 'right' });
+                }
                 doc.text(formatPdfMoney(row.amount), 190, y, { align: 'right' });
                 y += Math.max(12, itemLines.length * 4.5 + 7);
             });
@@ -3799,7 +3809,7 @@
             return `Indian Rupee ${parts.join(' ')} Only`;
         }
 
-        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst }) {
+        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst = true }) {
             if(y > 204) {
                 doc.addPage();
                 drawInvoicePageFrame(doc);
@@ -3808,19 +3818,22 @@
             const subTotalY = y;
             doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
             doc.text('Sub Total', 132, subTotalY, { align: 'right' });
-            doc.text(formatPdfMoney(cgst), 149, subTotalY, { align: 'right' });
-            doc.text(formatPdfMoney(sgst), 170, subTotalY, { align: 'right' });
+            if(showGst) {
+                doc.text(formatPdfMoney(cgst), 149, subTotalY, { align: 'right' });
+                doc.text(formatPdfMoney(sgst), 170, subTotalY, { align: 'right' });
+            }
             doc.text(formatPdfMoney(total), 190, subTotalY, { align: 'right' });
             y += 10; doc.line(20, y - 5, 192, y - 5);
             doc.setFont('helvetica', 'normal');
             const totalGst = cgst + sgst;
-            doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
-            doc.text('Total SGST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(sgst), 190, y, { align: 'right' }); y += 8;
-            doc.text('Total CGST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(cgst), 190, y, { align: 'right' }); y += 8;
-            doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
-            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatPdfMoney(total), 190, y, { align: 'right' }); y += 11;
-            doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
-            doc.text('Balance Due', 156, y, { align: 'right' }); doc.text(formatPdfMoney(due), 190, y, { align: 'right' }); y += 11;
+            if(showGst) {
+                doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
+                doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
+            }
+            doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(`₹ ${formatPdfMoney(total)}`, 190, y, { align: 'right' }); y += 9;
+            doc.setFont('helvetica', 'normal'); doc.text('Payment Received', 156, y, { align: 'right' }); doc.text(`₹ ${formatPdfMoney(paid)}`, 190, y, { align: 'right' }); y += 11;
+            doc.setFont('helvetica', 'bold'); doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
+            doc.text('Balance Due', 156, y, { align: 'right' }); doc.text(`₹ ${formatPdfMoney(due)}`, 190, y, { align: 'right' }); y += 11;
             doc.setFont('helvetica', 'normal'); doc.text('Total In Words:', 134, y, { align: 'right' });
             doc.setFont('helvetica', 'bolditalic'); doc.text(doc.splitTextToSize(amountToWords(total), 42), 140, y);
             doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
@@ -3848,8 +3861,9 @@
             const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
             const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
             drawInvoiceHeader(doc, 'TAX INVOICE', getInvoiceNumber(order), order, due, order.createdAt);
-            const y = addInvoiceTable(doc, rows);
-            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst });
+            const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
+            const y = addInvoiceTable(doc, rows, 134, showGst);
+            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst });
             return doc;
         }
 
@@ -3887,8 +3901,9 @@
             const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
             const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
             drawInvoiceHeader(doc, 'TAX INVOICE', `TOTAL-${phone}`, latest, summary.due, getTodayString());
-            const y = addInvoiceTable(doc, rows);
-            finishInvoicePdf(doc, y, { total: summary.total, paid: summary.paid, due: summary.due, taxable, cgst, sgst });
+            const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
+            const y = addInvoiceTable(doc, rows, 134, showGst);
+            finishInvoicePdf(doc, y, { total: summary.total, paid: summary.paid, due: summary.due, taxable, cgst, sgst, showGst });
             return doc;
         }
 
