@@ -3570,9 +3570,9 @@
                     const splitAddress = doc.splitTextToSize(addrText, boxW - 10);
                     doc.text(splitAddress, startX + 5, nextY);
                     
-                    nextY = nextY + (splitAddress.length * 6);
+                    nextY = nextY + (splitAddress.length * 5);
                     
-                    // Phone number sits directly below the pincode without an extra blank line.
+                    // Phone number sits on the very next line after the pincode without an extra blank line.
                     doc.setFontSize(12);
                     doc.setFont("helvetica", "bold");
                     doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
@@ -3583,15 +3583,11 @@
                     doc.line(startX + 5, toDividerY, startX + boxW - 5, toDividerY);
                     doc.setDrawColor(0);
 
-                    // Footer is anchored just above the label bottom margin with enough breathing room.
-                    const websiteY = startY + boxH - 6;
-                    const sloganY = websiteY - 5;
-                    const logoY = sloganY - 9;
-                    const descY = logoY - 11;
-
                     const logoX = startX + 5;
                     const logoW = 20;
                     const logoH = 13;
+                    const logoY = startY + boxH - logoH - 7;
+                    const descY = toDividerY + 5;
                     if(companySettings.companyLogoImage) {
                         try { doc.addImage(companySettings.companyLogoImage, 'PNG', logoX, logoY, logoW, logoH); } catch(e) { console.warn('Company logo could not be added to label', e); }
                     } else {
@@ -3605,16 +3601,17 @@
                     doc.setFontSize(7);
                     const labelDescription = companySettings.companyDescription || 'Thank you for bringing a taste of island life into your home! LAKFA is more than just a pickle—it is a piece of Lakshadweep coastal heritage.';
                     const descLines = doc.splitTextToSize(labelDescription, boxW - 10);
-                    if(descLines.length) doc.text(descLines.slice(0, 3), startX + 5, descY, { lineHeightFactor: 1.05 });
+                    if(descLines.length) doc.text(descLines, startX + 5, descY, { lineHeightFactor: 1.05 });
 
                     const brandTextX = logoX + logoW + 3;
                     const brandTextWidth = boxW - logoW - 13;
+                    const brandCenterX = brandTextX + (brandTextWidth / 2);
                     doc.setFont("helvetica", "bold");
                     doc.setFontSize(8);
-                    doc.text('Feel the Islands. Follow our wave.', brandTextX, logoY + 5, { maxWidth: brandTextWidth });
+                    doc.text('Feel the Islands. Follow our wave.', brandCenterX, logoY + 5, { align: 'center', maxWidth: brandTextWidth });
                     doc.setFont("helvetica", "normal");
                     doc.setFontSize(8);
-                    doc.text('www.lakfafoods.com', brandTextX, logoY + 11, { maxWidth: brandTextWidth });
+                    doc.text('www.lakfafoods.com', brandCenterX, logoY + 11, { align: 'center', maxWidth: brandTextWidth });
                 });
 
                 doc.save("Lakfa_Shipping_Labels.pdf");
