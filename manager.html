@@ -115,7 +115,7 @@
                 </button>
                 <button onclick="switchTab('repeat')" id="nav-repeat" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m10-4.13a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                    Repeat Customers
+                    Parties
                 </button>
                 <button onclick="switchTab('inventory')" id="nav-inventory" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-purple-700 bg-purple-50 border border-purple-100 hover:bg-purple-100 transition-colors">
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
@@ -926,7 +926,7 @@
             recycle: { title: 'Recycle Bin', statusFilter: 'Recycle Bin', icon: 'trash', color: 'red' },
             returns: { title: 'Return', statusFilter: 'Return', icon: 'return', color: 'orange' },
             cancelled: { title: 'Order Cancelled', statusFilter: 'Order Cancelled', icon: 'cancel', color: 'red' },
-            repeat: { title: 'Repeat Customers', statusFilter: 'Repeat Customers', icon: 'users', color: 'indigo' }
+            repeat: { title: 'Parties', statusFilter: 'Repeat Customers', icon: 'users', color: 'indigo' }
         };
         let companySettings = {
             name: "LAKFA FOODS",
@@ -1552,19 +1552,39 @@
             return order.status === status || (Array.isArray(order.statusHistory) && order.statusHistory.some(entry => entry.status === status));
         }
 
+
+        function getPartyKey(order) {
+            const phone = String(order?.phone || '').trim();
+            if(phone) return `phone:${phone}`;
+            const identity = [order?.name, order?.shopName, order?.address, order?.pincode, order?.gstin]
+                .map(value => String(value || '').trim().toLowerCase())
+                .filter(Boolean)
+                .join('|');
+            return identity ? `party:${identity}` : `order:${order?.id || ''}`;
+        }
+
+        function getPartyDisplayContact(party) {
+            return [party.phone ? `Ph: ${party.phone}` : '', party.pincode ? `PIN: ${party.pincode}` : ''].filter(Boolean).join(' | ') || 'No phone / PIN';
+        }
+
         function getRepeatCustomers() {
             const groups = {};
-            orders.filter(o => !o.isDeleted && o.phone).forEach(order => {
-                const key = String(order.phone).trim();
-                if(!groups[key]) groups[key] = { phone: key, name: String(order.name || '').trim(), address: order.address || '', pincode: order.pincode || '', orders: [] };
+            orders.filter(o => !o.isDeleted).forEach(order => {
+                const key = getPartyKey(order);
+                const orderName = String(order.name || '').trim();
+                if(!groups[key]) groups[key] = { key, phone: String(order.phone || '').trim(), name: orderName, address: order.address || '', pincode: order.pincode || '', orders: [] };
                 groups[key].orders.push(order);
+                if(orderName && !groups[key].name) groups[key].name = orderName;
+                if(order.phone && !groups[key].phone) groups[key].phone = String(order.phone).trim();
+                if(order.address && !groups[key].address) groups[key].address = order.address;
+                if(order.pincode && !groups[key].pincode) groups[key].pincode = order.pincode;
                 const currentDate = normalizeDateInput(order.createdAt);
                 const savedDate = normalizeDateInput(groups[key].latestDate);
                 if(!savedDate || currentDate >= savedDate) {
-                    const orderName = String(order.name || '').trim();
                     if(orderName) groups[key].name = orderName;
                     groups[key].address = order.address || groups[key].address;
                     groups[key].pincode = order.pincode || groups[key].pincode;
+                    groups[key].phone = String(order.phone || '').trim() || groups[key].phone;
                     groups[key].latestDate = order.createdAt;
                 }
             });
@@ -1681,7 +1701,7 @@
             const host = document.getElementById(hostId);
             if(!host) return;
             if(currentOrderStatusFilter === 'Repeat Customers') {
-                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Paid</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
+                host.innerHTML = `<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rank</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Party</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Paid</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Latest Order</th><th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th></tr></thead><tbody id="utility-repeat-list" class="bg-white divide-y divide-gray-200"></tbody></table></div></div>`;
                 renderRepeatCustomers('utility-repeat-list');
                 return;
             }
@@ -1707,7 +1727,7 @@
             updateBulkActions();
             const isUtilityList = targetId === 'utility-repeat-list';
             if(customers.length === 0) {
-                list.innerHTML = `<tr><td colspan="${isUtilityList ? 7 : 8}" class="px-6 py-10 text-center text-gray-500">No customers found</td></tr>`;
+                list.innerHTML = `<tr><td colspan="${isUtilityList ? 7 : 8}" class="px-6 py-10 text-center text-gray-500">No parties found</td></tr>`;
                 return;
             }
             list.innerHTML = customers.map((customer, index) => {
@@ -1716,16 +1736,16 @@
                 <tr class="hover:bg-gray-50 bg-indigo-50/30">
                     <td class="px-6 py-4 whitespace-nowrap"><span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">${index + 1}</span></td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words">${escapeHtml(customer.name || 'Customer')}</div>
+                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words">${escapeHtml(customer.name || 'Party')}</div>
                         <div class="text-sm text-gray-500 max-w-xs truncate">${escapeHtml(customer.address || '-')}</div>
-                        <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
+                        <div class="text-xs text-gray-600 font-bold">${getPartyDisplayContact(customer)}</div>
                     </td>
                     <td class="px-6 py-4"><span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800">${summary.products} Products / ${customer.orders.length} Bills</span></td>
                     <td class="px-6 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(summary.paid)}</td>
                     <td class="px-6 py-4 text-right font-bold ${summary.due > 0 ? 'text-red-700' : 'text-gray-500'} whitespace-nowrap">${formatMoney(summary.due)}</td>
                     <td class="px-6 py-4"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div><div class="text-xs text-gray-500">Total purchase: ${formatMoney(summary.total)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open / Bills</button>
+                        <button onclick="showRepeatCustomerOrders('${encodeURIComponent(customer.key)}')" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-semibold">${getIconSvg('history', 'w-4 h-4 mr-1')} Open / Bills</button>
                     </td>
                 </tr>
             ` : `
@@ -1736,16 +1756,16 @@
                         <div class="text-xs text-indigo-700 font-semibold">${getOrdersProductCount(customer.orders)} products in ${customer.orders.length} orders</div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words">${escapeHtml(customer.name || 'Customer')}</div>
+                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words">${escapeHtml(customer.name || 'Party')}</div>
                         <div class="text-sm text-gray-500 max-w-xs truncate">${escapeHtml(customer.address || '-')}</div>
-                        <div class="text-xs text-gray-600 font-bold">Ph: ${customer.phone} | PIN: ${customer.pincode || '-'}</div>
+                        <div class="text-xs text-gray-600 font-bold">${getPartyDisplayContact(customer)}</div>
                     </td>
-                    <td class="px-6 py-4"><div class="text-sm text-gray-700">Customer order history</div></td>
+                    <td class="px-6 py-4"><div class="text-sm text-gray-700">Party order history</div></td>
                     <td class="px-6 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">${formatMoney(summary.paid)}</td>
                     <td class="px-6 py-4 text-right font-bold ${summary.due > 0 ? 'text-red-700' : 'text-gray-500'} whitespace-nowrap">${formatMoney(summary.due)}</td>
                     <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-bold text-gray-900">${formatDisplayDate(customer.latestDate)}</div><div class="text-xs text-gray-500">Total: ${formatMoney(summary.total)}</div></td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="showRepeatCustomerOrders('${customer.phone}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open / Bills</button>
+                        <button onclick="showRepeatCustomerOrders('${encodeURIComponent(customer.key)}')" class="text-indigo-600 hover:text-indigo-800 font-semibold">Open / Bills</button>
                     </td>
                 </tr>
             `;
@@ -1848,15 +1868,17 @@
             showToast('Customer details filled');
         }
 
-        window.showRepeatCustomerOrders = function(phone) {
+        window.showRepeatCustomerOrders = function(encodedPartyKey) {
+            const partyKey = decodeURIComponent(encodedPartyKey);
             const customerOrders = orders
-                .filter(o => !o.isDeleted && o.phone === phone)
+                .filter(o => !o.isDeleted && getPartyKey(o) === partyKey)
                 .sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
             if(customerOrders.length === 0) return;
             const latest = customerOrders[0];
             const summary = getCustomerFinancialSummary(customerOrders);
-            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || 'Customer'} • ${phone} • ${summary.products} products in ${customerOrders.length} orders • Paid ${formatMoney(summary.paid)} • Balance ${formatMoney(summary.due)}`;
-            document.getElementById('repeat-customer-actions').innerHTML = `<button onclick="previewCustomerStatement('${phone}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Open Total Bill</button><button onclick="downloadCustomerStatement('${phone}')" class="rounded-md bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">Download Total Bill</button><button onclick="prefillCustomerFromRepeat('${phone}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Add New Order</button>`;
+            const partyContact = getPartyDisplayContact({ phone: latest.phone || '', pincode: latest.pincode || '' });
+            document.getElementById('repeat-customer-subtitle').innerText = `${latest.name || latest.shopName || 'Party'} • ${partyContact} • ${summary.products} products in ${customerOrders.length} orders • Paid ${formatMoney(summary.paid)} • Balance ${formatMoney(summary.due)}`;
+            document.getElementById('repeat-customer-actions').innerHTML = `<button onclick="previewCustomerStatement('${encodedPartyKey}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Open Total Bill</button><button onclick="downloadCustomerStatement('${encodedPartyKey}')" class="rounded-md bg-indigo-600 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-700">Download Total Bill</button><button onclick="prefillCustomerFromRepeat('${encodedPartyKey}')" class="rounded-md border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50">Add New Order</button>`;
             document.getElementById('repeat-customer-orders').innerHTML = customerOrders.map(order => {
                 const total = Number(order.orderTotal) || getOrderItemsTotal(order);
                 const paid = getOrderPaidTotal(order);
@@ -1884,8 +1906,9 @@
             document.getElementById('repeat-customer-modal').classList.remove('hidden');
         }
 
-        window.prefillCustomerFromRepeat = function(phone) {
-            const customerOrder = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))[0];
+        window.prefillCustomerFromRepeat = function(encodedPartyKey) {
+            const partyKey = decodeURIComponent(encodedPartyKey);
+            const customerOrder = orders.filter(o => !o.isDeleted && getPartyKey(o) === partyKey).sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)))[0];
             openOrderModal();
             if(customerOrder) fillCustomerDetails(customerOrder.id);
         }
@@ -3889,8 +3912,9 @@
             buildOrderInvoicePdf(order).save(`Lakfa_Invoice_${order.phone || 'customer'}_${normalizeDateInput(order.createdAt)}.pdf`);
         }
 
-        function buildCustomerStatementPdf(phone) {
-            const customerOrders = orders.filter(o => !o.isDeleted && o.phone === phone).sort((a, b) => new Date(normalizeDateInput(a.createdAt)) - new Date(normalizeDateInput(b.createdAt)));
+        function buildCustomerStatementPdf(encodedPartyKey) {
+            const partyKey = decodeURIComponent(encodedPartyKey);
+            const customerOrders = orders.filter(o => !o.isDeleted && getPartyKey(o) === partyKey).sort((a, b) => new Date(normalizeDateInput(a.createdAt)) - new Date(normalizeDateInput(b.createdAt)));
             if(!customerOrders.length) return null;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
@@ -3900,23 +3924,24 @@
             const taxable = rows.reduce((sum, row) => sum + row.taxable, 0);
             const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
             const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
-            drawInvoiceHeader(doc, 'TAX INVOICE', `TOTAL-${phone}`, latest, summary.due, getTodayString());
+            drawInvoiceHeader(doc, 'TAX INVOICE', `TOTAL-${String(partyKey).slice(0, 18).toUpperCase()}`, latest, summary.due, getTodayString());
             const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
             const y = addInvoiceTable(doc, rows, 134, showGst);
             finishInvoicePdf(doc, y, { total: summary.total, paid: summary.paid, due: summary.due, taxable, cgst, sgst, showGst });
             return doc;
         }
 
-        window.previewCustomerStatement = function(phone) {
-            const doc = buildCustomerStatementPdf(phone);
+        window.previewCustomerStatement = function(encodedPartyKey) {
+            const doc = buildCustomerStatementPdf(encodedPartyKey);
             if(!doc) return;
             showInvoicePreview(doc);
         }
 
-        window.downloadCustomerStatement = function(phone) {
-            const doc = buildCustomerStatementPdf(phone);
+        window.downloadCustomerStatement = function(encodedPartyKey) {
+            const doc = buildCustomerStatementPdf(encodedPartyKey);
             if(!doc) return;
-            doc.save(`Lakfa_Total_Bill_${phone}_${getTodayString()}.pdf`);
+            const partyKey = decodeURIComponent(encodedPartyKey).replace(/[^a-z0-9]+/gi, '_').slice(0, 30) || 'party';
+            doc.save(`Lakfa_Total_Bill_${partyKey}_${getTodayString()}.pdf`);
         }
 
         window.closeModal = function(id) { 
