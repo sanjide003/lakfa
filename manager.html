@@ -396,6 +396,7 @@
                                 <div><label class="block text-sm font-medium text-gray-700">Date & Time</label><input id="finance-date" type="datetime-local" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Income Received (₹)</label><input id="finance-income" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Expense Spent (₹)</label><input id="finance-expense" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Account</label><select id="finance-account" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm bg-white"><option value="cash">Cash in Hand</option><option value="bank">Company Bank</option></select></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Note</label><input id="finance-note" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Daily sales and packing expense"></div>
                                 <div class="flex gap-2"><button onclick="saveCompanyDailyAccount()" class="flex-1 rounded-md bg-cyan-600 px-3 py-2 text-sm font-bold text-white hover:bg-cyan-700">Save Account</button><button onclick="resetCompanyDailyAccountForm()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Clear</button></div>
                             </div>
@@ -608,9 +609,11 @@
                             <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">First Payment ₹</label><input type="number" id="order-first-payment" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Round Off ₹</label><input type="number" id="order-round-off" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Discount ₹</label><input type="number" id="order-discount" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">New Payment ₹</label><input type="number" id="order-new-payment" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="When clearing balance"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Date</label><input type="date" id="order-new-payment-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
-                                <div class="sm:col-span-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Note</label><input id="order-new-payment-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Balance cleared by UPI"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment From</label><select id="order-payment-source" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm bg-white"><option value="cash">Cash in Hand</option><option value="bank">Company Bank</option></select></div>
+                                <div class="sm:col-span-3"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Note</label><input id="order-new-payment-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Balance cleared by UPI"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Total Expense ₹</label><input type="number" id="order-expense-total" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Total expense"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Round Off / Discount ₹</label><input type="number" id="order-expense-adjustment" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Use - for discount"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Paid Now ₹</label><input type="number" id="order-new-expense" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Amount paid"></div>
@@ -645,6 +648,7 @@
                 <div><label class="block text-sm font-medium text-gray-700">Date & Time</label><input id="edit-finance-date" type="datetime-local" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Income Received (₹)</label><input id="edit-finance-income" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Expense Spent (₹)</label><input id="edit-finance-expense" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Account</label><select id="edit-finance-account" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm bg-white"><option value="cash">Cash in Hand</option><option value="bank">Company Bank</option></select></div>
                 <div><label class="block text-sm font-medium text-gray-700">Note</label><input id="edit-finance-note" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeModal('finance-edit-modal')" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">Cancel</button><button onclick="saveCompanyDailyAccount(true)" class="rounded-md bg-cyan-600 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-700">Save Changes</button></div>
@@ -1645,6 +1649,8 @@
                         <div class="text-xs font-extrabold uppercase tracking-wide text-purple-700">Promotion</div>
                     </div>` : `
                     <div class="space-y-1 text-xs leading-5">
+                        ${Number(order.discount) ? summaryLine('Discount', order.discount, 'text-purple-600', 'text-purple-700') : ''}
+                        ${Number(order.roundOff) ? summaryLine('Round Off', order.roundOff, 'text-blue-600', 'text-blue-700') : ''}
                         ${summaryLine('Total', itemsAmount, 'text-gray-500', 'text-gray-900')}
                         ${summaryLine('Paid', paidAmount, 'text-emerald-600', 'text-emerald-700')}
                         ${summaryLine('Balance', dueAmount, 'text-red-600', 'text-red-700')}
@@ -1859,6 +1865,7 @@
             window.currentEditingOrderExpenses = Array.isArray(order.orderExpenses) ? [...order.orderExpenses] : [];
             document.getElementById('order-first-payment').value = Number(order.firstPayment) || 0;
             document.getElementById('order-round-off').value = Number(order.roundOff) || 0;
+            document.getElementById('order-discount').value = Number(order.discount) || 0;
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
@@ -1930,6 +1937,7 @@
             window.currentEditingOrderExpenses = [];
             document.getElementById('order-first-payment').value = 0;
             document.getElementById('order-round-off').value = 0;
+            document.getElementById('order-discount').value = 0;
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
@@ -1979,14 +1987,15 @@
             const total = getCurrentOrderItemsTotal();
             const firstPayment = Number(document.getElementById('order-first-payment')?.value) || 0;
             const roundOff = Number(document.getElementById('order-round-off')?.value) || 0;
+            const discount = Number(document.getElementById('order-discount')?.value) || 0;
             const newPayment = Number(document.getElementById('order-new-payment')?.value) || 0;
             const history = existingHistory || (window.currentEditingOrderPaymentHistory || []);
             const historyPaid = history.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-            const payable = Math.max(0, total + roundOff);
+            const payable = Math.max(0, total + roundOff - discount);
             const paid = Math.max(0, firstPayment + historyPaid + newPayment);
             const due = Math.max(0, payable - paid);
             const summary = document.getElementById('order-payment-summary');
-            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Received</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Balance Due</div><div class="font-bold text-red-700">${formatMoney(due)}</div></div>`;
+            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div><div class="text-[11px] text-gray-500">Round: ${formatMoney(roundOff)} • Discount: ${formatMoney(discount)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Received</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Balance Due</div><div class="font-bold text-red-700">${formatMoney(due)}</div></div>`;
             return { total, payable, paid, due, historyPaid };
         }
 
@@ -2002,7 +2011,7 @@
             const paid = alreadyPaid + newPaid;
             const balance = Math.max(0, payable - paid);
             const summary = document.getElementById('order-expense-summary');
-            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Expense Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Expense Paid</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Expense Balance</div><div class="font-bold text-red-700">${formatMoney(balance)}</div></div>`;
+            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Expense Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div><div class="text-[11px] text-gray-500">Adjustment: ${formatMoney(adjustment)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Expense Paid</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Expense Balance</div><div class="font-bold text-red-700">${formatMoney(balance)}</div></div>`;
             return { total, adjustment, payable, paid, balance, alreadyPaid, newPaid };
         }
 
@@ -2115,6 +2124,7 @@
             window.currentEditingOrderExpenses = Array.isArray(order.orderExpenses) ? [...order.orderExpenses] : [];
             document.getElementById('order-first-payment').value = Number(order.firstPayment) || 0;
             document.getElementById('order-round-off').value = Number(order.roundOff) || 0;
+            document.getElementById('order-discount').value = Number(order.discount) || 0;
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
@@ -2149,6 +2159,7 @@
         async function syncOrderCompanyIncome(orderId, orderData, existingAccountId = '') {
             const income = Number(orderData.paidTotal) || 0;
             const accountDate = normalizeDateTimeInput(orderData.updatedAt || orderData.createdAt || getCurrentDateTimeLocal());
+            const paymentSource = (Array.isArray(orderData.paymentHistory) && orderData.paymentHistory.length ? orderData.paymentHistory[orderData.paymentHistory.length - 1]?.paymentSource : '') || orderData.paymentSource || 'cash';
             const note = `Order income: ${orderData.name || 'Customer'} (${orderData.phone || 'No phone'})`;
             const payload = {
                 accountDate,
@@ -2159,6 +2170,7 @@
                 receivableTotal: Number(orderData.orderTotal) || 0,
                 receivableBalance: Number(orderData.balanceDue) || 0,
                 source: 'order',
+                accountType: paymentSource,
                 orderId,
                 updatedAt: getCurrentDateTimeLocal(),
                 updatedBy: authUser?.uid || ''
@@ -2199,7 +2211,8 @@
             const newPaymentAmount = Number(document.getElementById('order-new-payment').value) || 0;
             const newPaymentDate = document.getElementById('order-new-payment-date').value || getTodayString();
             const newPaymentNote = document.getElementById('order-new-payment-note').value.trim();
-            const paymentHistory = newPaymentAmount > 0 ? [...existingPaymentHistory, { amount: newPaymentAmount, date: newPaymentDate, note: newPaymentNote || 'Balance payment', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingPaymentHistory;
+            const paymentSource = document.getElementById('order-payment-source')?.value || 'cash';
+            const paymentHistory = newPaymentAmount > 0 ? [...existingPaymentHistory, { amount: newPaymentAmount, date: newPaymentDate, note: newPaymentNote || 'Balance payment', paymentSource, recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingPaymentHistory;
             const existingOrderExpenses = window.currentEditingOrderExpenses || (Array.isArray(existingOrderForPayment?.orderExpenses) ? existingOrderForPayment.orderExpenses : []);
             const expenseTotal = Number(document.getElementById('order-expense-total')?.value) || 0;
             const expenseAdjustment = Number(document.getElementById('order-expense-adjustment')?.value) || 0;
@@ -2213,8 +2226,10 @@
             if(expensePaidTotal - expensePayable > 0.01) { showToast('Expense paid cannot be greater than expense payable amount', 'error'); return; }
             const firstPayment = Number(document.getElementById('order-first-payment').value) || 0;
             const roundOff = Number(document.getElementById('order-round-off').value) || 0;
+            const discount = Number(document.getElementById('order-discount').value) || 0;
+            if(discount < 0) { showToast('Discount cannot be negative', 'error'); return; }
             const orderItemsTotal = itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal) || 0), 0);
-            const payableTotal = Math.max(0, orderItemsTotal + roundOff);
+            const payableTotal = Math.max(0, orderItemsTotal + roundOff - discount);
             const paidTotal = firstPayment + paymentHistory.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
             const balanceDue = Math.max(0, payableTotal - paidTotal);
             if(paidTotal - payableTotal > 0.01) { showToast('Payment cannot be greater than payable amount', 'error'); return; }
@@ -2234,6 +2249,7 @@
                 orderTotal: payableTotal,
                 itemsTotal: orderItemsTotal,
                 roundOff,
+                discount,
                 firstPayment,
                 paymentHistory,
                 orderExpenses,
@@ -3007,7 +3023,7 @@
                 const balance = income - expense;
                 const isSystem = item.source === 'order' || item.source === 'managerLoanRepayment';
                 const actionHtml = isSystem ? `<span class="inline-flex w-12 flex-col items-center justify-center rounded border border-gray-200 bg-gray-50 p-1 text-[10px] font-bold leading-tight text-gray-500">${getIconSvg('status', 'w-5 h-5 mb-0.5')}<span>Auto</span></span>` : `<div class="flex justify-center gap-1"><button onclick="editCompanyDailyAccount('${item.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded border border-cyan-200 bg-cyan-50 p-1 text-[10px] font-bold leading-tight text-cyan-700 hover:bg-cyan-100">${getIconSvg('edit', 'w-5 h-5 mb-0.5')}<span>Edit</span></button><button onclick="deleteCompanyDailyAccount('${item.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded border border-red-200 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-5 h-5 mb-0.5')}<span>Delete</span></button></div>`;
-                return `<tr><td class="px-3 py-3 text-gray-600"><div class="font-semibold text-gray-900">${escapeHtml(item.note || 'Daily company account')}</div><div class="text-xs text-gray-500 mt-1">${formatDisplayDateTime(item.accountDate || item.createdAt)}</div></td><td class="px-3 py-3 text-right font-bold text-cyan-700 whitespace-nowrap">${formatMoney(income)}</td><td class="px-3 py-3 text-right font-bold ${due > 0 ? 'text-orange-700' : 'text-gray-400'} whitespace-nowrap">${formatMoney(due)}</td><td class="px-3 py-3 text-right font-bold text-red-700 whitespace-nowrap">${formatMoney(expense)}</td><td class="px-3 py-3 text-right font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'} whitespace-nowrap">${formatMoney(balance)}</td><td class="px-3 py-3 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
+                return `<tr><td class="px-3 py-3 text-gray-600"><div class="font-semibold text-gray-900">${escapeHtml(item.note || 'Daily company account')}</div><div class="text-xs text-gray-500 mt-1">${formatDisplayDateTime(item.accountDate || item.createdAt)} • ${(item.accountType || 'cash') === 'bank' ? 'Company Bank' : 'Cash in Hand'}</div></td><td class="px-3 py-3 text-right font-bold text-cyan-700 whitespace-nowrap">${formatMoney(income)}</td><td class="px-3 py-3 text-right font-bold ${due > 0 ? 'text-orange-700' : 'text-gray-400'} whitespace-nowrap">${formatMoney(due)}</td><td class="px-3 py-3 text-right font-bold text-red-700 whitespace-nowrap">${formatMoney(expense)}</td><td class="px-3 py-3 text-right font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'} whitespace-nowrap">${formatMoney(balance)}</td><td class="px-3 py-3 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
             }).join('')}</tbody><tfoot class="bg-gray-50"><tr><td class="px-3 py-3 text-right font-bold text-gray-700">Total</td><td class="px-3 py-3 text-right font-bold text-cyan-800">${formatMoney(totalIncome)}</td><td class="px-3 py-3 text-right font-bold text-orange-800">${formatMoney(totalReceivable)}</td><td class="px-3 py-3 text-right font-bold text-red-800">${formatMoney(totalExpense)}</td><td class="px-3 py-3 text-right font-bold text-emerald-800">${formatMoney(totalIncome - totalExpense)}</td><td></td></tr></tfoot></table></div>`;
         }
 
@@ -3017,6 +3033,7 @@
             document.getElementById('finance-income').value = 0;
             document.getElementById('finance-expense').value = 0;
             document.getElementById('finance-note').value = '';
+            const account = document.getElementById('finance-account'); if(account) account.value = 'cash';
         }
 
         window.editCompanyDailyAccount = function(accountId) {
@@ -3027,6 +3044,7 @@
             document.getElementById('edit-finance-income').value = Number(account.income) || 0;
             document.getElementById('edit-finance-expense').value = Number(account.expense) || 0;
             document.getElementById('edit-finance-note').value = account.note || '';
+            document.getElementById('edit-finance-account').value = account.accountType || 'cash';
             document.getElementById('finance-edit-modal').classList.remove('hidden');
             document.getElementById('edit-finance-income').focus();
         }
@@ -3065,10 +3083,11 @@
             const income = Number(document.getElementById(`${prefix}-income`).value) || 0;
             const expense = Number(document.getElementById(`${prefix}-expense`).value) || 0;
             const note = document.getElementById(`${prefix}-note`).value.trim();
+            const accountType = document.getElementById(`${prefix}-account`)?.value || 'cash';
             if(income < 0 || expense < 0) { showToast('Income and expense cannot be negative', 'error'); return; }
             try {
                 const existingAccount = accountId ? companyDailyAccounts.find(item => item.id === accountId) : null;
-                const payload = { accountDate, income, expense, note, balance: income - expense, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
+                const payload = { accountDate, income, expense, note, accountType, balance: income - expense, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
                 if(accountId) {
                     const companyExpenseId = await syncCompanyDailyExpense(accountId, accountDate, expense, note, existingAccount?.companyExpenseId || '');
                     await updateDoc(doc(db, 'companyDailyAccounts', accountId), { ...payload, companyExpenseId });
@@ -3762,7 +3781,7 @@
                 ['Invoice Date :', formatDisplayDate(invoiceDate)],
                 ['Terms :', 'Custom'],
                 ['Due Date :', formatDisplayDate(invoiceDate)],
-                ['Discount Allowed :', formatPdfMoney(0)]
+                ['Discount Allowed :', formatPdfMoney(Number(customer.discount) || 0)]
             ];
             let y = 101;
             details.forEach(([label, value]) => {
@@ -3848,7 +3867,7 @@
             return `Indian Rupee ${parts.join(' ')} Only`;
         }
 
-        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst = true }) {
+        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst = true, roundOff = 0, discount = 0, itemsTotal = total }) {
             if(y > 204) {
                 doc.addPage();
                 drawInvoicePageFrame(doc);
@@ -3861,7 +3880,7 @@
                 doc.text(formatPdfMoney(cgst), 149, subTotalY, { align: 'right' });
                 doc.text(formatPdfMoney(sgst), 170, subTotalY, { align: 'right' });
             }
-            doc.text(formatPdfMoney(total), 190, subTotalY, { align: 'right' });
+            doc.text(formatPdfMoney(itemsTotal), 190, subTotalY, { align: 'right' });
             y += 10; doc.line(20, y - 5, 192, y - 5);
             doc.setFont('helvetica', 'normal');
             const totalGst = cgst + sgst;
@@ -3869,6 +3888,8 @@
                 doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
                 doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
             }
+            if(discount) { doc.text('Discount', 156, y, { align: 'right' }); doc.text('-' + formatPdfMoney(discount), 190, y, { align: 'right' }); y += 8; }
+            if(roundOff) { doc.text('Round Off', 156, y, { align: 'right' }); doc.text(formatPdfMoney(roundOff), 190, y, { align: 'right' }); y += 8; }
             doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatPdfMoney(total), 190, y, { align: 'right' }); y += 9;
             doc.setFont('helvetica', 'normal'); doc.text('Payment Received', 156, y, { align: 'right' }); doc.text(formatPdfMoney(paid), 190, y, { align: 'right' }); y += 11;
             doc.setFont('helvetica', 'bold'); doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
@@ -3902,7 +3923,7 @@
             drawInvoiceHeader(doc, 'TAX INVOICE', getInvoiceNumber(order), order, due, order.createdAt);
             const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
             const y = addInvoiceTable(doc, rows, 134, showGst);
-            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst });
+            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst, roundOff: Number(order.roundOff) || 0, discount: Number(order.discount) || 0, itemsTotal: getOrderItemsTotal(order) });
             return doc;
         }
 
