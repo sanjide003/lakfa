@@ -222,6 +222,7 @@
                             <button onclick="filterOrdersByStatus('Delivered')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered</button>
                             <button onclick="filterOrdersByStatus('Payment Due')" data-order-filter="Payment Due" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Payment Due</button>
                             <button onclick="filterOrdersByStatus('All')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">All Orders</button>
+                            <button onclick="filterOrdersByStatus('Promotions')" data-order-filter="Promotions" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Promotions</button>
                         </nav>
                         <div id="payment-due-status-filters" class="hidden mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-orange-100 bg-orange-50 p-3">
                             <span class="text-xs font-bold uppercase text-orange-700">Filter Due By Status</span>
@@ -1618,8 +1619,9 @@
                 if(isRecycle ? !o.isDeleted : o.isDeleted) return false;
                 const lifecycleTab = currentOrderStatusFilter === 'Return' || currentOrderStatusFilter === 'Order Cancelled';
                 const isPaymentDue = currentOrderStatusFilter === 'Payment Due';
+                const isPromotions = currentOrderStatusFilter === 'Promotions';
                 const matchesDueStatus = paymentDueStatusFilter === 'All' || o.status === paymentDueStatusFilter;
-                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (isPaymentDue ? ((Number(o.balanceDue) || 0) > 0 && matchesDueStatus) : (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter));
+                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (isPromotions ? orderHasPromotionPrice(o) : (isPaymentDue ? ((Number(o.balanceDue) || 0) > 0 && matchesDueStatus) : (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter)));
                 const matchesSearch = ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search));
                 const orderDate = normalizeDateInput(o.createdAt);
                 const matchesFrom = !fromDate || orderDate >= fromDate;
@@ -4044,7 +4046,7 @@
                 doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
                 doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
             }
-            if(discount) { doc.text('Discount', 156, y, { align: 'right' }); doc.text('-' + formatPdfMoney(discount), 190, y, { align: 'right' }); y += 8; }
+            if(discount) { doc.text('Discount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(discount), 190, y, { align: 'right' }); y += 8; }
             if(roundOff) { doc.text('Round Off', 156, y, { align: 'right' }); doc.text(formatPdfMoney(roundOff), 190, y, { align: 'right' }); y += 8; }
             doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatPdfMoney(total), 190, y, { align: 'right' }); y += 9;
             doc.setFont('helvetica', 'normal'); doc.text('Payment Received', 156, y, { align: 'right' }); doc.text(formatPdfMoney(paid), 190, y, { align: 'right' }); y += 11;
@@ -4112,29 +4114,29 @@
             }
             doc.setDrawColor(180);
             doc.rect(slotX + 4, 5, slotW - 8, pageH - 10);
-            addLogoToPdf(doc, marginX, y0, 12, 32);
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-            doc.text(companySettings.name || 'Lakfa Foods', marginX, y0 + 16);
-            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+            addLogoToPdf(doc, marginX, y0, 13, 26);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+            doc.text(companySettings.name || 'Lakfa Foods', marginX + 30, y0 + 5, { maxWidth: 34 });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.2);
             const companyLines = [...getCompanyAddressLines(), companySettings.gstin ? `GSTIN ${companySettings.gstin}` : '', companySettings.phone ? `Ph: ${companySettings.phone}` : ''].filter(Boolean);
-            doc.text(companyLines.slice(0, 3), marginX, y0 + 20, { lineHeightFactor: 1.05 });
+            doc.text(companyLines.slice(0, 4), marginX + 30, y0 + 11, { lineHeightFactor: 1.08, maxWidth: 64 });
 
-            doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
             doc.text('TAX INVOICE', slotX + slotW - 6, y0 + 4, { align: 'right' });
-            doc.setFontSize(7);
+            doc.setFontSize(6.8);
             doc.text(`# ${getInvoiceNumber(order)}`, slotX + slotW - 6, y0 + 11, { align: 'right' });
             doc.setFont('helvetica', 'normal');
-            doc.text(`Date: ${formatDisplayDate(order.createdAt)}`, slotX + slotW - 6, y0 + 17, { align: 'right' });
-            doc.text(`Balance: ${formatPdfMoney(due)}`, slotX + slotW - 6, y0 + 23, { align: 'right' });
+            doc.text(`Date: ${formatDisplayDate(order.createdAt)}`, slotX + slotW - 6, y0 + 18, { align: 'right' });
+            doc.text(`Balance: ${formatPdfMoney(due)}`, slotX + slotW - 6, y0 + 25, { align: 'right' });
 
-            let y = y0 + 34;
+            let y = y0 + 35;
             doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
             doc.text('Bill To', marginX, y);
             doc.setFont('helvetica', 'normal');
             const bill = [order.name || 'Customer', order.shopName ? `Shop: ${order.shopName}` : '', order.address || '', order.pincode ? `PIN: ${order.pincode}` : '', order.phone ? `Ph: ${order.phone}` : '', order.gstin ? `GSTIN ${order.gstin}` : ''].filter(Boolean).join('\n');
-            doc.text(doc.splitTextToSize(bill, 92).slice(0, 7), marginX, y + 5, { lineHeightFactor: 1.05 });
+            doc.text(doc.splitTextToSize(bill, 92).slice(0, 8), marginX, y + 5, { lineHeightFactor: 1.08 });
 
-            y += 30;
+            y += 34;
             doc.setFillColor(55, 55, 55);
             doc.rect(marginX, y, contentW, 7, 'F');
             doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5);
@@ -4162,17 +4164,22 @@
             doc.setFontSize(7);
             const totalLine = (label, value, bold = false) => { doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.text(label, labelX, y, { align: 'right' }); doc.text(value, totalsX, y, { align: 'right' }); y += 5; };
             totalLine('Sub Total', formatPdfMoney(itemsTotal));
-            if(showGst) totalLine('Taxable / GST', `${formatPdfMoney(taxable)} / ${formatPdfMoney(cgst + sgst)}`);
-            if(discount) totalLine('Discount', '-' + formatPdfMoney(discount));
+            if(showGst) {
+                totalLine('Taxable Amount', formatPdfMoney(taxable));
+                totalLine('CGST', formatPdfMoney(cgst));
+                totalLine('SGST', formatPdfMoney(sgst));
+            }
+            if(discount) totalLine('Discount', formatPdfMoney(discount));
             if(roundOff) totalLine('Round Off', formatPdfMoney(roundOff));
             totalLine('Total', formatPdfMoney(total), true);
             totalLine('Paid', formatPdfMoney(paid));
             totalLine('Balance Due', formatPdfMoney(due), true);
 
+            y += 4;
             doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-            doc.text('Amount in words:', marginX, pageH - 32);
+            doc.text('Amount in words:', marginX, y);
             doc.setFont('helvetica', 'bolditalic');
-            doc.text(doc.splitTextToSize(amountToWords(total), 62).slice(0, 3), marginX + 24, pageH - 32, { lineHeightFactor: 1.05 });
+            doc.text(doc.splitTextToSize(amountToWords(total), 68).slice(0, 3), marginX + 24, y, { lineHeightFactor: 1.05 });
             doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
             doc.text('Thanks for your business.', marginX, pageH - 12);
             if(companySettings.signatureImage) {
