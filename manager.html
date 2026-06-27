@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF for Printing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
@@ -38,7 +38,7 @@
     <!-- ================== LOGIN SCREEN ================== -->
     <div id="login-screen" class="fixed inset-0 bg-gray-100 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-100 text-center">
-            
+
             <!-- Company Logo & Address -->
             <div class="mb-8 flex flex-col items-center">
                 <img src="assets/logo.png" alt="Lakfa Foods Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\' fill=\'%23dc2626\' viewBox=\'0 0 24 24\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg>'" class="w-24 h-24 object-contain mb-4 bg-gray-50 rounded-full p-2 border border-gray-100 shadow-sm">
@@ -69,7 +69,7 @@
 
     <!-- ================== MAIN DASHBOARD APP ================== -->
     <div id="main-app" class="hidden min-h-screen md:h-screen flex md:flex-row overflow-hidden bg-gray-50">
-        
+
         <!-- Mobile Top Bar -->
         <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-red-600 text-white shadow flex items-center px-4">
             <button type="button" onclick="toggleMobileMenu(true)" class="mr-3 inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Open navigation menu">
@@ -162,7 +162,7 @@
             </header>
 
             <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-                
+
                 <!-- 1. DASHBOARD TAB -->
                 <div id="tab-dashboard" class="tab-content fade-in">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -222,6 +222,7 @@
                             <button onclick="filterOrdersByStatus('Delivered')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Delivered</button>
                             <button onclick="filterOrdersByStatus('Payment Due')" data-order-filter="Payment Due" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Payment Due</button>
                             <button onclick="filterOrdersByStatus('All')" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">All Orders</button>
+                            <button onclick="filterOrdersByStatus('Promotions')" data-order-filter="Promotions" class="order-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Promotions</button>
                         </nav>
                         <div id="payment-due-status-filters" class="hidden mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-orange-100 bg-orange-50 p-3">
                             <span class="text-xs font-bold uppercase text-orange-700">Filter Due By Status</span>
@@ -252,8 +253,17 @@
                         </div>
                         <div id="bulk-actions" class="hidden flex items-center space-x-3 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
                             <span class="text-red-700 font-medium text-sm" id="selected-count">0 Selected</span>
+                            <button onclick="previewSelectedLabels()" class="flex items-center px-4 py-2 bg-white border border-red-200 text-red-700 rounded-md text-sm font-medium hover:bg-red-50 shadow-sm">
+                                Open Labels
+                            </button>
                             <button onclick="printSelectedOrders()" class="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 shadow-sm">
-                                Print Selected
+                                Download Labels
+                            </button>
+                            <button onclick="previewSelectedInvoices()" class="flex items-center px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-md text-sm font-medium hover:bg-emerald-50 shadow-sm">
+                                Open Invoices
+                            </button>
+                            <button onclick="printSelectedInvoices()" class="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-medium hover:bg-emerald-700 shadow-sm">
+                                Download Invoices
                             </button>
                         </div>
                     </div>
@@ -396,6 +406,7 @@
                                 <div><label class="block text-sm font-medium text-gray-700">Date & Time</label><input id="finance-date" type="datetime-local" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Income Received (₹)</label><input id="finance-income" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Expense Spent (₹)</label><input id="finance-expense" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Account</label><select id="finance-account" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm bg-white"><option value="cash">Cash in Hand</option><option value="bank">Company Bank</option></select></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Note</label><input id="finance-note" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Daily sales and packing expense"></div>
                                 <div class="flex gap-2"><button onclick="saveCompanyDailyAccount()" class="flex-1 rounded-md bg-cyan-600 px-3 py-2 text-sm font-bold text-white hover:bg-cyan-700">Save Account</button><button onclick="resetCompanyDailyAccountForm()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Clear</button></div>
                             </div>
@@ -589,11 +600,11 @@
                             <label class="block text-sm font-medium text-gray-700">Location Link (Optional)</label>
                             <input type="url" id="order-location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
-                        
+
                         <div class="sm:col-span-2 border-t pt-2 mt-2">
                             <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Order Items</label>
                         </div>
-                        
+
                         <div class="sm:col-span-2" id="order-products-container">
                             <!-- Items added dynamically -->
                         </div>
@@ -608,9 +619,11 @@
                             <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">First Payment ₹</label><input type="number" id="order-first-payment" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Round Off ₹</label><input type="number" id="order-round-off" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Discount ₹</label><input type="number" id="order-discount" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">New Payment ₹</label><input type="number" id="order-new-payment" min="0" step="0.01" oninput="updateOrderPaymentSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="When clearing balance"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Date</label><input type="date" id="order-new-payment-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
-                                <div class="sm:col-span-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Note</label><input id="order-new-payment-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Balance cleared by UPI"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment From</label><select id="order-payment-source" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm bg-white"><option value="cash">Cash in Hand</option><option value="bank">Company Bank</option></select></div>
+                                <div class="sm:col-span-3"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Payment Note</label><input id="order-new-payment-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Balance cleared by UPI"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Total Expense ₹</label><input type="number" id="order-expense-total" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Total expense"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Round Off / Discount ₹</label><input type="number" id="order-expense-adjustment" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Use - for discount"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Paid Now ₹</label><input type="number" id="order-new-expense" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Amount paid"></div>
@@ -645,6 +658,7 @@
                 <div><label class="block text-sm font-medium text-gray-700">Date & Time</label><input id="edit-finance-date" type="datetime-local" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Income Received (₹)</label><input id="edit-finance-income" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Expense Spent (₹)</label><input id="edit-finance-expense" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                <div><label class="block text-sm font-medium text-gray-700">Account</label><select id="edit-finance-account" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm bg-white"><option value="cash">Cash in Hand</option><option value="bank">Company Bank</option></select></div>
                 <div><label class="block text-sm font-medium text-gray-700">Note</label><input id="edit-finance-note" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeModal('finance-edit-modal')" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">Cancel</button><button onclick="saveCompanyDailyAccount(true)" class="rounded-md bg-cyan-600 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-700">Save Changes</button></div>
@@ -954,7 +968,7 @@
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
             document.getElementById('toast-message').innerText = message;
-            
+
             if(type === 'error') {
                 toast.className = "fixed top-4 right-4 z-[100] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform duration-300 bg-red-600";
                 icon.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
@@ -962,7 +976,7 @@
                 toast.className = "fixed top-4 right-4 z-[100] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform duration-300 bg-green-600";
                 icon.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
             }
-            
+
             setTimeout(() => { toast.classList.remove('translate-x-full', 'opacity-0'); }, 10);
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); }, 3000);
         };
@@ -1150,7 +1164,7 @@
             if(pushHistory) pushAppHistory(tabId, orderFilter);
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tab-' + tabId).classList.remove('hidden');
-            
+
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('bg-red-50', 'text-red-700', 'ring-2', 'ring-red-200', 'shadow-sm');
                 el.classList.add('text-gray-600');
@@ -1316,7 +1330,7 @@
 
                 if (!ordersByMonth[monthKey]) { ordersByMonth[monthKey] = { total: 0, days: {} }; }
                 ordersByMonth[monthKey].total += productCount;
-                
+
                 if (!ordersByMonth[monthKey].days[dayStr]) { ordersByMonth[monthKey].days[dayStr] = 0; }
                 ordersByMonth[monthKey].days[dayStr] += productCount;
             });
@@ -1350,10 +1364,10 @@
 
             const sortedMonths = Object.keys(ordersByMonth).sort((a, b) => new Date(b) - new Date(a));
             let accordionHTML = '';
-            
+
             sortedMonths.forEach((month, index) => {
                 const data = ordersByMonth[month];
-                const isCurrent = month === currentMonthKey || (index === 0 && !ordersByMonth[currentMonthKey]); 
+                const isCurrent = month === currentMonthKey || (index === 0 && !ordersByMonth[currentMonthKey]);
                 const monthId = month.replace(/\s+/g, '-');
                 let daysHTML = '';
                 const sortedDays = Object.keys(data.days).sort((a, b) => {
@@ -1395,7 +1409,7 @@
                 const ordered = product.ordered || 0;
                 const balance = (Number(product.initialStock) || 0) + added - ordered;
                 const isLow = balance < 5;
-                
+
                 stockHTML += `
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900 flex justify-between items-center">
@@ -1605,8 +1619,9 @@
                 if(isRecycle ? !o.isDeleted : o.isDeleted) return false;
                 const lifecycleTab = currentOrderStatusFilter === 'Return' || currentOrderStatusFilter === 'Order Cancelled';
                 const isPaymentDue = currentOrderStatusFilter === 'Payment Due';
+                const isPromotions = currentOrderStatusFilter === 'Promotions';
                 const matchesDueStatus = paymentDueStatusFilter === 'All' || o.status === paymentDueStatusFilter;
-                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (isPaymentDue ? ((Number(o.balanceDue) || 0) > 0 && matchesDueStatus) : (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter));
+                const matchesStatus = currentOrderStatusFilter === 'All' || isRecycle || (isPromotions ? orderHasPromotionPrice(o) : (isPaymentDue ? ((Number(o.balanceDue) || 0) > 0 && matchesDueStatus) : (lifecycleTab ? orderPassedThroughStatus(o, currentOrderStatusFilter) : o.status === currentOrderStatusFilter)));
                 const matchesSearch = ((o.name || '').toLowerCase().includes(search) || (o.phone || '').includes(search));
                 const orderDate = normalizeDateInput(o.createdAt);
                 const matchesFrom = !fromDate || orderDate >= fromDate;
@@ -1645,6 +1660,8 @@
                         <div class="text-xs font-extrabold uppercase tracking-wide text-purple-700">Promotion</div>
                     </div>` : `
                     <div class="space-y-1 text-xs leading-5">
+                        ${Number(order.discount) ? summaryLine('Discount', order.discount, 'text-purple-600', 'text-purple-700') : ''}
+                        ${Number(order.roundOff) ? summaryLine('Round Off', order.roundOff, 'text-blue-600', 'text-blue-700') : ''}
                         ${summaryLine('Total', itemsAmount, 'text-gray-500', 'text-gray-900')}
                         ${summaryLine('Paid', paidAmount, 'text-emerald-600', 'text-emerald-700')}
                         ${summaryLine('Balance', dueAmount, 'text-red-600', 'text-red-700')}
@@ -1656,7 +1673,10 @@
                             </div>
                 ` : `
                             <div class="flex items-center justify-end gap-1">
-                                <button onclick="printSingleOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100" title="Print Order">${getIconSvg('printer', 'w-5 h-5 mb-0.5')}<span>Print</span></button>
+                                <button onclick="previewSingleOrderLabel('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-white p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-50" title="Open delivery label">${getIconSvg('eye', 'w-5 h-5 mb-0.5')}<span>Label</span></button>
+                                <button onclick="printSingleOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100" title="Download delivery label">${getIconSvg('printer', 'w-5 h-5 mb-0.5')}<span>Label</span></button>
+                                <button onclick="previewOrderA5Invoice('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-emerald-100 bg-white p-1 text-[10px] font-bold leading-tight text-emerald-700 hover:bg-emerald-50" title="Open invoice">${getIconSvg('eye', 'w-5 h-5 mb-0.5')}<span>Bill</span></button>
+                                <button onclick="printOrderInvoice('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 p-1 text-[10px] font-bold leading-tight text-emerald-700 hover:bg-emerald-100" title="Download invoice">${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Bill</span></button>
                                 <button onclick="openStatusModal('${order.id}', '${order.status}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-blue-100 bg-blue-50 p-1 text-[10px] font-bold leading-tight text-blue-700 hover:bg-blue-100" title="Update product status">${getIconSvg('truck','w-5 h-5 mb-0.5')}<span>Update</span></button>
                                 <button onclick="openOrderPaymentUpdate('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-orange-100 bg-orange-50 p-1 text-[10px] font-bold leading-tight text-orange-700 hover:bg-orange-100" title="Edit payment">${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Payment</span></button>
                                 <button onclick="deleteOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-200 bg-white p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-50" title="Delete Order">${getIconSvg('trash','w-5 h-5 mb-0.5')}<span>Delete</span></button>
@@ -1859,6 +1879,7 @@
             window.currentEditingOrderExpenses = Array.isArray(order.orderExpenses) ? [...order.orderExpenses] : [];
             document.getElementById('order-first-payment').value = Number(order.firstPayment) || 0;
             document.getElementById('order-round-off').value = Number(order.roundOff) || 0;
+            document.getElementById('order-discount').value = Number(order.discount) || 0;
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
@@ -1930,6 +1951,7 @@
             window.currentEditingOrderExpenses = [];
             document.getElementById('order-first-payment').value = 0;
             document.getElementById('order-round-off').value = 0;
+            document.getElementById('order-discount').value = 0;
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
@@ -1979,14 +2001,15 @@
             const total = getCurrentOrderItemsTotal();
             const firstPayment = Number(document.getElementById('order-first-payment')?.value) || 0;
             const roundOff = Number(document.getElementById('order-round-off')?.value) || 0;
+            const discount = Number(document.getElementById('order-discount')?.value) || 0;
             const newPayment = Number(document.getElementById('order-new-payment')?.value) || 0;
             const history = existingHistory || (window.currentEditingOrderPaymentHistory || []);
             const historyPaid = history.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-            const payable = Math.max(0, total + roundOff);
+            const payable = Math.max(0, total + roundOff - discount);
             const paid = Math.max(0, firstPayment + historyPaid + newPayment);
             const due = Math.max(0, payable - paid);
             const summary = document.getElementById('order-payment-summary');
-            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Received</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Balance Due</div><div class="font-bold text-red-700">${formatMoney(due)}</div></div>`;
+            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div><div class="text-[11px] text-gray-500">Round: ${formatMoney(roundOff)} • Discount: ${formatMoney(discount)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Received</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Balance Due</div><div class="font-bold text-red-700">${formatMoney(due)}</div></div>`;
             return { total, payable, paid, due, historyPaid };
         }
 
@@ -2002,7 +2025,7 @@
             const paid = alreadyPaid + newPaid;
             const balance = Math.max(0, payable - paid);
             const summary = document.getElementById('order-expense-summary');
-            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Expense Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Expense Paid</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Expense Balance</div><div class="font-bold text-red-700">${formatMoney(balance)}</div></div>`;
+            if(summary) summary.innerHTML = `<div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-gray-500">Expense Payable</div><div class="font-bold text-gray-900">${formatMoney(payable)}</div><div class="text-[11px] text-gray-500">Adjustment: ${formatMoney(adjustment)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-emerald-500">Expense Paid</div><div class="font-bold text-emerald-700">${formatMoney(paid)}</div></div><div class="rounded bg-white p-3"><div class="text-xs font-bold uppercase text-red-500">Expense Balance</div><div class="font-bold text-red-700">${formatMoney(balance)}</div></div>`;
             return { total, adjustment, payable, paid, balance, alreadyPaid, newPaid };
         }
 
@@ -2101,7 +2124,7 @@
             if(!skipConfirm && !(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('order-id').value = order.id;
             document.getElementById('order-modal-title').innerText = 'Edit Order';
-            document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); 
+            document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-');
             document.getElementById('order-status').value = order.status;
             document.getElementById('order-name').value = order.name;
             document.getElementById('order-phone').value = order.phone;
@@ -2115,6 +2138,7 @@
             window.currentEditingOrderExpenses = Array.isArray(order.orderExpenses) ? [...order.orderExpenses] : [];
             document.getElementById('order-first-payment').value = Number(order.firstPayment) || 0;
             document.getElementById('order-round-off').value = Number(order.roundOff) || 0;
+            document.getElementById('order-discount').value = Number(order.discount) || 0;
             document.getElementById('order-new-payment').value = '';
             document.getElementById('order-new-payment-date').value = getTodayString();
             document.getElementById('order-new-payment-note').value = '';
@@ -2125,7 +2149,7 @@
             document.getElementById('order-new-expense-note').value = '';
             updateOrderExpenseSummary(order);
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
-            
+
             document.getElementById('order-products-container').innerHTML = '';
             if(order.itemsObj && order.itemsObj.length > 0) {
                 order.itemsObj.forEach(item => addOrderProductRow(item.productId, item.qty, item.priceType || 'includingGst', item.unitPrice ?? item.price));
@@ -2149,6 +2173,7 @@
         async function syncOrderCompanyIncome(orderId, orderData, existingAccountId = '') {
             const income = Number(orderData.paidTotal) || 0;
             const accountDate = normalizeDateTimeInput(orderData.updatedAt || orderData.createdAt || getCurrentDateTimeLocal());
+            const paymentSource = (Array.isArray(orderData.paymentHistory) && orderData.paymentHistory.length ? orderData.paymentHistory[orderData.paymentHistory.length - 1]?.paymentSource : '') || orderData.paymentSource || 'cash';
             const note = `Order income: ${orderData.name || 'Customer'} (${orderData.phone || 'No phone'})`;
             const payload = {
                 accountDate,
@@ -2159,6 +2184,7 @@
                 receivableTotal: Number(orderData.orderTotal) || 0,
                 receivableBalance: Number(orderData.balanceDue) || 0,
                 source: 'order',
+                accountType: paymentSource,
                 orderId,
                 updatedAt: getCurrentDateTimeLocal(),
                 updatedBy: authUser?.uid || ''
@@ -2174,14 +2200,14 @@
         window.saveOrder = async function() {
             const id = document.getElementById('order-id').value;
             const dateStr = document.getElementById('order-date').value;
-            
+
             const selects = document.querySelectorAll('.order-product-select');
             const qtys = document.querySelectorAll('.order-product-qty');
             const priceTypes = document.querySelectorAll('.order-price-type');
             const prices = document.querySelectorAll('.order-product-price');
             let itemsObj = [];
             let isValid = true;
-            
+
             selects.forEach((select, index) => {
                 if(select.value) {
                     const qty = parseInt(qtys[index].value) || 1;
@@ -2199,7 +2225,8 @@
             const newPaymentAmount = Number(document.getElementById('order-new-payment').value) || 0;
             const newPaymentDate = document.getElementById('order-new-payment-date').value || getTodayString();
             const newPaymentNote = document.getElementById('order-new-payment-note').value.trim();
-            const paymentHistory = newPaymentAmount > 0 ? [...existingPaymentHistory, { amount: newPaymentAmount, date: newPaymentDate, note: newPaymentNote || 'Balance payment', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingPaymentHistory;
+            const paymentSource = document.getElementById('order-payment-source')?.value || 'cash';
+            const paymentHistory = newPaymentAmount > 0 ? [...existingPaymentHistory, { amount: newPaymentAmount, date: newPaymentDate, note: newPaymentNote || 'Balance payment', paymentSource, recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingPaymentHistory;
             const existingOrderExpenses = window.currentEditingOrderExpenses || (Array.isArray(existingOrderForPayment?.orderExpenses) ? existingOrderForPayment.orderExpenses : []);
             const expenseTotal = Number(document.getElementById('order-expense-total')?.value) || 0;
             const expenseAdjustment = Number(document.getElementById('order-expense-adjustment')?.value) || 0;
@@ -2213,8 +2240,10 @@
             if(expensePaidTotal - expensePayable > 0.01) { showToast('Expense paid cannot be greater than expense payable amount', 'error'); return; }
             const firstPayment = Number(document.getElementById('order-first-payment').value) || 0;
             const roundOff = Number(document.getElementById('order-round-off').value) || 0;
+            const discount = Number(document.getElementById('order-discount').value) || 0;
+            if(discount < 0) { showToast('Discount cannot be negative', 'error'); return; }
             const orderItemsTotal = itemsObj.reduce((sum, item) => sum + (Number(item.lineTotal) || 0), 0);
-            const payableTotal = Math.max(0, orderItemsTotal + roundOff);
+            const payableTotal = Math.max(0, orderItemsTotal + roundOff - discount);
             const paidTotal = firstPayment + paymentHistory.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
             const balanceDue = Math.max(0, payableTotal - paidTotal);
             if(paidTotal - payableTotal > 0.01) { showToast('Payment cannot be greater than payable amount', 'error'); return; }
@@ -2234,6 +2263,7 @@
                 orderTotal: payableTotal,
                 itemsTotal: orderItemsTotal,
                 roundOff,
+                discount,
                 firstPayment,
                 paymentHistory,
                 orderExpenses,
@@ -2368,7 +2398,7 @@
                                 <button onclick="deleteProduct('${p.id}')" class="text-red-400 hover:text-red-700 bg-white p-1.5 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                             </div>
                         </div>
-                        
+
                         <div class="p-6 flex-1 flex flex-col justify-center">
                             <div class="grid grid-cols-3 gap-2 text-center cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors border border-transparent hover:border-gray-200" onclick="showHistoryModal('${p.id}')" title="Click to view Stock History">
                                 <div><div class="text-xs text-gray-500 font-medium">Added</div><div class="text-lg font-bold text-gray-800">${totalAdded}</div></div>
@@ -2376,7 +2406,7 @@
                                 <div><div class="text-xs text-gray-500 font-medium">Balance</div><div class="text-lg font-bold ${balance < 5 ? 'text-red-600' : 'text-green-600'}">${balance}</div></div>
                             </div>
                         </div>
-                        
+
                         <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-center">
                             <button onclick="openStockModal('${p.id}', '${p.name}')" class="text-green-600 text-sm font-bold flex items-center justify-center w-full hover:text-green-800">
                                 <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg> Add Stock
@@ -2460,7 +2490,7 @@
             document.getElementById('stock-product-id').value = id;
             document.getElementById('stock-history-index').value = historyIndex;
             document.getElementById('stock-product-name').innerText = `Item: ${name}`;
-            
+
             if (historyIndex > -1) {
                 const p = products.find(x => x.id === id);
                 const item = p.stockHistory[historyIndex];
@@ -2482,7 +2512,7 @@
             const qty = parseFloat(document.getElementById('stock-add-qty').value) || 0;
             const date = document.getElementById('stock-add-date').value;
             const p = products.find(x => x.id === id);
-            
+
             try {
                 let history = [...(p.stockHistory || [])];
                 if (index > -1) {
@@ -3007,7 +3037,7 @@
                 const balance = income - expense;
                 const isSystem = item.source === 'order' || item.source === 'managerLoanRepayment';
                 const actionHtml = isSystem ? `<span class="inline-flex w-12 flex-col items-center justify-center rounded border border-gray-200 bg-gray-50 p-1 text-[10px] font-bold leading-tight text-gray-500">${getIconSvg('status', 'w-5 h-5 mb-0.5')}<span>Auto</span></span>` : `<div class="flex justify-center gap-1"><button onclick="editCompanyDailyAccount('${item.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded border border-cyan-200 bg-cyan-50 p-1 text-[10px] font-bold leading-tight text-cyan-700 hover:bg-cyan-100">${getIconSvg('edit', 'w-5 h-5 mb-0.5')}<span>Edit</span></button><button onclick="deleteCompanyDailyAccount('${item.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded border border-red-200 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-5 h-5 mb-0.5')}<span>Delete</span></button></div>`;
-                return `<tr><td class="px-3 py-3 text-gray-600"><div class="font-semibold text-gray-900">${escapeHtml(item.note || 'Daily company account')}</div><div class="text-xs text-gray-500 mt-1">${formatDisplayDateTime(item.accountDate || item.createdAt)}</div></td><td class="px-3 py-3 text-right font-bold text-cyan-700 whitespace-nowrap">${formatMoney(income)}</td><td class="px-3 py-3 text-right font-bold ${due > 0 ? 'text-orange-700' : 'text-gray-400'} whitespace-nowrap">${formatMoney(due)}</td><td class="px-3 py-3 text-right font-bold text-red-700 whitespace-nowrap">${formatMoney(expense)}</td><td class="px-3 py-3 text-right font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'} whitespace-nowrap">${formatMoney(balance)}</td><td class="px-3 py-3 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
+                return `<tr><td class="px-3 py-3 text-gray-600"><div class="font-semibold text-gray-900">${escapeHtml(item.note || 'Daily company account')}</div><div class="text-xs text-gray-500 mt-1">${formatDisplayDateTime(item.accountDate || item.createdAt)} • ${(item.accountType || 'cash') === 'bank' ? 'Company Bank' : 'Cash in Hand'}</div></td><td class="px-3 py-3 text-right font-bold text-cyan-700 whitespace-nowrap">${formatMoney(income)}</td><td class="px-3 py-3 text-right font-bold ${due > 0 ? 'text-orange-700' : 'text-gray-400'} whitespace-nowrap">${formatMoney(due)}</td><td class="px-3 py-3 text-right font-bold text-red-700 whitespace-nowrap">${formatMoney(expense)}</td><td class="px-3 py-3 text-right font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'} whitespace-nowrap">${formatMoney(balance)}</td><td class="px-3 py-3 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
             }).join('')}</tbody><tfoot class="bg-gray-50"><tr><td class="px-3 py-3 text-right font-bold text-gray-700">Total</td><td class="px-3 py-3 text-right font-bold text-cyan-800">${formatMoney(totalIncome)}</td><td class="px-3 py-3 text-right font-bold text-orange-800">${formatMoney(totalReceivable)}</td><td class="px-3 py-3 text-right font-bold text-red-800">${formatMoney(totalExpense)}</td><td class="px-3 py-3 text-right font-bold text-emerald-800">${formatMoney(totalIncome - totalExpense)}</td><td></td></tr></tfoot></table></div>`;
         }
 
@@ -3017,6 +3047,7 @@
             document.getElementById('finance-income').value = 0;
             document.getElementById('finance-expense').value = 0;
             document.getElementById('finance-note').value = '';
+            const account = document.getElementById('finance-account'); if(account) account.value = 'cash';
         }
 
         window.editCompanyDailyAccount = function(accountId) {
@@ -3027,6 +3058,7 @@
             document.getElementById('edit-finance-income').value = Number(account.income) || 0;
             document.getElementById('edit-finance-expense').value = Number(account.expense) || 0;
             document.getElementById('edit-finance-note').value = account.note || '';
+            document.getElementById('edit-finance-account').value = account.accountType || 'cash';
             document.getElementById('finance-edit-modal').classList.remove('hidden');
             document.getElementById('edit-finance-income').focus();
         }
@@ -3065,10 +3097,11 @@
             const income = Number(document.getElementById(`${prefix}-income`).value) || 0;
             const expense = Number(document.getElementById(`${prefix}-expense`).value) || 0;
             const note = document.getElementById(`${prefix}-note`).value.trim();
+            const accountType = document.getElementById(`${prefix}-account`)?.value || 'cash';
             if(income < 0 || expense < 0) { showToast('Income and expense cannot be negative', 'error'); return; }
             try {
                 const existingAccount = accountId ? companyDailyAccounts.find(item => item.id === accountId) : null;
-                const payload = { accountDate, income, expense, note, balance: income - expense, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
+                const payload = { accountDate, income, expense, note, accountType, balance: income - expense, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
                 if(accountId) {
                     const companyExpenseId = await syncCompanyDailyExpense(accountId, accountDate, expense, note, existingAccount?.companyExpenseId || '');
                     await updateDoc(doc(db, 'companyDailyAccounts', accountId), { ...payload, companyExpenseId });
@@ -3514,6 +3547,150 @@
         }
 
         // ================= PDF PRINTING (Updated Sizes) =================
+
+        function buildShippingLabelsPdf(ordersToPrint) {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const pgW = 210; const pgH = 297;
+
+                ordersToPrint.forEach((order, index) => {
+                    if (index > 0 && index % 4 === 0) doc.addPage();
+
+                    const posIndex = index % 4;
+                    const isLeft = posIndex === 0 || posIndex === 2;
+                    const isTop = posIndex === 0 || posIndex === 1;
+
+                    const startX = isLeft ? 10 : (pgW / 2) + 5;
+                    const startY = isTop ? 10 : (pgH / 2) + 5;
+                    const boxW = (pgW / 2) - 15;
+                    const boxH = (pgH / 2) - 15;
+
+                    // Draw Cross Cutting Lines once per page
+                    if (posIndex === 0) {
+                        doc.setDrawColor(200); doc.setLineDashPattern([2, 2], 0);
+                        doc.line(pgW / 2, 5, pgW / 2, pgH - 5);
+                        doc.line(5, pgH / 2, pgW - 5, pgH / 2);
+                        doc.setLineDashPattern([], 0); doc.setDrawColor(0);
+                    }
+
+                    // Label Border Margin
+                    doc.setLineWidth(0.3);
+                    doc.rect(startX, startY, boxW, boxH);
+
+                    // --- TO SECTION ---
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("To:", startX + 5, startY + 10);
+
+                    const landmark = String(order.landmark || '').trim();
+                    let nextY = startY + 18;
+                    if(landmark) {
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        const splitLandmark = doc.splitTextToSize(landmark, boxW - 10);
+                        doc.text(splitLandmark, startX + 5, nextY);
+                        nextY += splitLandmark.length * 6;
+
+                        doc.setFontSize(12);
+                        doc.setFont("helvetica", "normal");
+                        const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                        doc.text(splitName, startX + 5, nextY);
+                        nextY += splitName.length * 5;
+                    } else {
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                        doc.text(splitName, startX + 5, nextY);
+                        nextY += splitName.length * 6;
+                    }
+
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+                    const customerExtra = [order.shopName ? `Shop: ${order.shopName}` : '', order.gstin ? `GSTIN: ${order.gstin}` : ''].filter(Boolean).join('\n');
+                    const addrText = `${customerExtra ? customerExtra + '\n' : ''}${order.address || ""}\nPIN: ${order.pincode || ""}`;
+                    const splitAddress = doc.splitTextToSize(addrText, boxW - 10);
+                    doc.text(splitAddress, startX + 5, nextY);
+
+                    nextY = nextY + (splitAddress.length * 5);
+
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
+
+                    const toDividerY = nextY + 5;
+                    doc.setDrawColor(150);
+                    doc.line(startX + 5, toDividerY, startX + boxW - 5, toDividerY);
+                    doc.setDrawColor(0);
+
+                    // --- FROM SECTION ---
+                    const fromStartY = toDividerY + 8;
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("From:", startX + 5, fromStartY);
+
+                    doc.setFontSize(14);
+                    doc.text(companySettings.name || 'Lakfa Foods', startX + 5, fromStartY + 8);
+                    doc.setFontSize(12);
+                    doc.text(`Ph: ${companySettings.phone || ''}`, startX + 5, fromStartY + 15);
+
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "normal");
+                    const fromAddress = doc.splitTextToSize(getCompanyAddressLines().join('\n'), boxW - 10);
+                    doc.text(fromAddress, startX + 5, fromStartY + 22);
+                    const fromEndY = fromStartY + 22 + (fromAddress.length * 5);
+
+                    const fromDividerY = fromEndY + 3;
+                    doc.setDrawColor(150);
+                    doc.line(startX + 5, fromDividerY, startX + boxW - 5, fromDividerY);
+                    doc.setDrawColor(0);
+
+                    const logoX = startX + 5;
+                    const logoW = 20;
+                    const logoH = 13;
+                    const logoY = startY + boxH - logoH - 7;
+                    const descY = fromDividerY + 5;
+                    if(companySettings.companyLogoImage) {
+                        try { doc.addImage(companySettings.companyLogoImage, 'PNG', logoX, logoY, logoW, logoH); } catch(e) { console.warn('Company logo could not be added to label', e); }
+                    } else {
+                        try {
+                            const defaultLogo = document.querySelector('img[src="assets/logo.png"]');
+                            if(defaultLogo?.complete) doc.addImage(defaultLogo, 'PNG', logoX, logoY, logoW, logoH);
+                        } catch(e) { console.warn('Default logo could not be added to label', e); }
+                    }
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(7);
+                    const labelDescription = companySettings.companyDescription || 'Thank you for bringing a taste of island life into your home! LAKFA is more than just a pickle—it is a piece of Lakshadweep coastal heritage.';
+                    const descLines = doc.splitTextToSize(labelDescription, boxW - 10);
+                    if(descLines.length) doc.text(descLines, startX + 5, descY, { lineHeightFactor: 1.05 });
+
+                    const brandTextX = logoX + logoW + 3;
+                    const brandTextWidth = boxW - logoW - 13;
+                    const brandCenterX = brandTextX + (brandTextWidth / 2);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(8);
+                    doc.text('Feel the Islands. Follow our wave.', brandCenterX, logoY + 5, { align: 'center', maxWidth: brandTextWidth });
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(8);
+                    doc.text('www.lakfafoods.com', brandCenterX, logoY + 11, { align: 'center', maxWidth: brandTextWidth });
+                });
+
+
+                return doc;
+        }
+
+        window.previewSingleOrderLabel = function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            showInvoicePreview(buildShippingLabelsPdf([order]));
+        }
+
+        window.previewSelectedLabels = function() {
+            if(selectedOrders.size === 0) return;
+            const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
+            showInvoicePreview(buildShippingLabelsPdf(ordersToPrint));
+        }
+
         window.printSingleOrder = async function(id) {
             const previousSelection = new Set(selectedOrders);
             selectedOrders = new Set([id]);
@@ -3526,19 +3703,19 @@
             if (selectedOrders.size === 0) return;
             if(!(await showConfirm({ title: 'Print Selected Orders?', message: `Generate shipping labels for ${selectedOrders.size} selected order(s)?`, confirmText: 'Print Labels', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
-            
+
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 const pgW = 210; const pgH = 297;
-                
+
                 ordersToPrint.forEach((order, index) => {
                     if (index > 0 && index % 4 === 0) doc.addPage();
-                    
+
                     const posIndex = index % 4;
                     const isLeft = posIndex === 0 || posIndex === 2;
                     const isTop = posIndex === 0 || posIndex === 1;
-                    
+
                     const startX = isLeft ? 10 : (pgW / 2) + 5;
                     const startY = isTop ? 10 : (pgH / 2) + 5;
                     const boxW = (pgW / 2) - 15;
@@ -3762,7 +3939,7 @@
                 ['Invoice Date :', formatDisplayDate(invoiceDate)],
                 ['Terms :', 'Custom'],
                 ['Due Date :', formatDisplayDate(invoiceDate)],
-                ['Discount Allowed :', formatPdfMoney(0)]
+                ['Discount Allowed :', formatPdfMoney(Number(customer.discount) || 0)]
             ];
             let y = 101;
             details.forEach(([label, value]) => {
@@ -3848,7 +4025,7 @@
             return `Indian Rupee ${parts.join(' ')} Only`;
         }
 
-        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst = true }) {
+        function finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst = true, roundOff = 0, discount = 0, itemsTotal = total }) {
             if(y > 204) {
                 doc.addPage();
                 drawInvoicePageFrame(doc);
@@ -3861,7 +4038,7 @@
                 doc.text(formatPdfMoney(cgst), 149, subTotalY, { align: 'right' });
                 doc.text(formatPdfMoney(sgst), 170, subTotalY, { align: 'right' });
             }
-            doc.text(formatPdfMoney(total), 190, subTotalY, { align: 'right' });
+            doc.text(formatPdfMoney(itemsTotal), 190, subTotalY, { align: 'right' });
             y += 10; doc.line(20, y - 5, 192, y - 5);
             doc.setFont('helvetica', 'normal');
             const totalGst = cgst + sgst;
@@ -3869,6 +4046,8 @@
                 doc.text('Total Taxable Amount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(taxable), 190, y, { align: 'right' }); y += 8;
                 doc.text('Total GST', 156, y, { align: 'right' }); doc.text(formatPdfMoney(totalGst), 190, y, { align: 'right' }); y += 9;
             }
+            if(discount) { doc.text('Discount', 156, y, { align: 'right' }); doc.text(formatPdfMoney(discount), 190, y, { align: 'right' }); y += 8; }
+            if(roundOff) { doc.text('Round Off', 156, y, { align: 'right' }); doc.text(formatPdfMoney(roundOff), 190, y, { align: 'right' }); y += 8; }
             doc.setFont('helvetica', 'bold'); doc.text('Total', 156, y, { align: 'right' }); doc.text(formatPdfMoney(total), 190, y, { align: 'right' }); y += 9;
             doc.setFont('helvetica', 'normal'); doc.text('Payment Received', 156, y, { align: 'right' }); doc.text(formatPdfMoney(paid), 190, y, { align: 'right' }); y += 11;
             doc.setFont('helvetica', 'bold'); doc.setFillColor(245, 245, 245); doc.rect(106, y - 7, 86, 10, 'F');
@@ -3902,8 +4081,157 @@
             drawInvoiceHeader(doc, 'TAX INVOICE', getInvoiceNumber(order), order, due, order.createdAt);
             const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
             const y = addInvoiceTable(doc, rows, 134, showGst);
-            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst });
+            finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst, roundOff: Number(order.roundOff) || 0, discount: Number(order.discount) || 0, itemsTotal: getOrderItemsTotal(order) });
             return doc;
+        }
+
+
+        function drawA5InvoiceSlot(doc, order, slotIndex = 0) {
+            const pageW = 210;
+            const pageH = 297;
+            const slotW = pageW / 2;
+            const slotX = slotIndex === 0 ? 0 : slotW;
+            const top = 0;
+            const marginX = slotX + 6;
+            const y0 = 8;
+            const contentW = slotW - 12;
+            const rows = getOrderInvoiceRows(order);
+            const itemsTotal = getOrderItemsTotal(order);
+            const roundOff = Number(order.roundOff) || 0;
+            const discount = Number(order.discount) || 0;
+            const total = Number(order.orderTotal) || itemsTotal;
+            const paid = getOrderPaidTotal(order);
+            const due = getOrderBalanceDue(order);
+            const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
+            const taxable = rows.reduce((sum, row) => sum + row.taxable, 0);
+            const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
+            const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
+            if(slotIndex === 1) {
+                doc.setDrawColor(210);
+                doc.setLineDashPattern([2, 2], 0);
+                doc.line(slotW, 6, slotW, pageH - 6);
+                doc.setLineDashPattern([], 0);
+            }
+            doc.setDrawColor(180);
+            doc.rect(slotX + 4, 5, slotW - 8, pageH - 10);
+            addLogoToPdf(doc, marginX, y0, 13, 26);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+            doc.text(companySettings.name || 'Lakfa Foods', marginX + 30, y0 + 5, { maxWidth: 34 });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.2);
+            const companyLines = [...getCompanyAddressLines(), companySettings.gstin ? `GSTIN ${companySettings.gstin}` : '', companySettings.phone ? `Ph: ${companySettings.phone}` : ''].filter(Boolean);
+            doc.text(companyLines.slice(0, 4), marginX + 30, y0 + 11, { lineHeightFactor: 1.08, maxWidth: 64 });
+
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+            doc.text('TAX INVOICE', slotX + slotW - 6, y0 + 4, { align: 'right' });
+            doc.setFontSize(6.8);
+            doc.text(`# ${getInvoiceNumber(order)}`, slotX + slotW - 6, y0 + 11, { align: 'right' });
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Date: ${formatDisplayDate(order.createdAt)}`, slotX + slotW - 6, y0 + 18, { align: 'right' });
+            doc.text(`Balance: ${formatPdfMoney(due)}`, slotX + slotW - 6, y0 + 25, { align: 'right' });
+
+            let y = y0 + 35;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
+            doc.text('Bill To', marginX, y);
+            doc.setFont('helvetica', 'normal');
+            const bill = [order.name || 'Customer', order.shopName ? `Shop: ${order.shopName}` : '', order.address || '', order.pincode ? `PIN: ${order.pincode}` : '', order.phone ? `Ph: ${order.phone}` : '', order.gstin ? `GSTIN ${order.gstin}` : ''].filter(Boolean).join('\n');
+            doc.text(doc.splitTextToSize(bill, 92).slice(0, 8), marginX, y + 5, { lineHeightFactor: 1.08 });
+
+            y += 34;
+            doc.setFillColor(55, 55, 55);
+            doc.rect(marginX, y, contentW, 7, 'F');
+            doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5);
+            doc.text('#', marginX + 2, y + 5); doc.text('Item', marginX + 8, y + 5); doc.text('Qty', marginX + 54, y + 5, { align: 'right' }); doc.text('Rate', marginX + 70, y + 5, { align: 'right' });
+            if(showGst) { doc.text('GST', marginX + 80, y + 5, { align: 'right' }); }
+            doc.text('Amount', slotX + slotW - 6 - 2, y + 5, { align: 'right' });
+            doc.setTextColor(0); doc.setFont('helvetica', 'normal');
+            y += 12;
+            rows.slice(0, 15).forEach((row, index) => {
+                const itemName = doc.splitTextToSize(row.name, 40).slice(0, 2);
+                doc.text(String(index + 1), marginX + 2, y);
+                doc.text(itemName, marginX + 8, y, { lineHeightFactor: 1.05 });
+                doc.text(formatQuantity(row.qty), marginX + 54, y, { align: 'right' });
+                doc.text(formatPdfMoney(row.rate), marginX + 70, y, { align: 'right' });
+                if(showGst) doc.text(`${row.gstPercent}%`, marginX + 80, y, { align: 'right' });
+                doc.text(formatPdfMoney(row.amount), slotX + slotW - 6 - 2, y, { align: 'right' });
+                y += Math.max(6, itemName.length * 3.5 + 2);
+            });
+            if(rows.length > 15) { doc.text(`+ ${rows.length - 15} more item(s)`, marginX + 8, y); y += 5; }
+            doc.line(marginX, y, slotX + slotW - 6, y);
+            y += 5;
+
+            const totalsX = slotX + slotW - 6 - 2;
+            const labelX = marginX + 66;
+            doc.setFontSize(7);
+            const totalLine = (label, value, bold = false) => { doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.text(label, labelX, y, { align: 'right' }); doc.text(value, totalsX, y, { align: 'right' }); y += 5; };
+            totalLine('Sub Total', formatPdfMoney(itemsTotal));
+            if(showGst) {
+                totalLine('Taxable Amount', formatPdfMoney(taxable));
+                totalLine('CGST', formatPdfMoney(cgst));
+                totalLine('SGST', formatPdfMoney(sgst));
+            }
+            if(discount) totalLine('Discount', formatPdfMoney(discount));
+            if(roundOff) totalLine('Round Off', formatPdfMoney(roundOff));
+            totalLine('Total', formatPdfMoney(total), true);
+            totalLine('Paid', formatPdfMoney(paid));
+            totalLine('Balance Due', formatPdfMoney(due), true);
+
+            y += 4;
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+            doc.text('Amount in words:', marginX, y);
+            doc.setFont('helvetica', 'bolditalic');
+            doc.text(doc.splitTextToSize(amountToWords(total), 68).slice(0, 3), marginX + 24, y, { lineHeightFactor: 1.05 });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+            doc.text('Thanks for your business.', marginX, pageH - 12);
+            if(companySettings.signatureImage) {
+                try { doc.addImage(companySettings.signatureImage, 'PNG', slotX + slotW - 40, pageH - 30, 22, 11); } catch(e) { console.warn('Signature could not be added', e); }
+            }
+            doc.setFont('helvetica', 'bold');
+            doc.text(companySettings.signatureName || 'Authorized Signatory', slotX + slotW - 6, pageH - 12, { align: 'right' });
+        }
+
+        function buildA5InvoicesPdf(ordersToPrint) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            ordersToPrint.forEach((order, index) => {
+                if(index > 0 && index % 2 === 0) doc.addPage();
+                drawA5InvoiceSlot(doc, order, index % 2);
+            });
+            addInvoicePageNumbers(doc);
+            return doc;
+        }
+
+        window.previewOrderA5Invoice = function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            showInvoicePreview(buildA5InvoicesPdf([order]));
+        }
+
+        window.printOrderInvoice = async function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            buildA5InvoicesPdf([order]).save(`Lakfa_A5_Invoice_${order.phone || 'customer'}_${normalizeDateInput(order.createdAt)}.pdf`);
+        }
+
+        window.previewSelectedInvoices = async function() {
+            if(selectedOrders.size === 0) return;
+            const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
+            showInvoicePreview(buildA5InvoicesPdf(ordersToPrint));
+        }
+
+        window.printSelectedInvoices = async function() {
+            if(selectedOrders.size === 0) return;
+            if(!(await showConfirm({ title: 'Print Selected Invoices?', message: `Generate A5 portrait invoices for ${selectedOrders.size} selected order(s)? Two invoices will be placed side-by-side on each A4 page.`, confirmText: 'Print Invoices', confirmClass: 'bg-emerald-600 hover:bg-emerald-700' }))) return;
+            const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
+            try {
+                buildA5InvoicesPdf(ordersToPrint).save(`Lakfa_A5_Invoices_${getTodayString()}.pdf`);
+                selectedOrders.clear();
+                document.getElementById('select-all-orders').checked = false;
+                renderOrders();
+                showToast('Invoice PDF Download Started');
+            } catch(err) {
+                console.error(err);
+                showToast('Invoice PDF Error: ' + err.message, 'error');
+            }
         }
 
         function showInvoicePreview(doc) {
@@ -3960,8 +4288,8 @@
             doc.save(`Lakfa_Total_Bill_${partyKey}_${getTodayString()}.pdf`);
         }
 
-        window.closeModal = function(id) { 
-            document.getElementById(id).classList.add('hidden'); 
+        window.closeModal = function(id) {
+            document.getElementById(id).classList.add('hidden');
             if(id === 'invoice-preview-modal') {
                 const frame = document.getElementById('invoice-preview-frame');
                 if(frame?.dataset.objectUrl) { URL.revokeObjectURL(frame.dataset.objectUrl); delete frame.dataset.objectUrl; }
