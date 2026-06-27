@@ -3099,11 +3099,11 @@
         }
 
         function getFinanceAccount(accountId = '') {
-            return getActiveFinanceAccounts().find(account => account.id === accountId) || fallbackFinanceAccounts.find(account => account.id === accountId) || fallbackFinanceAccounts[0];
+            return companyAccounts.find(account => account.id === accountId) || fallbackFinanceAccounts.find(account => account.id === accountId) || fallbackFinanceAccounts[0];
         }
 
         function getFinanceCategory(categoryId = '') {
-            return getActiveFinanceCategories().find(category => category.id === categoryId) || fallbackFinanceCategories.find(category => category.id === categoryId) || fallbackFinanceCategories[0];
+            return financeCategories.find(category => category.id === categoryId) || fallbackFinanceCategories.find(category => category.id === categoryId) || fallbackFinanceCategories[0];
         }
 
         function renderFinanceSelectOptions(selectId, selectedValue = '', { type = '', accounts = false } = {}) {
@@ -3142,11 +3142,33 @@
             refreshFinanceSelectors();
             const accountsList = document.getElementById('finance-accounts-list');
             if(accountsList) {
-                accountsList.innerHTML = getActiveFinanceAccounts().map(account => `<div class="flex items-center justify-between gap-2 rounded border border-gray-100 bg-gray-50 px-3 py-2"><div><div class="font-bold text-gray-900">${escapeHtml(account.name || account.id)}</div><div class="text-xs text-gray-500 uppercase">${escapeHtml(account.type || 'account')} • Opening ${formatMoney(account.openingBalance || 0)}</div></div><div class="font-bold text-cyan-700">${formatMoney(getAccountLedgerBalance(account.id))}</div></div>`).join('');
+                accountsList.innerHTML = getActiveFinanceAccounts().map(account => {
+                    const balance = getAccountLedgerBalance(account.id);
+                    const actionHtml = account.isFallback
+                        ? '<span class="text-[10px] font-bold uppercase text-gray-400">Default</span>'
+                        : `<div class="flex gap-1"><button onclick="editFinanceAccount('${account.id}')" class="rounded border border-cyan-200 bg-white px-2 py-1 text-[10px] font-bold text-cyan-700 hover:bg-cyan-50">Edit</button><button onclick="deleteFinanceAccount('${account.id}')" class="rounded border border-red-200 bg-white px-2 py-1 text-[10px] font-bold text-red-700 hover:bg-red-50">Delete</button></div>`;
+                    return `<div class="rounded border border-gray-100 bg-gray-50 px-3 py-2"><div class="flex items-start justify-between gap-2"><div><div class="font-bold text-gray-900">${escapeHtml(account.name || account.id)}</div><div class="text-xs text-gray-500 uppercase">${escapeHtml(account.type || 'account')} • Opening ${formatMoney(account.openingBalance || 0)}</div></div><div class="text-right"><div class="font-bold ${balance >= 0 ? 'text-cyan-700' : 'text-red-700'}">${formatMoney(balance)}</div>${actionHtml}</div></div></div>`;
+                }).join('');
             }
             const categoriesList = document.getElementById('finance-categories-list');
             if(categoriesList) {
-                categoriesList.innerHTML = getActiveFinanceCategories().slice(0, 8).map(category => `<span class="mr-1 mb-1 inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">${escapeHtml(category.name || category.id)}</span>`).join('');
+                const renderGroup = (title, type, color) => {
+                    const colorClasses = {
+                        emerald: { title: 'text-emerald-700', row: 'border-emerald-100 bg-emerald-50', edit: 'border-emerald-200 text-emerald-700 hover:bg-emerald-50' },
+                        red: { title: 'text-red-700', row: 'border-red-100 bg-red-50', edit: 'border-red-200 text-red-700 hover:bg-red-50' },
+                        indigo: { title: 'text-indigo-700', row: 'border-indigo-100 bg-indigo-50', edit: 'border-indigo-200 text-indigo-700 hover:bg-indigo-50' }
+                    }[color];
+                    const items = getActiveFinanceCategories().filter(category => category.type === type);
+                    const rows = items.map(category => {
+                        const used = getFinanceCategoryUsageCount(category.id);
+                        const actionHtml = category.isFallback
+                            ? '<span class="text-[10px] font-bold uppercase text-gray-400">Default</span>'
+                            : `<div class="flex gap-1"><button onclick="editFinanceCategory('${category.id}')" class="rounded border bg-white px-2 py-1 text-[10px] font-bold ${colorClasses.edit}">Edit</button><button onclick="deleteFinanceCategory('${category.id}')" class="rounded border border-red-200 bg-white px-2 py-1 text-[10px] font-bold text-red-700 hover:bg-red-50">Delete</button></div>`;
+                        return `<div class="flex items-center justify-between gap-2 rounded border px-3 py-2 ${colorClasses.row}"><div><div class="font-bold text-gray-900">${escapeHtml(category.name || category.id)}</div><div class="text-xs text-gray-500">${used} record(s)</div></div>${actionHtml}</div>`;
+                    }).join('') || `<div class="rounded bg-gray-50 px-3 py-2 text-xs text-gray-500">No ${title.toLowerCase()} categories.</div>`;
+                    return `<div><div class="mb-2 text-xs font-extrabold uppercase ${colorClasses.title}">${title}</div><div class="space-y-2">${rows}</div></div>`;
+                };
+                categoriesList.innerHTML = `<div class="grid grid-cols-1 gap-3">${renderGroup('Income', 'income', 'emerald')}${renderGroup('Expense', 'expense', 'red')}${renderGroup('Transfer', 'transfer', 'indigo')}</div>`;
             }
             const transferDate = document.getElementById('finance-transfer-date');
             if(transferDate && !transferDate.value) transferDate.value = getTodayString();
@@ -3164,6 +3186,70 @@
             }).join('');
             const totalFunds = getActiveFinanceAccounts().reduce((sum, account) => sum + getAccountLedgerBalance(account.id), 0);
             host.innerHTML = `<div class="rounded-xl border border-purple-100 bg-purple-50 p-4 shadow-sm"><div class="text-xs font-bold uppercase text-purple-700">Total Company Funds</div><div class="mt-2 text-2xl font-extrabold text-purple-950">${formatMoney(totalFunds)}</div><p class="mt-1 text-xs text-purple-700">Cash + bank + wallet balances</p></div>${accountCards}`;
+        }
+
+        function getFinanceAccountUsageCount(accountId) {
+            return companyDailyAccounts.filter(item => (item.accountId || item.accountType || 'cash') === accountId || (item.expenseAccountId || '') === accountId).length;
+        }
+
+        function getFinanceCategoryUsageCount(categoryId) {
+            const ledgerCount = companyDailyAccounts.filter(item => item.categoryId === categoryId || item.expenseCategoryId === categoryId).length;
+            const orderCount = orders.filter(order => order.orderExpenseCategoryId === categoryId || (Array.isArray(order.orderExpenses) && order.orderExpenses.some(expense => expense.categoryId === categoryId))).length;
+            return ledgerCount + orderCount;
+        }
+
+        window.editFinanceAccount = async function(accountId) {
+            const account = companyAccounts.find(item => item.id === accountId);
+            if(!account) { showToast('Default account cannot be edited here', 'error'); return; }
+            const name = prompt('Account name', account.name || '');
+            if(name === null) return;
+            const trimmedName = name.trim();
+            if(!trimmedName) { showToast('Enter account name', 'error'); return; }
+            const openingInput = prompt('Opening balance', String(Number(account.openingBalance) || 0));
+            if(openingInput === null) return;
+            const openingBalance = Number(openingInput);
+            if(!Number.isFinite(openingBalance)) { showToast('Enter a valid opening balance', 'error'); return; }
+            try {
+                await updateDoc(doc(db, 'companyAccounts', accountId), { name: trimmedName, openingBalance, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' });
+                showToast('Finance account updated');
+            } catch(error) { showToast(error.message, 'error'); }
+        }
+
+        window.deleteFinanceAccount = async function(accountId) {
+            const account = companyAccounts.find(item => item.id === accountId);
+            if(!account) { showToast('Default account cannot be deleted', 'error'); return; }
+            const balance = getAccountLedgerBalance(accountId);
+            if(Math.abs(balance) > 0.01) { showToast('Account can be deleted only when balance is zero', 'error'); return; }
+            if(!(await showConfirm({ title: 'Delete Account?', message: `${account.name || 'This account'} has zero balance. Hide it from finance account lists?`, confirmText: 'Delete' }))) return;
+            try {
+                await updateDoc(doc(db, 'companyAccounts', accountId), { isActive: false, deletedAt: getCurrentDateTimeLocal(), deletedBy: authUser?.uid || '' });
+                showToast('Finance account deleted', 'error');
+            } catch(error) { showToast(error.message, 'error'); }
+        }
+
+        window.editFinanceCategory = async function(categoryId) {
+            const category = financeCategories.find(item => item.id === categoryId);
+            if(!category) { showToast('Default category cannot be edited here', 'error'); return; }
+            const name = prompt('Category name', category.name || '');
+            if(name === null) return;
+            const trimmedName = name.trim();
+            if(!trimmedName) { showToast('Enter category name', 'error'); return; }
+            try {
+                await updateDoc(doc(db, 'financeCategories', categoryId), { name: trimmedName, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' });
+                showToast('Finance category updated');
+            } catch(error) { showToast(error.message, 'error'); }
+        }
+
+        window.deleteFinanceCategory = async function(categoryId) {
+            const category = financeCategories.find(item => item.id === categoryId);
+            if(!category) { showToast('Default category cannot be deleted', 'error'); return; }
+            const usageCount = getFinanceCategoryUsageCount(categoryId);
+            if(usageCount > 0) { showToast('Delete recorded finance entries before deleting this category', 'error'); return; }
+            if(!(await showConfirm({ title: 'Delete Category?', message: `${category.name || 'This category'} has no records. Delete it?`, confirmText: 'Delete' }))) return;
+            try {
+                await deleteDoc(doc(db, 'financeCategories', categoryId));
+                showToast('Finance category deleted', 'error');
+            } catch(error) { showToast(error.message, 'error'); }
         }
 
         window.saveFinanceAccount = async function() {
