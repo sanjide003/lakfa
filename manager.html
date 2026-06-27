@@ -398,6 +398,48 @@
                         <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm"><div class="text-xs font-bold uppercase text-emerald-700">Profit / Balance</div><div id="finance-total-balance" class="mt-2 text-2xl font-extrabold text-emerald-900">₹0</div><p class="mt-1 text-xs text-emerald-700">Income minus expense</p></div>
                         <div class="rounded-xl border border-orange-100 bg-orange-50 p-5 shadow-sm"><div class="text-xs font-bold uppercase text-orange-700">Due To Receive</div><div id="finance-total-due" class="mt-2 text-2xl font-extrabold text-orange-900">₹0</div><p class="mt-1 text-xs text-orange-700">Pending order balance</p></div>
                     </div>
+                    <div id="finance-account-balances" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"></div>
+                    <div class="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden mb-6">
+                        <div class="px-6 py-4 border-b bg-indigo-50"><h3 class="font-bold text-indigo-950">Finance Project Plan & Setup</h3><p class="text-sm text-indigo-700 mt-1">Accounts, categories, cash/bank balances, transfers, income and expense ledger are tracked from here.</p></div>
+                        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 p-4">
+                            <div class="rounded-lg border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-950">
+                                <div class="font-extrabold mb-2">Implementation Plan</div>
+                                <ol class="list-decimal list-inside space-y-1 text-indigo-900">
+                                    <li>Accounts master: Cash, bank, UPI/wallet with opening balance.</li>
+                                    <li>Category master: Sales, purchase, packing, courier, salary, rent.</li>
+                                    <li>Every income/expense/transfer is posted to one finance ledger.</li>
+                                    <li>Order payments and expenses sync to selected account/category.</li>
+                                    <li>Account-wise balance, total company fund, receivable and P&amp;L reports.</li>
+                                </ol>
+                            </div>
+                            <div class="rounded-lg border border-cyan-100 bg-white p-4">
+                                <div class="font-extrabold text-cyan-950 mb-3">Add Account</div>
+                                <div class="space-y-2">
+                                    <input id="finance-account-name" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Account name (eg. SBI Current)">
+                                    <select id="finance-account-type" class="w-full rounded-md border border-gray-300 p-2 text-sm bg-white"><option value="cash">Cash</option><option value="bank">Bank</option><option value="upi">UPI / Wallet</option><option value="other">Other</option></select>
+                                    <input id="finance-account-opening" type="number" step="0.01" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Opening balance ₹">
+                                    <button onclick="saveFinanceAccount()" class="w-full rounded-md bg-cyan-600 px-3 py-2 text-sm font-bold text-white hover:bg-cyan-700">Save Account</button>
+                                </div>
+                                <div id="finance-accounts-list" class="mt-3 space-y-2 text-sm"></div>
+                            </div>
+                            <div class="rounded-lg border border-emerald-100 bg-white p-4">
+                                <div class="font-extrabold text-emerald-950 mb-3">Categories & Transfer</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <input id="finance-category-name" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Category name (eg. Purchase)">
+                                    <select id="finance-category-type" class="w-full rounded-md border border-gray-300 p-2 text-sm bg-white"><option value="income">Income</option><option value="expense">Expense</option><option value="transfer">Transfer</option></select>
+                                    <button onclick="saveFinanceCategory()" class="rounded-md bg-emerald-600 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-700">Save Category</button>
+                                </div>
+                                <div class="mt-4 border-t pt-3 space-y-2">
+                                    <div class="text-xs font-bold uppercase text-gray-500">Account Transfer</div>
+                                    <div class="grid grid-cols-2 gap-2"><select id="finance-transfer-from" class="rounded-md border border-gray-300 p-2 text-sm bg-white"></select><select id="finance-transfer-to" class="rounded-md border border-gray-300 p-2 text-sm bg-white"></select></div>
+                                    <div class="grid grid-cols-2 gap-2"><input id="finance-transfer-amount" type="number" min="1" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Amount ₹"><input id="finance-transfer-date" type="date" class="rounded-md border border-gray-300 p-2 text-sm"></div>
+                                    <input id="finance-transfer-note" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Transfer note">
+                                    <button onclick="saveFinanceTransfer()" class="w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700">Record Transfer</button>
+                                </div>
+                                <div id="finance-categories-list" class="mt-3 space-y-2 text-sm"></div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 xl:grid-cols-[20rem_minmax(0,1fr)] gap-6 items-start">
                         <div class="bg-white rounded-xl shadow-sm border border-cyan-100 overflow-hidden xl:sticky xl:top-0">
                             <div class="px-4 py-3 border-b bg-cyan-50"><h3 class="font-bold text-cyan-950">Add Daily Account</h3><p class="text-xs text-cyan-700 mt-1">Manual income / expense only.</p></div>
@@ -407,6 +449,7 @@
                                 <div><label class="block text-sm font-medium text-gray-700">Income Received (₹)</label><input id="finance-income" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Expense Spent (₹)</label><input id="finance-expense" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Account</label><select id="finance-account" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm bg-white"><option value="cash">Cash in Hand</option><option value="bank">Company Bank</option></select></div>
+                                <div><label class="block text-sm font-medium text-gray-700">Category</label><select id="finance-category" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm bg-white"></select></div>
                                 <div><label class="block text-sm font-medium text-gray-700">Note</label><input id="finance-note" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="eg. Daily sales and packing expense"></div>
                                 <div class="flex gap-2"><button onclick="saveCompanyDailyAccount()" class="flex-1 rounded-md bg-cyan-600 px-3 py-2 text-sm font-bold text-white hover:bg-cyan-700">Save Account</button><button onclick="resetCompanyDailyAccountForm()" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Clear</button></div>
                             </div>
@@ -628,6 +671,8 @@
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Round Off / Discount ₹</label><input type="number" id="order-expense-adjustment" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Use - for discount"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Paid Now ₹</label><input type="number" id="order-new-expense" min="0" step="0.01" oninput="updateOrderExpenseSummary()" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="Amount paid"></div>
                                 <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Paid Date</label><input type="date" id="order-new-expense-date" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense From</label><select id="order-expense-source" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm bg-white"></select></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Category</label><select id="order-expense-category" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm bg-white"></select></div>
                                 <div class="sm:col-span-4"><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Expense Note</label><input id="order-new-expense-note" class="w-full rounded-md border-gray-300 shadow-sm p-2 border sm:text-sm" placeholder="eg. Courier / packing paid"></div>
                                 <div class="sm:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm" id="order-expense-summary"></div>
                                 <div class="sm:col-span-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm" id="order-payment-summary"></div>
@@ -659,6 +704,7 @@
                 <div><label class="block text-sm font-medium text-gray-700">Income Received (₹)</label><input id="edit-finance-income" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Expense Spent (₹)</label><input id="edit-finance-expense" type="number" min="0" value="0" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
                 <div><label class="block text-sm font-medium text-gray-700">Account</label><select id="edit-finance-account" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm bg-white"><option value="cash">Cash in Hand</option><option value="bank">Company Bank</option></select></div>
+                <div><label class="block text-sm font-medium text-gray-700">Category</label><select id="edit-finance-category" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm bg-white"></select></div>
                 <div><label class="block text-sm font-medium text-gray-700">Note</label><input id="edit-finance-note" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-2"><button onclick="closeModal('finance-edit-modal')" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700">Cancel</button><button onclick="saveCompanyDailyAccount(true)" class="rounded-md bg-cyan-600 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-700">Save Changes</button></div>
@@ -934,6 +980,8 @@
         let investorPaymentRequests = [];
         let managerLoans = [];
         let companyDailyAccounts = [];
+        let companyAccounts = [];
+        let financeCategories = [];
         let authUser = null;
         let currentUserRole = 'manager';
         let selectedOrders = new Set();
@@ -1281,6 +1329,20 @@
                 companyDailyAccounts = [];
                 snapshot.forEach((doc) => companyDailyAccounts.push({ id: doc.id, ...doc.data() }));
                 companyDailyAccounts.sort((a, b) => new Date(normalizeDateInput(b.accountDate || b.createdAt)) - new Date(normalizeDateInput(a.accountDate || a.createdAt)));
+                if(currentTab === 'company-finance') renderCompanyFinanceDashboard();
+            });
+            onSnapshot(collection(db, "companyAccounts"), (snapshot) => {
+                companyAccounts = [];
+                snapshot.forEach((doc) => companyAccounts.push({ id: doc.id, ...doc.data() }));
+                companyAccounts.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+                refreshFinanceSelectors();
+                if(currentTab === 'company-finance') renderCompanyFinanceDashboard();
+            });
+            onSnapshot(collection(db, "financeCategories"), (snapshot) => {
+                financeCategories = [];
+                snapshot.forEach((doc) => financeCategories.push({ id: doc.id, ...doc.data() }));
+                financeCategories.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+                refreshFinanceSelectors();
                 if(currentTab === 'company-finance') renderCompanyFinanceDashboard();
             });
             onSnapshot(collection(db, "investorPaymentRequests"), (snapshot) => {
@@ -1888,6 +1950,9 @@
             document.getElementById('order-new-expense').value = '';
             document.getElementById('order-new-expense-date').value = getTodayString();
             document.getElementById('order-new-expense-note').value = '';
+            refreshFinanceSelectors();
+            const expenseSourceEl = document.getElementById('order-expense-source'); if(expenseSourceEl) expenseSourceEl.value = order.orderExpenseSource || 'cash';
+            const expenseCategoryEl = document.getElementById('order-expense-category'); if(expenseCategoryEl) expenseCategoryEl.value = order.orderExpenseCategoryId || 'courier';
             updateOrderExpenseSummary();
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
             document.getElementById('customer-suggestions').classList.add('hidden');
@@ -1960,6 +2025,9 @@
             document.getElementById('order-new-expense').value = '';
             document.getElementById('order-new-expense-date').value = getTodayString();
             document.getElementById('order-new-expense-note').value = '';
+            refreshFinanceSelectors();
+            const expenseSourceEl = document.getElementById('order-expense-source'); if(expenseSourceEl) expenseSourceEl.value = 'cash';
+            const expenseCategoryEl = document.getElementById('order-expense-category'); if(expenseCategoryEl) expenseCategoryEl.value = 'courier';
             updateOrderExpenseSummary();
             renderOrderPaymentHistory([]);
             addOrderProductRow();
@@ -2147,6 +2215,10 @@
             document.getElementById('order-new-expense').value = '';
             document.getElementById('order-new-expense-date').value = getTodayString();
             document.getElementById('order-new-expense-note').value = '';
+            refreshFinanceSelectors();
+            const paymentSourceEl = document.getElementById('order-payment-source'); if(paymentSourceEl) paymentSourceEl.value = order.paymentSource || 'cash';
+            const expenseSourceEl = document.getElementById('order-expense-source'); if(expenseSourceEl) expenseSourceEl.value = order.orderExpenseSource || 'cash';
+            const expenseCategoryEl = document.getElementById('order-expense-category'); if(expenseCategoryEl) expenseCategoryEl.value = order.orderExpenseCategoryId || 'courier';
             updateOrderExpenseSummary(order);
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
 
@@ -2185,6 +2257,12 @@
                 receivableBalance: Number(orderData.balanceDue) || 0,
                 source: 'order',
                 accountType: paymentSource,
+                accountId: paymentSource,
+                expenseAccountId: orderData.orderExpenseSource || paymentSource,
+                expenseCategoryId: orderData.orderExpenseCategoryId || 'courier',
+                expenseCategoryName: orderData.orderExpenseCategoryName || 'Order Expense',
+                categoryId: 'sales',
+                categoryName: 'Sales',
                 orderId,
                 updatedAt: getCurrentDateTimeLocal(),
                 updatedBy: authUser?.uid || ''
@@ -2233,7 +2311,10 @@
             const newExpenseAmount = Number(document.getElementById('order-new-expense')?.value) || 0;
             const newExpenseDate = document.getElementById('order-new-expense-date')?.value || getTodayString();
             const newExpenseNote = document.getElementById('order-new-expense-note')?.value.trim();
-            const orderExpenses = newExpenseAmount > 0 ? [...existingOrderExpenses, { amount: newExpenseAmount, date: newExpenseDate, note: newExpenseNote || 'Expense paid', recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingOrderExpenses;
+            const expenseSource = document.getElementById('order-expense-source')?.value || paymentSource || 'cash';
+            const expenseCategoryId = document.getElementById('order-expense-category')?.value || 'courier';
+            const expenseCategoryName = getFinanceCategory(expenseCategoryId).name || 'Order Expense';
+            const orderExpenses = newExpenseAmount > 0 ? [...existingOrderExpenses, { amount: newExpenseAmount, date: newExpenseDate, note: newExpenseNote || 'Expense paid', accountId: expenseSource, accountType: expenseSource, categoryId: expenseCategoryId, categoryName: expenseCategoryName, recordedAt: getCurrentDateTimeLocal(), recordedBy: authUser?.uid || '' }] : existingOrderExpenses;
             const expensePayable = Math.max(0, expenseTotal + expenseAdjustment);
             const expensePaidTotal = orderExpenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
             const expenseBalanceDue = Math.max(0, expensePayable - expensePaidTotal);
@@ -2272,6 +2353,9 @@
                 orderExpensePayable: expensePayable,
                 orderExpensePaidTotal: expensePaidTotal,
                 orderExpenseBalanceDue: expenseBalanceDue,
+                orderExpenseSource: expenseSource,
+                orderExpenseCategoryId: expenseCategoryId,
+                orderExpenseCategoryName: expenseCategoryName,
                 paidTotal,
                 balanceDue
             };
@@ -2986,10 +3070,149 @@
             } catch (error) { showToast(error.message, 'error'); }
         }
 
+        const fallbackFinanceAccounts = [
+            { id: 'cash', name: 'Cash in Hand', type: 'cash', openingBalance: 0, isFallback: true },
+            { id: 'bank', name: 'Company Bank', type: 'bank', openingBalance: 0, isFallback: true }
+        ];
+        const fallbackFinanceCategories = [
+            { id: 'sales', name: 'Sales', type: 'income', isFallback: true },
+            { id: 'purchase', name: 'Purchase', type: 'expense', isFallback: true },
+            { id: 'packing', name: 'Packing', type: 'expense', isFallback: true },
+            { id: 'courier', name: 'Courier', type: 'expense', isFallback: true },
+            { id: 'salary', name: 'Salary', type: 'expense', isFallback: true },
+            { id: 'rent', name: 'Rent', type: 'expense', isFallback: true },
+            { id: 'transfer', name: 'Transfer', type: 'transfer', isFallback: true },
+            { id: 'other', name: 'Other', type: 'expense', isFallback: true }
+        ];
+
+        function getActiveFinanceAccounts() {
+            const active = companyAccounts.filter(account => account.isActive !== false);
+            const customIds = new Set(active.map(account => account.id));
+            return [...fallbackFinanceAccounts.filter(account => !customIds.has(account.id)), ...active];
+        }
+
+        function getActiveFinanceCategories(type = '') {
+            const active = financeCategories.filter(category => category.isActive !== false);
+            const customIds = new Set(active.map(category => category.id));
+            const source = [...fallbackFinanceCategories.filter(category => !customIds.has(category.id)), ...active];
+            return type ? source.filter(category => category.type === type || category.type === 'transfer') : source;
+        }
+
+        function getFinanceAccount(accountId = '') {
+            return getActiveFinanceAccounts().find(account => account.id === accountId) || fallbackFinanceAccounts.find(account => account.id === accountId) || fallbackFinanceAccounts[0];
+        }
+
+        function getFinanceCategory(categoryId = '') {
+            return getActiveFinanceCategories().find(category => category.id === categoryId) || fallbackFinanceCategories.find(category => category.id === categoryId) || fallbackFinanceCategories[0];
+        }
+
+        function renderFinanceSelectOptions(selectId, selectedValue = '', { type = '', accounts = false } = {}) {
+            const select = document.getElementById(selectId);
+            if(!select) return;
+            const items = accounts ? getActiveFinanceAccounts() : getActiveFinanceCategories(type);
+            select.innerHTML = items.map(item => `<option value="${item.id}">${escapeHtml(item.name || item.id)}</option>`).join('');
+            if(selectedValue && items.some(item => item.id === selectedValue)) select.value = selectedValue;
+        }
+
+        function refreshFinanceSelectors() {
+            renderFinanceSelectOptions('finance-account', document.getElementById('finance-account')?.value || 'cash', { accounts: true });
+            renderFinanceSelectOptions('edit-finance-account', document.getElementById('edit-finance-account')?.value || 'cash', { accounts: true });
+            renderFinanceSelectOptions('order-payment-source', document.getElementById('order-payment-source')?.value || 'cash', { accounts: true });
+            renderFinanceSelectOptions('order-expense-source', document.getElementById('order-expense-source')?.value || 'cash', { accounts: true });
+            renderFinanceSelectOptions('finance-transfer-from', document.getElementById('finance-transfer-from')?.value || 'cash', { accounts: true });
+            renderFinanceSelectOptions('finance-transfer-to', document.getElementById('finance-transfer-to')?.value || 'bank', { accounts: true });
+            renderFinanceSelectOptions('finance-category', document.getElementById('finance-category')?.value || 'other');
+            renderFinanceSelectOptions('edit-finance-category', document.getElementById('edit-finance-category')?.value || 'other');
+            renderFinanceSelectOptions('order-expense-category', document.getElementById('order-expense-category')?.value || 'courier', { type: 'expense' });
+        }
+
+        function getAccountLedgerBalance(accountId) {
+            const opening = Number(getFinanceAccount(accountId).openingBalance) || 0;
+            const movement = companyDailyAccounts.reduce((sum, item) => {
+                const incomeAccount = item.accountId || item.accountType || 'cash';
+                const expenseAccount = item.expenseAccountId || item.accountId || item.accountType || 'cash';
+                const income = incomeAccount === accountId ? (Number(item.income) || 0) : 0;
+                const expense = expenseAccount === accountId ? (Number(item.expense) || 0) : 0;
+                return sum + income - expense;
+            }, 0);
+            return opening + movement;
+        }
+
+        function renderFinanceMasters() {
+            refreshFinanceSelectors();
+            const accountsList = document.getElementById('finance-accounts-list');
+            if(accountsList) {
+                accountsList.innerHTML = getActiveFinanceAccounts().map(account => `<div class="flex items-center justify-between gap-2 rounded border border-gray-100 bg-gray-50 px-3 py-2"><div><div class="font-bold text-gray-900">${escapeHtml(account.name || account.id)}</div><div class="text-xs text-gray-500 uppercase">${escapeHtml(account.type || 'account')} • Opening ${formatMoney(account.openingBalance || 0)}</div></div><div class="font-bold text-cyan-700">${formatMoney(getAccountLedgerBalance(account.id))}</div></div>`).join('');
+            }
+            const categoriesList = document.getElementById('finance-categories-list');
+            if(categoriesList) {
+                categoriesList.innerHTML = getActiveFinanceCategories().slice(0, 8).map(category => `<span class="mr-1 mb-1 inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">${escapeHtml(category.name || category.id)}</span>`).join('');
+            }
+            const transferDate = document.getElementById('finance-transfer-date');
+            if(transferDate && !transferDate.value) transferDate.value = getTodayString();
+        }
+
+        function renderFinanceAccountBalances(filteredAccounts = companyDailyAccounts) {
+            const host = document.getElementById('finance-account-balances');
+            if(!host) return;
+            const accountCards = getActiveFinanceAccounts().map(account => {
+                const opening = Number(account.openingBalance) || 0;
+                const inTotal = filteredAccounts.filter(item => (item.accountId || item.accountType || 'cash') === account.id).reduce((sum, item) => sum + (Number(item.income) || 0), 0);
+                const outTotal = filteredAccounts.filter(item => (item.expenseAccountId || item.accountId || item.accountType || 'cash') === account.id).reduce((sum, item) => sum + (Number(item.expense) || 0), 0);
+                const balance = opening + inTotal - outTotal;
+                return `<div class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm"><div class="text-xs font-bold uppercase text-slate-500">${escapeHtml(account.type || 'account')}</div><div class="mt-1 font-extrabold text-slate-900">${escapeHtml(account.name || account.id)}</div><div class="mt-2 text-2xl font-extrabold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'}">${formatMoney(balance)}</div><div class="mt-1 text-xs text-slate-500">In ${formatMoney(inTotal)} • Out ${formatMoney(outTotal)}</div></div>`;
+            }).join('');
+            const totalFunds = getActiveFinanceAccounts().reduce((sum, account) => sum + getAccountLedgerBalance(account.id), 0);
+            host.innerHTML = `<div class="rounded-xl border border-purple-100 bg-purple-50 p-4 shadow-sm"><div class="text-xs font-bold uppercase text-purple-700">Total Company Funds</div><div class="mt-2 text-2xl font-extrabold text-purple-950">${formatMoney(totalFunds)}</div><p class="mt-1 text-xs text-purple-700">Cash + bank + wallet balances</p></div>${accountCards}`;
+        }
+
+        window.saveFinanceAccount = async function() {
+            const name = document.getElementById('finance-account-name')?.value.trim();
+            const type = document.getElementById('finance-account-type')?.value || 'cash';
+            const openingBalance = Number(document.getElementById('finance-account-opening')?.value) || 0;
+            if(!name) { showToast('Enter account name', 'error'); return; }
+            try {
+                await addDoc(collection(db, 'companyAccounts'), { name, type, openingBalance, isActive: true, createdAt: getCurrentDateTimeLocal(), createdBy: authUser?.uid || '' });
+                document.getElementById('finance-account-name').value = '';
+                document.getElementById('finance-account-opening').value = '';
+                showToast('Finance account added');
+            } catch(error) { showToast(error.message, 'error'); }
+        }
+
+        window.saveFinanceCategory = async function() {
+            const name = document.getElementById('finance-category-name')?.value.trim();
+            const type = document.getElementById('finance-category-type')?.value || 'expense';
+            if(!name) { showToast('Enter category name', 'error'); return; }
+            try {
+                await addDoc(collection(db, 'financeCategories'), { name, type, isActive: true, createdAt: getCurrentDateTimeLocal(), createdBy: authUser?.uid || '' });
+                document.getElementById('finance-category-name').value = '';
+                showToast('Finance category added');
+            } catch(error) { showToast(error.message, 'error'); }
+        }
+
+        window.saveFinanceTransfer = async function() {
+            const fromAccountId = document.getElementById('finance-transfer-from')?.value;
+            const toAccountId = document.getElementById('finance-transfer-to')?.value;
+            const amount = Number(document.getElementById('finance-transfer-amount')?.value) || 0;
+            const date = document.getElementById('finance-transfer-date')?.value || getTodayString();
+            const note = document.getElementById('finance-transfer-note')?.value.trim() || 'Account transfer';
+            if(!fromAccountId || !toAccountId || fromAccountId === toAccountId) { showToast('Select two different accounts', 'error'); return; }
+            if(amount <= 0) { showToast('Enter transfer amount', 'error'); return; }
+            try {
+                const transferGroupId = doc(collection(db, 'companyDailyAccounts')).id;
+                await addDoc(collection(db, 'companyDailyAccounts'), { accountDate: normalizeDateTimeInput(date), income: 0, expense: amount, note: `${note} → ${getFinanceAccount(toAccountId).name}`, accountType: fromAccountId, accountId: fromAccountId, categoryId: 'transfer', categoryName: 'Transfer', balance: -amount, source: 'transfer', transferGroupId, createdAt: normalizeDateTimeInput(date), createdBy: authUser?.uid || '' });
+                await addDoc(collection(db, 'companyDailyAccounts'), { accountDate: normalizeDateTimeInput(date), income: amount, expense: 0, note: `${note} ← ${getFinanceAccount(fromAccountId).name}`, accountType: toAccountId, accountId: toAccountId, categoryId: 'transfer', categoryName: 'Transfer', balance: amount, source: 'transfer', transferGroupId, createdAt: normalizeDateTimeInput(date), createdBy: authUser?.uid || '' });
+                document.getElementById('finance-transfer-amount').value = '';
+                document.getElementById('finance-transfer-note').value = '';
+                showToast('Transfer recorded');
+            } catch(error) { showToast(error.message, 'error'); }
+        }
+
         function getFinanceSourceLabel(item) {
             if(item.source === 'order') return 'Order Management';
             if(item.source === 'managerLoanRepayment') return 'Manager Loan Payment';
             if(item.source === 'companyDailyAccount') return 'Daily Company Account';
+            if(item.source === 'transfer') return 'Account Transfer';
             return 'Manual Daily Account';
         }
 
@@ -3015,6 +3238,7 @@
         function renderCompanyFinanceDashboard() {
             const dateInput = document.getElementById('finance-date');
             if(dateInput && !dateInput.value) dateInput.value = getCurrentDateTimeLocal();
+            renderFinanceMasters();
             const filteredAccounts = getFilteredCompanyFinanceAccounts();
             const totalIncome = filteredAccounts.reduce((sum, item) => sum + (Number(item.income) || 0), 0);
             const totalExpense = filteredAccounts.reduce((sum, item) => sum + (Number(item.expense) || 0), 0);
@@ -3024,21 +3248,24 @@
             document.getElementById('finance-total-balance').innerText = formatMoney(totalIncome - totalExpense);
             const dueCard = document.getElementById('finance-total-due');
             if(dueCard) dueCard.innerText = formatMoney(totalReceivable);
+            renderFinanceAccountBalances(filteredAccounts);
             const list = document.getElementById('company-finance-list');
             if(!list) return;
             if(filteredAccounts.length === 0) {
                 list.innerHTML = '<div class="p-8 text-center text-sm text-gray-500">No company finance records found for this filter.</div>';
                 return;
             }
-            list.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-3 py-3 text-left font-bold text-gray-600">Details</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-32">Cash Received</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-32">To Receive</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Expense</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Balance</th><th class="px-3 py-3 text-center font-bold text-gray-600 w-28">Action</th></tr></thead><tbody class="divide-y divide-gray-100 bg-white">${filteredAccounts.map(item => {
+            list.innerHTML = `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-3 py-3 text-left font-bold text-gray-600">Details</th><th class="px-3 py-3 text-left font-bold text-gray-600 w-36">Account / Category</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-32">Income</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-32">To Receive</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Expense</th><th class="px-3 py-3 text-right font-bold text-gray-600 w-28">Balance</th><th class="px-3 py-3 text-center font-bold text-gray-600 w-28">Action</th></tr></thead><tbody class="divide-y divide-gray-100 bg-white">${filteredAccounts.map(item => {
                 const income = Number(item.income) || 0;
                 const expense = Number(item.expense) || 0;
                 const due = Number(item.receivableBalance) || 0;
                 const balance = income - expense;
-                const isSystem = item.source === 'order' || item.source === 'managerLoanRepayment';
+                const isSystem = item.source === 'order' || item.source === 'managerLoanRepayment' || item.source === 'transfer';
                 const actionHtml = isSystem ? `<span class="inline-flex w-12 flex-col items-center justify-center rounded border border-gray-200 bg-gray-50 p-1 text-[10px] font-bold leading-tight text-gray-500">${getIconSvg('status', 'w-5 h-5 mb-0.5')}<span>Auto</span></span>` : `<div class="flex justify-center gap-1"><button onclick="editCompanyDailyAccount('${item.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded border border-cyan-200 bg-cyan-50 p-1 text-[10px] font-bold leading-tight text-cyan-700 hover:bg-cyan-100">${getIconSvg('edit', 'w-5 h-5 mb-0.5')}<span>Edit</span></button><button onclick="deleteCompanyDailyAccount('${item.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded border border-red-200 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100">${getIconSvg('trash', 'w-5 h-5 mb-0.5')}<span>Delete</span></button></div>`;
-                return `<tr><td class="px-3 py-3 text-gray-600"><div class="font-semibold text-gray-900">${escapeHtml(item.note || 'Daily company account')}</div><div class="text-xs text-gray-500 mt-1">${formatDisplayDateTime(item.accountDate || item.createdAt)} • ${(item.accountType || 'cash') === 'bank' ? 'Company Bank' : 'Cash in Hand'}</div></td><td class="px-3 py-3 text-right font-bold text-cyan-700 whitespace-nowrap">${formatMoney(income)}</td><td class="px-3 py-3 text-right font-bold ${due > 0 ? 'text-orange-700' : 'text-gray-400'} whitespace-nowrap">${formatMoney(due)}</td><td class="px-3 py-3 text-right font-bold text-red-700 whitespace-nowrap">${formatMoney(expense)}</td><td class="px-3 py-3 text-right font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'} whitespace-nowrap">${formatMoney(balance)}</td><td class="px-3 py-3 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
-            }).join('')}</tbody><tfoot class="bg-gray-50"><tr><td class="px-3 py-3 text-right font-bold text-gray-700">Total</td><td class="px-3 py-3 text-right font-bold text-cyan-800">${formatMoney(totalIncome)}</td><td class="px-3 py-3 text-right font-bold text-orange-800">${formatMoney(totalReceivable)}</td><td class="px-3 py-3 text-right font-bold text-red-800">${formatMoney(totalExpense)}</td><td class="px-3 py-3 text-right font-bold text-emerald-800">${formatMoney(totalIncome - totalExpense)}</td><td></td></tr></tfoot></table></div>`;
+                const account = getFinanceAccount(item.accountId || item.accountType || 'cash');
+                const category = getFinanceCategory(item.categoryId || (item.source === 'order' ? 'sales' : item.source === 'transfer' ? 'transfer' : 'other'));
+                return `<tr><td class="px-3 py-3 text-gray-600"><div class="font-semibold text-gray-900">${escapeHtml(item.note || 'Daily company account')}</div><div class="text-xs text-gray-500 mt-1">${formatDisplayDateTime(item.accountDate || item.createdAt)} • ${getFinanceSourceLabel(item)}</div></td><td class="px-3 py-3 text-gray-600"><div class="font-bold text-gray-900">${escapeHtml(account.name || account.id)}</div><div class="text-xs text-gray-500">${escapeHtml(item.categoryName || category.name || 'Other')}</div></td><td class="px-3 py-3 text-right font-bold text-cyan-700 whitespace-nowrap">${formatMoney(income)}</td><td class="px-3 py-3 text-right font-bold ${due > 0 ? 'text-orange-700' : 'text-gray-400'} whitespace-nowrap">${formatMoney(due)}</td><td class="px-3 py-3 text-right font-bold text-red-700 whitespace-nowrap">${formatMoney(expense)}</td><td class="px-3 py-3 text-right font-bold ${balance >= 0 ? 'text-emerald-700' : 'text-red-700'} whitespace-nowrap">${formatMoney(balance)}</td><td class="px-3 py-3 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
+            }).join('')}</tbody><tfoot class="bg-gray-50"><tr><td colspan="2" class="px-3 py-3 text-right font-bold text-gray-700">Total</td><td class="px-3 py-3 text-right font-bold text-cyan-800">${formatMoney(totalIncome)}</td><td class="px-3 py-3 text-right font-bold text-orange-800">${formatMoney(totalReceivable)}</td><td class="px-3 py-3 text-right font-bold text-red-800">${formatMoney(totalExpense)}</td><td class="px-3 py-3 text-right font-bold text-emerald-800">${formatMoney(totalIncome - totalExpense)}</td><td></td></tr></tfoot></table></div>`;
         }
 
         window.resetCompanyDailyAccountForm = function() {
@@ -3048,6 +3275,7 @@
             document.getElementById('finance-expense').value = 0;
             document.getElementById('finance-note').value = '';
             const account = document.getElementById('finance-account'); if(account) account.value = 'cash';
+            const category = document.getElementById('finance-category'); if(category) category.value = 'other';
         }
 
         window.editCompanyDailyAccount = function(accountId) {
@@ -3058,7 +3286,9 @@
             document.getElementById('edit-finance-income').value = Number(account.income) || 0;
             document.getElementById('edit-finance-expense').value = Number(account.expense) || 0;
             document.getElementById('edit-finance-note').value = account.note || '';
-            document.getElementById('edit-finance-account').value = account.accountType || 'cash';
+            refreshFinanceSelectors();
+            document.getElementById('edit-finance-account').value = account.accountId || account.accountType || 'cash';
+            document.getElementById('edit-finance-category').value = account.categoryId || 'other';
             document.getElementById('finance-edit-modal').classList.remove('hidden');
             document.getElementById('edit-finance-income').focus();
         }
@@ -3098,10 +3328,12 @@
             const expense = Number(document.getElementById(`${prefix}-expense`).value) || 0;
             const note = document.getElementById(`${prefix}-note`).value.trim();
             const accountType = document.getElementById(`${prefix}-account`)?.value || 'cash';
+            const categoryId = document.getElementById(`${prefix}-category`)?.value || 'other';
+            const categoryName = getFinanceCategory(categoryId).name || 'Other';
             if(income < 0 || expense < 0) { showToast('Income and expense cannot be negative', 'error'); return; }
             try {
                 const existingAccount = accountId ? companyDailyAccounts.find(item => item.id === accountId) : null;
-                const payload = { accountDate, income, expense, note, accountType, balance: income - expense, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
+                const payload = { accountDate, income, expense, note, accountType, accountId: accountType, expenseAccountId: accountType, categoryId, categoryName, balance: income - expense, source: 'companyDailyAccount', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
                 if(accountId) {
                     const companyExpenseId = await syncCompanyDailyExpense(accountId, accountDate, expense, note, existingAccount?.companyExpenseId || '');
                     await updateDoc(doc(db, 'companyDailyAccounts', accountId), { ...payload, companyExpenseId });
