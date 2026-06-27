@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF for Printing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
@@ -38,7 +38,7 @@
     <!-- ================== LOGIN SCREEN ================== -->
     <div id="login-screen" class="fixed inset-0 bg-gray-100 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-100 text-center">
-            
+
             <!-- Company Logo & Address -->
             <div class="mb-8 flex flex-col items-center">
                 <img src="assets/logo.png" alt="Lakfa Foods Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'64\' height=\'64\' fill=\'%23dc2626\' viewBox=\'0 0 24 24\'><path d=\'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5\'/></svg>'" class="w-24 h-24 object-contain mb-4 bg-gray-50 rounded-full p-2 border border-gray-100 shadow-sm">
@@ -69,7 +69,7 @@
 
     <!-- ================== MAIN DASHBOARD APP ================== -->
     <div id="main-app" class="hidden min-h-screen md:h-screen flex md:flex-row overflow-hidden bg-gray-50">
-        
+
         <!-- Mobile Top Bar -->
         <div class="md:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-red-600 text-white shadow flex items-center px-4">
             <button type="button" onclick="toggleMobileMenu(true)" class="mr-3 inline-flex h-10 w-10 items-center justify-center rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Open navigation menu">
@@ -162,7 +162,7 @@
             </header>
 
             <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-                
+
                 <!-- 1. DASHBOARD TAB -->
                 <div id="tab-dashboard" class="tab-content fade-in">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -252,11 +252,17 @@
                         </div>
                         <div id="bulk-actions" class="hidden flex items-center space-x-3 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
                             <span class="text-red-700 font-medium text-sm" id="selected-count">0 Selected</span>
+                            <button onclick="previewSelectedLabels()" class="flex items-center px-4 py-2 bg-white border border-red-200 text-red-700 rounded-md text-sm font-medium hover:bg-red-50 shadow-sm">
+                                Open Labels
+                            </button>
                             <button onclick="printSelectedOrders()" class="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 shadow-sm">
-                                Print Selected
+                                Download Labels
+                            </button>
+                            <button onclick="previewSelectedInvoices()" class="flex items-center px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-md text-sm font-medium hover:bg-emerald-50 shadow-sm">
+                                Open Invoices
                             </button>
                             <button onclick="printSelectedInvoices()" class="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-medium hover:bg-emerald-700 shadow-sm">
-                                Print Invoices
+                                Download Invoices
                             </button>
                         </div>
                     </div>
@@ -593,11 +599,11 @@
                             <label class="block text-sm font-medium text-gray-700">Location Link (Optional)</label>
                             <input type="url" id="order-location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm p-2 border">
                         </div>
-                        
+
                         <div class="sm:col-span-2 border-t pt-2 mt-2">
                             <label class="block text-sm font-medium text-gray-700 font-bold mb-2">Order Items</label>
                         </div>
-                        
+
                         <div class="sm:col-span-2" id="order-products-container">
                             <!-- Items added dynamically -->
                         </div>
@@ -961,7 +967,7 @@
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
             document.getElementById('toast-message').innerText = message;
-            
+
             if(type === 'error') {
                 toast.className = "fixed top-4 right-4 z-[100] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform duration-300 bg-red-600";
                 icon.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`;
@@ -969,7 +975,7 @@
                 toast.className = "fixed top-4 right-4 z-[100] p-4 rounded-md shadow-lg text-white flex items-center transition-all transform duration-300 bg-green-600";
                 icon.innerHTML = `<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
             }
-            
+
             setTimeout(() => { toast.classList.remove('translate-x-full', 'opacity-0'); }, 10);
             setTimeout(() => { toast.classList.add('translate-x-full', 'opacity-0'); }, 3000);
         };
@@ -1157,7 +1163,7 @@
             if(pushHistory) pushAppHistory(tabId, orderFilter);
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tab-' + tabId).classList.remove('hidden');
-            
+
             document.querySelectorAll('.nav-btn').forEach(el => {
                 el.classList.remove('bg-red-50', 'text-red-700', 'ring-2', 'ring-red-200', 'shadow-sm');
                 el.classList.add('text-gray-600');
@@ -1323,7 +1329,7 @@
 
                 if (!ordersByMonth[monthKey]) { ordersByMonth[monthKey] = { total: 0, days: {} }; }
                 ordersByMonth[monthKey].total += productCount;
-                
+
                 if (!ordersByMonth[monthKey].days[dayStr]) { ordersByMonth[monthKey].days[dayStr] = 0; }
                 ordersByMonth[monthKey].days[dayStr] += productCount;
             });
@@ -1357,10 +1363,10 @@
 
             const sortedMonths = Object.keys(ordersByMonth).sort((a, b) => new Date(b) - new Date(a));
             let accordionHTML = '';
-            
+
             sortedMonths.forEach((month, index) => {
                 const data = ordersByMonth[month];
-                const isCurrent = month === currentMonthKey || (index === 0 && !ordersByMonth[currentMonthKey]); 
+                const isCurrent = month === currentMonthKey || (index === 0 && !ordersByMonth[currentMonthKey]);
                 const monthId = month.replace(/\s+/g, '-');
                 let daysHTML = '';
                 const sortedDays = Object.keys(data.days).sort((a, b) => {
@@ -1402,7 +1408,7 @@
                 const ordered = product.ordered || 0;
                 const balance = (Number(product.initialStock) || 0) + added - ordered;
                 const isLow = balance < 5;
-                
+
                 stockHTML += `
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900 flex justify-between items-center">
@@ -1665,8 +1671,10 @@
                             </div>
                 ` : `
                             <div class="flex items-center justify-end gap-1">
-                                <button onclick="printSingleOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100" title="Print delivery label">${getIconSvg('printer', 'w-5 h-5 mb-0.5')}<span>Label</span></button>
-                                <button onclick="printOrderInvoice('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 p-1 text-[10px] font-bold leading-tight text-emerald-700 hover:bg-emerald-100" title="Print invoice">${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Invoice</span></button>
+                                <button onclick="previewSingleOrderLabel('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-white p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-50" title="Open delivery label">${getIconSvg('eye', 'w-5 h-5 mb-0.5')}<span>Label</span></button>
+                                <button onclick="printSingleOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100" title="Download delivery label">${getIconSvg('printer', 'w-5 h-5 mb-0.5')}<span>Label</span></button>
+                                <button onclick="previewOrderA5Invoice('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-emerald-100 bg-white p-1 text-[10px] font-bold leading-tight text-emerald-700 hover:bg-emerald-50" title="Open invoice">${getIconSvg('eye', 'w-5 h-5 mb-0.5')}<span>Bill</span></button>
+                                <button onclick="printOrderInvoice('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 p-1 text-[10px] font-bold leading-tight text-emerald-700 hover:bg-emerald-100" title="Download invoice">${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Bill</span></button>
                                 <button onclick="openStatusModal('${order.id}', '${order.status}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-blue-100 bg-blue-50 p-1 text-[10px] font-bold leading-tight text-blue-700 hover:bg-blue-100" title="Update product status">${getIconSvg('truck','w-5 h-5 mb-0.5')}<span>Update</span></button>
                                 <button onclick="openOrderPaymentUpdate('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-orange-100 bg-orange-50 p-1 text-[10px] font-bold leading-tight text-orange-700 hover:bg-orange-100" title="Edit payment">${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Payment</span></button>
                                 <button onclick="deleteOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-200 bg-white p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-50" title="Delete Order">${getIconSvg('trash','w-5 h-5 mb-0.5')}<span>Delete</span></button>
@@ -2114,7 +2122,7 @@
             if(!skipConfirm && !(await showConfirm({ title: 'Edit Order?', message: `Open ${order.name || 'this customer'} order for editing?`, confirmText: 'Edit Order', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             document.getElementById('order-id').value = order.id;
             document.getElementById('order-modal-title').innerText = 'Edit Order';
-            document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-'); 
+            document.getElementById('order-date').value = formatDisplayDate(order.createdAt).split('-').reverse().join('-');
             document.getElementById('order-status').value = order.status;
             document.getElementById('order-name').value = order.name;
             document.getElementById('order-phone').value = order.phone;
@@ -2139,7 +2147,7 @@
             document.getElementById('order-new-expense-note').value = '';
             updateOrderExpenseSummary(order);
             renderOrderPaymentHistory(window.currentEditingOrderPaymentHistory);
-            
+
             document.getElementById('order-products-container').innerHTML = '';
             if(order.itemsObj && order.itemsObj.length > 0) {
                 order.itemsObj.forEach(item => addOrderProductRow(item.productId, item.qty, item.priceType || 'includingGst', item.unitPrice ?? item.price));
@@ -2190,14 +2198,14 @@
         window.saveOrder = async function() {
             const id = document.getElementById('order-id').value;
             const dateStr = document.getElementById('order-date').value;
-            
+
             const selects = document.querySelectorAll('.order-product-select');
             const qtys = document.querySelectorAll('.order-product-qty');
             const priceTypes = document.querySelectorAll('.order-price-type');
             const prices = document.querySelectorAll('.order-product-price');
             let itemsObj = [];
             let isValid = true;
-            
+
             selects.forEach((select, index) => {
                 if(select.value) {
                     const qty = parseInt(qtys[index].value) || 1;
@@ -2388,7 +2396,7 @@
                                 <button onclick="deleteProduct('${p.id}')" class="text-red-400 hover:text-red-700 bg-white p-1.5 rounded border shadow-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                             </div>
                         </div>
-                        
+
                         <div class="p-6 flex-1 flex flex-col justify-center">
                             <div class="grid grid-cols-3 gap-2 text-center cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors border border-transparent hover:border-gray-200" onclick="showHistoryModal('${p.id}')" title="Click to view Stock History">
                                 <div><div class="text-xs text-gray-500 font-medium">Added</div><div class="text-lg font-bold text-gray-800">${totalAdded}</div></div>
@@ -2396,7 +2404,7 @@
                                 <div><div class="text-xs text-gray-500 font-medium">Balance</div><div class="text-lg font-bold ${balance < 5 ? 'text-red-600' : 'text-green-600'}">${balance}</div></div>
                             </div>
                         </div>
-                        
+
                         <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-center">
                             <button onclick="openStockModal('${p.id}', '${p.name}')" class="text-green-600 text-sm font-bold flex items-center justify-center w-full hover:text-green-800">
                                 <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg> Add Stock
@@ -2480,7 +2488,7 @@
             document.getElementById('stock-product-id').value = id;
             document.getElementById('stock-history-index').value = historyIndex;
             document.getElementById('stock-product-name').innerText = `Item: ${name}`;
-            
+
             if (historyIndex > -1) {
                 const p = products.find(x => x.id === id);
                 const item = p.stockHistory[historyIndex];
@@ -2502,7 +2510,7 @@
             const qty = parseFloat(document.getElementById('stock-add-qty').value) || 0;
             const date = document.getElementById('stock-add-date').value;
             const p = products.find(x => x.id === id);
-            
+
             try {
                 let history = [...(p.stockHistory || [])];
                 if (index > -1) {
@@ -3537,6 +3545,150 @@
         }
 
         // ================= PDF PRINTING (Updated Sizes) =================
+
+        function buildShippingLabelsPdf(ordersToPrint) {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const pgW = 210; const pgH = 297;
+
+                ordersToPrint.forEach((order, index) => {
+                    if (index > 0 && index % 4 === 0) doc.addPage();
+
+                    const posIndex = index % 4;
+                    const isLeft = posIndex === 0 || posIndex === 2;
+                    const isTop = posIndex === 0 || posIndex === 1;
+
+                    const startX = isLeft ? 10 : (pgW / 2) + 5;
+                    const startY = isTop ? 10 : (pgH / 2) + 5;
+                    const boxW = (pgW / 2) - 15;
+                    const boxH = (pgH / 2) - 15;
+
+                    // Draw Cross Cutting Lines once per page
+                    if (posIndex === 0) {
+                        doc.setDrawColor(200); doc.setLineDashPattern([2, 2], 0);
+                        doc.line(pgW / 2, 5, pgW / 2, pgH - 5);
+                        doc.line(5, pgH / 2, pgW - 5, pgH / 2);
+                        doc.setLineDashPattern([], 0); doc.setDrawColor(0);
+                    }
+
+                    // Label Border Margin
+                    doc.setLineWidth(0.3);
+                    doc.rect(startX, startY, boxW, boxH);
+
+                    // --- TO SECTION ---
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("To:", startX + 5, startY + 10);
+
+                    const landmark = String(order.landmark || '').trim();
+                    let nextY = startY + 18;
+                    if(landmark) {
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        const splitLandmark = doc.splitTextToSize(landmark, boxW - 10);
+                        doc.text(splitLandmark, startX + 5, nextY);
+                        nextY += splitLandmark.length * 6;
+
+                        doc.setFontSize(12);
+                        doc.setFont("helvetica", "normal");
+                        const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                        doc.text(splitName, startX + 5, nextY);
+                        nextY += splitName.length * 5;
+                    } else {
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        const splitName = doc.splitTextToSize(order.name || "Customer", boxW - 10);
+                        doc.text(splitName, startX + 5, nextY);
+                        nextY += splitName.length * 6;
+                    }
+
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "normal");
+                    const customerExtra = [order.shopName ? `Shop: ${order.shopName}` : '', order.gstin ? `GSTIN: ${order.gstin}` : ''].filter(Boolean).join('\n');
+                    const addrText = `${customerExtra ? customerExtra + '\n' : ''}${order.address || ""}\nPIN: ${order.pincode || ""}`;
+                    const splitAddress = doc.splitTextToSize(addrText, boxW - 10);
+                    doc.text(splitAddress, startX + 5, nextY);
+
+                    nextY = nextY + (splitAddress.length * 5);
+
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`Ph: ${order.phone || ""}`, startX + 5, nextY);
+
+                    const toDividerY = nextY + 5;
+                    doc.setDrawColor(150);
+                    doc.line(startX + 5, toDividerY, startX + boxW - 5, toDividerY);
+                    doc.setDrawColor(0);
+
+                    // --- FROM SECTION ---
+                    const fromStartY = toDividerY + 8;
+                    doc.setFontSize(12);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("From:", startX + 5, fromStartY);
+
+                    doc.setFontSize(14);
+                    doc.text(companySettings.name || 'Lakfa Foods', startX + 5, fromStartY + 8);
+                    doc.setFontSize(12);
+                    doc.text(`Ph: ${companySettings.phone || ''}`, startX + 5, fromStartY + 15);
+
+                    doc.setFontSize(11);
+                    doc.setFont("helvetica", "normal");
+                    const fromAddress = doc.splitTextToSize(getCompanyAddressLines().join('\n'), boxW - 10);
+                    doc.text(fromAddress, startX + 5, fromStartY + 22);
+                    const fromEndY = fromStartY + 22 + (fromAddress.length * 5);
+
+                    const fromDividerY = fromEndY + 3;
+                    doc.setDrawColor(150);
+                    doc.line(startX + 5, fromDividerY, startX + boxW - 5, fromDividerY);
+                    doc.setDrawColor(0);
+
+                    const logoX = startX + 5;
+                    const logoW = 20;
+                    const logoH = 13;
+                    const logoY = startY + boxH - logoH - 7;
+                    const descY = fromDividerY + 5;
+                    if(companySettings.companyLogoImage) {
+                        try { doc.addImage(companySettings.companyLogoImage, 'PNG', logoX, logoY, logoW, logoH); } catch(e) { console.warn('Company logo could not be added to label', e); }
+                    } else {
+                        try {
+                            const defaultLogo = document.querySelector('img[src="assets/logo.png"]');
+                            if(defaultLogo?.complete) doc.addImage(defaultLogo, 'PNG', logoX, logoY, logoW, logoH);
+                        } catch(e) { console.warn('Default logo could not be added to label', e); }
+                    }
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(7);
+                    const labelDescription = companySettings.companyDescription || 'Thank you for bringing a taste of island life into your home! LAKFA is more than just a pickle—it is a piece of Lakshadweep coastal heritage.';
+                    const descLines = doc.splitTextToSize(labelDescription, boxW - 10);
+                    if(descLines.length) doc.text(descLines, startX + 5, descY, { lineHeightFactor: 1.05 });
+
+                    const brandTextX = logoX + logoW + 3;
+                    const brandTextWidth = boxW - logoW - 13;
+                    const brandCenterX = brandTextX + (brandTextWidth / 2);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(8);
+                    doc.text('Feel the Islands. Follow our wave.', brandCenterX, logoY + 5, { align: 'center', maxWidth: brandTextWidth });
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(8);
+                    doc.text('www.lakfafoods.com', brandCenterX, logoY + 11, { align: 'center', maxWidth: brandTextWidth });
+                });
+
+
+                return doc;
+        }
+
+        window.previewSingleOrderLabel = function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            showInvoicePreview(buildShippingLabelsPdf([order]));
+        }
+
+        window.previewSelectedLabels = function() {
+            if(selectedOrders.size === 0) return;
+            const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
+            showInvoicePreview(buildShippingLabelsPdf(ordersToPrint));
+        }
+
         window.printSingleOrder = async function(id) {
             const previousSelection = new Set(selectedOrders);
             selectedOrders = new Set([id]);
@@ -3549,19 +3701,19 @@
             if (selectedOrders.size === 0) return;
             if(!(await showConfirm({ title: 'Print Selected Orders?', message: `Generate shipping labels for ${selectedOrders.size} selected order(s)?`, confirmText: 'Print Labels', confirmClass: 'bg-blue-600 hover:bg-blue-700' }))) return;
             const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
-            
+
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 const pgW = 210; const pgH = 297;
-                
+
                 ordersToPrint.forEach((order, index) => {
                     if (index > 0 && index % 4 === 0) doc.addPage();
-                    
+
                     const posIndex = index % 4;
                     const isLeft = posIndex === 0 || posIndex === 2;
                     const isTop = posIndex === 0 || posIndex === 1;
-                    
+
                     const startX = isLeft ? 10 : (pgW / 2) + 5;
                     const startY = isTop ? 10 : (pgH / 2) + 5;
                     const boxW = (pgW / 2) - 15;
@@ -3934,11 +4086,13 @@
 
         function drawA5InvoiceSlot(doc, order, slotIndex = 0) {
             const pageW = 210;
-            const slotH = 148.5;
-            const top = slotIndex === 0 ? 0 : slotH;
-            const marginX = 10;
-            const y0 = top + 8;
-            const contentW = pageW - (marginX * 2);
+            const pageH = 297;
+            const slotW = pageW / 2;
+            const slotX = slotIndex === 0 ? 0 : slotW;
+            const top = 0;
+            const marginX = slotX + 6;
+            const y0 = 8;
+            const contentW = slotW - 12;
             const rows = getOrderInvoiceRows(order);
             const itemsTotal = getOrderItemsTotal(order);
             const roundOff = Number(order.roundOff) || 0;
@@ -3953,11 +4107,11 @@
             if(slotIndex === 1) {
                 doc.setDrawColor(210);
                 doc.setLineDashPattern([2, 2], 0);
-                doc.line(6, slotH, pageW - 6, slotH);
+                doc.line(slotW, 6, slotW, pageH - 6);
                 doc.setLineDashPattern([], 0);
             }
             doc.setDrawColor(180);
-            doc.rect(6, top + 5, pageW - 12, slotH - 10);
+            doc.rect(slotX + 4, 5, slotW - 8, pageH - 10);
             addLogoToPdf(doc, marginX, y0, 12, 32);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
             doc.text(companySettings.name || 'Lakfa Foods', marginX, y0 + 16);
@@ -3966,45 +4120,45 @@
             doc.text(companyLines.slice(0, 3), marginX, y0 + 20, { lineHeightFactor: 1.05 });
 
             doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
-            doc.text('TAX INVOICE', pageW - marginX, y0 + 4, { align: 'right' });
+            doc.text('TAX INVOICE', slotX + slotW - 6, y0 + 4, { align: 'right' });
             doc.setFontSize(7);
-            doc.text(`# ${getInvoiceNumber(order)}`, pageW - marginX, y0 + 11, { align: 'right' });
+            doc.text(`# ${getInvoiceNumber(order)}`, slotX + slotW - 6, y0 + 11, { align: 'right' });
             doc.setFont('helvetica', 'normal');
-            doc.text(`Date: ${formatDisplayDate(order.createdAt)}`, pageW - marginX, y0 + 17, { align: 'right' });
-            doc.text(`Balance: ${formatPdfMoney(due)}`, pageW - marginX, y0 + 23, { align: 'right' });
+            doc.text(`Date: ${formatDisplayDate(order.createdAt)}`, slotX + slotW - 6, y0 + 17, { align: 'right' });
+            doc.text(`Balance: ${formatPdfMoney(due)}`, slotX + slotW - 6, y0 + 23, { align: 'right' });
 
             let y = y0 + 34;
             doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
             doc.text('Bill To', marginX, y);
             doc.setFont('helvetica', 'normal');
             const bill = [order.name || 'Customer', order.shopName ? `Shop: ${order.shopName}` : '', order.address || '', order.pincode ? `PIN: ${order.pincode}` : '', order.phone ? `Ph: ${order.phone}` : '', order.gstin ? `GSTIN ${order.gstin}` : ''].filter(Boolean).join('\n');
-            doc.text(doc.splitTextToSize(bill, 82).slice(0, 5), marginX, y + 5, { lineHeightFactor: 1.05 });
+            doc.text(doc.splitTextToSize(bill, 92).slice(0, 7), marginX, y + 5, { lineHeightFactor: 1.05 });
 
             y += 30;
             doc.setFillColor(55, 55, 55);
             doc.rect(marginX, y, contentW, 7, 'F');
             doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5);
-            doc.text('#', marginX + 3, y + 5); doc.text('Item', marginX + 11, y + 5); doc.text('Qty', 108, y + 5, { align: 'right' }); doc.text('Rate', 130, y + 5, { align: 'right' });
-            if(showGst) { doc.text('GST', 153, y + 5, { align: 'right' }); }
-            doc.text('Amount', pageW - marginX - 2, y + 5, { align: 'right' });
+            doc.text('#', marginX + 2, y + 5); doc.text('Item', marginX + 8, y + 5); doc.text('Qty', marginX + 54, y + 5, { align: 'right' }); doc.text('Rate', marginX + 70, y + 5, { align: 'right' });
+            if(showGst) { doc.text('GST', marginX + 80, y + 5, { align: 'right' }); }
+            doc.text('Amount', slotX + slotW - 6 - 2, y + 5, { align: 'right' });
             doc.setTextColor(0); doc.setFont('helvetica', 'normal');
             y += 12;
-            rows.slice(0, 7).forEach((row, index) => {
-                const itemName = doc.splitTextToSize(row.name, 58).slice(0, 2);
-                doc.text(String(index + 1), marginX + 3, y);
-                doc.text(itemName, marginX + 11, y, { lineHeightFactor: 1.05 });
-                doc.text(formatQuantity(row.qty), 108, y, { align: 'right' });
-                doc.text(formatPdfMoney(row.rate), 130, y, { align: 'right' });
-                if(showGst) doc.text(`${row.gstPercent}%`, 153, y, { align: 'right' });
-                doc.text(formatPdfMoney(row.amount), pageW - marginX - 2, y, { align: 'right' });
+            rows.slice(0, 15).forEach((row, index) => {
+                const itemName = doc.splitTextToSize(row.name, 40).slice(0, 2);
+                doc.text(String(index + 1), marginX + 2, y);
+                doc.text(itemName, marginX + 8, y, { lineHeightFactor: 1.05 });
+                doc.text(formatQuantity(row.qty), marginX + 54, y, { align: 'right' });
+                doc.text(formatPdfMoney(row.rate), marginX + 70, y, { align: 'right' });
+                if(showGst) doc.text(`${row.gstPercent}%`, marginX + 80, y, { align: 'right' });
+                doc.text(formatPdfMoney(row.amount), slotX + slotW - 6 - 2, y, { align: 'right' });
                 y += Math.max(6, itemName.length * 3.5 + 2);
             });
-            if(rows.length > 7) { doc.text(`+ ${rows.length - 7} more item(s)`, marginX + 11, y); y += 5; }
-            doc.line(marginX, y, pageW - marginX, y);
+            if(rows.length > 15) { doc.text(`+ ${rows.length - 15} more item(s)`, marginX + 8, y); y += 5; }
+            doc.line(marginX, y, slotX + slotW - 6, y);
             y += 5;
 
-            const totalsX = pageW - marginX - 2;
-            const labelX = 154;
+            const totalsX = slotX + slotW - 6 - 2;
+            const labelX = marginX + 66;
             doc.setFontSize(7);
             const totalLine = (label, value, bold = false) => { doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.text(label, labelX, y, { align: 'right' }); doc.text(value, totalsX, y, { align: 'right' }); y += 5; };
             totalLine('Sub Total', formatPdfMoney(itemsTotal));
@@ -4016,16 +4170,16 @@
             totalLine('Balance Due', formatPdfMoney(due), true);
 
             doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-            doc.text('Amount in words:', marginX, top + slotH - 21);
+            doc.text('Amount in words:', marginX, pageH - 32);
             doc.setFont('helvetica', 'bolditalic');
-            doc.text(doc.splitTextToSize(amountToWords(total), 88).slice(0, 2), marginX + 24, top + slotH - 21, { lineHeightFactor: 1.05 });
+            doc.text(doc.splitTextToSize(amountToWords(total), 62).slice(0, 3), marginX + 24, pageH - 32, { lineHeightFactor: 1.05 });
             doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-            doc.text('Thanks for your business.', marginX, top + slotH - 10);
+            doc.text('Thanks for your business.', marginX, pageH - 12);
             if(companySettings.signatureImage) {
-                try { doc.addImage(companySettings.signatureImage, 'PNG', pageW - 54, top + slotH - 29, 22, 11); } catch(e) { console.warn('Signature could not be added', e); }
+                try { doc.addImage(companySettings.signatureImage, 'PNG', slotX + slotW - 40, pageH - 30, 22, 11); } catch(e) { console.warn('Signature could not be added', e); }
             }
             doc.setFont('helvetica', 'bold');
-            doc.text(companySettings.signatureName || 'Authorized Signatory', pageW - marginX, top + slotH - 10, { align: 'right' });
+            doc.text(companySettings.signatureName || 'Authorized Signatory', slotX + slotW - 6, pageH - 12, { align: 'right' });
         }
 
         function buildA5InvoicesPdf(ordersToPrint) {
@@ -4039,15 +4193,27 @@
             return doc;
         }
 
+        window.previewOrderA5Invoice = function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            showInvoicePreview(buildA5InvoicesPdf([order]));
+        }
+
         window.printOrderInvoice = async function(id) {
             const order = orders.find(o => o.id === id);
             if(!order) return;
             buildA5InvoicesPdf([order]).save(`Lakfa_A5_Invoice_${order.phone || 'customer'}_${normalizeDateInput(order.createdAt)}.pdf`);
         }
 
+        window.previewSelectedInvoices = async function() {
+            if(selectedOrders.size === 0) return;
+            const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
+            showInvoicePreview(buildA5InvoicesPdf(ordersToPrint));
+        }
+
         window.printSelectedInvoices = async function() {
             if(selectedOrders.size === 0) return;
-            if(!(await showConfirm({ title: 'Print Selected Invoices?', message: `Generate A5 invoices for ${selectedOrders.size} selected order(s)? Two invoices will be placed on each A4 page.`, confirmText: 'Print Invoices', confirmClass: 'bg-emerald-600 hover:bg-emerald-700' }))) return;
+            if(!(await showConfirm({ title: 'Print Selected Invoices?', message: `Generate A5 portrait invoices for ${selectedOrders.size} selected order(s)? Two invoices will be placed side-by-side on each A4 page.`, confirmText: 'Print Invoices', confirmClass: 'bg-emerald-600 hover:bg-emerald-700' }))) return;
             const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
             try {
                 buildA5InvoicesPdf(ordersToPrint).save(`Lakfa_A5_Invoices_${getTodayString()}.pdf`);
@@ -4115,8 +4281,8 @@
             doc.save(`Lakfa_Total_Bill_${partyKey}_${getTodayString()}.pdf`);
         }
 
-        window.closeModal = function(id) { 
-            document.getElementById(id).classList.add('hidden'); 
+        window.closeModal = function(id) {
+            document.getElementById(id).classList.add('hidden');
             if(id === 'invoice-preview-modal') {
                 const frame = document.getElementById('invoice-preview-frame');
                 if(frame?.dataset.objectUrl) { URL.revokeObjectURL(frame.dataset.objectUrl); delete frame.dataset.objectUrl; }
