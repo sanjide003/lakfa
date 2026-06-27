@@ -255,6 +255,9 @@
                             <button onclick="printSelectedOrders()" class="flex items-center px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 shadow-sm">
                                 Print Selected
                             </button>
+                            <button onclick="printSelectedInvoices()" class="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-medium hover:bg-emerald-700 shadow-sm">
+                                Print Invoices
+                            </button>
                         </div>
                     </div>
 
@@ -1662,7 +1665,8 @@
                             </div>
                 ` : `
                             <div class="flex items-center justify-end gap-1">
-                                <button onclick="printSingleOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100" title="Print Order">${getIconSvg('printer', 'w-5 h-5 mb-0.5')}<span>Print</span></button>
+                                <button onclick="printSingleOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-100 bg-red-50 p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-100" title="Print delivery label">${getIconSvg('printer', 'w-5 h-5 mb-0.5')}<span>Label</span></button>
+                                <button onclick="printOrderInvoice('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 p-1 text-[10px] font-bold leading-tight text-emerald-700 hover:bg-emerald-100" title="Print invoice">${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Invoice</span></button>
                                 <button onclick="openStatusModal('${order.id}', '${order.status}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-blue-100 bg-blue-50 p-1 text-[10px] font-bold leading-tight text-blue-700 hover:bg-blue-100" title="Update product status">${getIconSvg('truck','w-5 h-5 mb-0.5')}<span>Update</span></button>
                                 <button onclick="openOrderPaymentUpdate('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-orange-100 bg-orange-50 p-1 text-[10px] font-bold leading-tight text-orange-700 hover:bg-orange-100" title="Edit payment">${getIconSvg('rupee', 'w-5 h-5 mb-0.5')}<span>Payment</span></button>
                                 <button onclick="deleteOrder('${order.id}')" class="inline-flex w-12 flex-col items-center justify-center rounded-md border border-red-200 bg-white p-1 text-[10px] font-bold leading-tight text-red-700 hover:bg-red-50" title="Delete Order">${getIconSvg('trash','w-5 h-5 mb-0.5')}<span>Delete</span></button>
@@ -3925,6 +3929,136 @@
             const y = addInvoiceTable(doc, rows, 134, showGst);
             finishInvoicePdf(doc, y, { total, paid, due, taxable, cgst, sgst, showGst, roundOff: Number(order.roundOff) || 0, discount: Number(order.discount) || 0, itemsTotal: getOrderItemsTotal(order) });
             return doc;
+        }
+
+
+        function drawA5InvoiceSlot(doc, order, slotIndex = 0) {
+            const pageW = 210;
+            const slotH = 148.5;
+            const top = slotIndex === 0 ? 0 : slotH;
+            const marginX = 10;
+            const y0 = top + 8;
+            const contentW = pageW - (marginX * 2);
+            const rows = getOrderInvoiceRows(order);
+            const itemsTotal = getOrderItemsTotal(order);
+            const roundOff = Number(order.roundOff) || 0;
+            const discount = Number(order.discount) || 0;
+            const total = Number(order.orderTotal) || itemsTotal;
+            const paid = getOrderPaidTotal(order);
+            const due = getOrderBalanceDue(order);
+            const showGst = rows.some(row => row.priceType !== 'withoutGst' && row.gstPercent > 0);
+            const taxable = rows.reduce((sum, row) => sum + row.taxable, 0);
+            const cgst = rows.reduce((sum, row) => sum + row.cgst, 0);
+            const sgst = rows.reduce((sum, row) => sum + row.sgst, 0);
+            if(slotIndex === 1) {
+                doc.setDrawColor(210);
+                doc.setLineDashPattern([2, 2], 0);
+                doc.line(6, slotH, pageW - 6, slotH);
+                doc.setLineDashPattern([], 0);
+            }
+            doc.setDrawColor(180);
+            doc.rect(6, top + 5, pageW - 12, slotH - 10);
+            addLogoToPdf(doc, marginX, y0, 12, 32);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+            doc.text(companySettings.name || 'Lakfa Foods', marginX, y0 + 16);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+            const companyLines = [...getCompanyAddressLines(), companySettings.gstin ? `GSTIN ${companySettings.gstin}` : '', companySettings.phone ? `Ph: ${companySettings.phone}` : ''].filter(Boolean);
+            doc.text(companyLines.slice(0, 3), marginX, y0 + 20, { lineHeightFactor: 1.05 });
+
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(15);
+            doc.text('TAX INVOICE', pageW - marginX, y0 + 4, { align: 'right' });
+            doc.setFontSize(7);
+            doc.text(`# ${getInvoiceNumber(order)}`, pageW - marginX, y0 + 11, { align: 'right' });
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Date: ${formatDisplayDate(order.createdAt)}`, pageW - marginX, y0 + 17, { align: 'right' });
+            doc.text(`Balance: ${formatPdfMoney(due)}`, pageW - marginX, y0 + 23, { align: 'right' });
+
+            let y = y0 + 34;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(7);
+            doc.text('Bill To', marginX, y);
+            doc.setFont('helvetica', 'normal');
+            const bill = [order.name || 'Customer', order.shopName ? `Shop: ${order.shopName}` : '', order.address || '', order.pincode ? `PIN: ${order.pincode}` : '', order.phone ? `Ph: ${order.phone}` : '', order.gstin ? `GSTIN ${order.gstin}` : ''].filter(Boolean).join('\n');
+            doc.text(doc.splitTextToSize(bill, 82).slice(0, 5), marginX, y + 5, { lineHeightFactor: 1.05 });
+
+            y += 30;
+            doc.setFillColor(55, 55, 55);
+            doc.rect(marginX, y, contentW, 7, 'F');
+            doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(6.5);
+            doc.text('#', marginX + 3, y + 5); doc.text('Item', marginX + 11, y + 5); doc.text('Qty', 108, y + 5, { align: 'right' }); doc.text('Rate', 130, y + 5, { align: 'right' });
+            if(showGst) { doc.text('GST', 153, y + 5, { align: 'right' }); }
+            doc.text('Amount', pageW - marginX - 2, y + 5, { align: 'right' });
+            doc.setTextColor(0); doc.setFont('helvetica', 'normal');
+            y += 12;
+            rows.slice(0, 7).forEach((row, index) => {
+                const itemName = doc.splitTextToSize(row.name, 58).slice(0, 2);
+                doc.text(String(index + 1), marginX + 3, y);
+                doc.text(itemName, marginX + 11, y, { lineHeightFactor: 1.05 });
+                doc.text(formatQuantity(row.qty), 108, y, { align: 'right' });
+                doc.text(formatPdfMoney(row.rate), 130, y, { align: 'right' });
+                if(showGst) doc.text(`${row.gstPercent}%`, 153, y, { align: 'right' });
+                doc.text(formatPdfMoney(row.amount), pageW - marginX - 2, y, { align: 'right' });
+                y += Math.max(6, itemName.length * 3.5 + 2);
+            });
+            if(rows.length > 7) { doc.text(`+ ${rows.length - 7} more item(s)`, marginX + 11, y); y += 5; }
+            doc.line(marginX, y, pageW - marginX, y);
+            y += 5;
+
+            const totalsX = pageW - marginX - 2;
+            const labelX = 154;
+            doc.setFontSize(7);
+            const totalLine = (label, value, bold = false) => { doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.text(label, labelX, y, { align: 'right' }); doc.text(value, totalsX, y, { align: 'right' }); y += 5; };
+            totalLine('Sub Total', formatPdfMoney(itemsTotal));
+            if(showGst) totalLine('Taxable / GST', `${formatPdfMoney(taxable)} / ${formatPdfMoney(cgst + sgst)}`);
+            if(discount) totalLine('Discount', '-' + formatPdfMoney(discount));
+            if(roundOff) totalLine('Round Off', formatPdfMoney(roundOff));
+            totalLine('Total', formatPdfMoney(total), true);
+            totalLine('Paid', formatPdfMoney(paid));
+            totalLine('Balance Due', formatPdfMoney(due), true);
+
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+            doc.text('Amount in words:', marginX, top + slotH - 21);
+            doc.setFont('helvetica', 'bolditalic');
+            doc.text(doc.splitTextToSize(amountToWords(total), 88).slice(0, 2), marginX + 24, top + slotH - 21, { lineHeightFactor: 1.05 });
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+            doc.text('Thanks for your business.', marginX, top + slotH - 10);
+            if(companySettings.signatureImage) {
+                try { doc.addImage(companySettings.signatureImage, 'PNG', pageW - 54, top + slotH - 29, 22, 11); } catch(e) { console.warn('Signature could not be added', e); }
+            }
+            doc.setFont('helvetica', 'bold');
+            doc.text(companySettings.signatureName || 'Authorized Signatory', pageW - marginX, top + slotH - 10, { align: 'right' });
+        }
+
+        function buildA5InvoicesPdf(ordersToPrint) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+            ordersToPrint.forEach((order, index) => {
+                if(index > 0 && index % 2 === 0) doc.addPage();
+                drawA5InvoiceSlot(doc, order, index % 2);
+            });
+            addInvoicePageNumbers(doc);
+            return doc;
+        }
+
+        window.printOrderInvoice = async function(id) {
+            const order = orders.find(o => o.id === id);
+            if(!order) return;
+            buildA5InvoicesPdf([order]).save(`Lakfa_A5_Invoice_${order.phone || 'customer'}_${normalizeDateInput(order.createdAt)}.pdf`);
+        }
+
+        window.printSelectedInvoices = async function() {
+            if(selectedOrders.size === 0) return;
+            if(!(await showConfirm({ title: 'Print Selected Invoices?', message: `Generate A5 invoices for ${selectedOrders.size} selected order(s)? Two invoices will be placed on each A4 page.`, confirmText: 'Print Invoices', confirmClass: 'bg-emerald-600 hover:bg-emerald-700' }))) return;
+            const ordersToPrint = orders.filter(o => selectedOrders.has(o.id));
+            try {
+                buildA5InvoicesPdf(ordersToPrint).save(`Lakfa_A5_Invoices_${getTodayString()}.pdf`);
+                selectedOrders.clear();
+                document.getElementById('select-all-orders').checked = false;
+                renderOrders();
+                showToast('Invoice PDF Download Started');
+            } catch(err) {
+                console.error(err);
+                showToast('Invoice PDF Error: ' + err.message, 'error');
+            }
         }
 
         function showInvoicePreview(doc) {
