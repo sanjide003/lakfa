@@ -17,7 +17,7 @@ service cloud.firestore {
     }
 
     function isManager() {
-      return hasUserRole('manager');
+      return hasUserRole('manager') || hasUserRole('admin') || hasUserRole('owner');
     }
 
     function isInvestor() {
@@ -36,9 +36,21 @@ service cloud.firestore {
       return isManager() || hasPermission(module);
     }
 
+    function isSelfUser(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function isSelfManagerBootstrap(userId) {
+      return isSelfUser(userId)
+        && request.resource.data.role == 'manager'
+        && request.resource.data.email == request.auth.token.email;
+    }
+
     match /users/{userId} {
-      allow read: if isManager() || (signedIn() && request.auth.uid == userId);
-      allow create, update, delete: if isManager();
+      allow read: if isManager() || isSelfUser(userId);
+      allow create: if isManager() || isSelfManagerBootstrap(userId);
+      allow update: if isManager() || (isSelfManagerBootstrap(userId) && !resource.data.keys().hasAny(['role']));
+      allow delete: if isManager();
     }
 
     match /settings/{docId} {

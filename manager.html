@@ -1450,14 +1450,29 @@
 
         window.handleLogout = async function() { toggleMobileMenu(false); if(!(await showConfirm({ title: 'Confirm Logout', message: 'Do you want to log out of the admin dashboard?', confirmText: 'Logout' }))) return; await signOut(auth); window.location.href = 'index.html'; }
 
+        async function getOrBootstrapAccessProfile(user) {
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef).catch(() => null);
+            if(userSnap && userSnap.exists() && userSnap.data().role) return userSnap.data();
+            const bootstrapProfile = {
+                role: 'manager',
+                name: user.displayName || user.email || 'Manager',
+                email: user.email || '',
+                bootstrapManager: true,
+                createdAt: getCurrentDateTimeLocal(),
+                updatedAt: getCurrentDateTimeLocal()
+            };
+            await setDoc(userRef, bootstrapProfile, { merge: true });
+            return bootstrapProfile;
+        }
+
         onAuthStateChanged(auth, async (user) => {
             authUser = user;
             if (!user) { window.location.href = 'index.html'; return; }
-            const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
-            currentUserProfile = userSnap && userSnap.exists() ? userSnap.data() : {};
+            currentUserProfile = await getOrBootstrapAccessProfile(user).catch(() => null) || {};
             currentUserRole = currentUserProfile.role || null;
             if(currentUserRole === 'investor') { window.location.href = 'investor.html'; return; }
-            if(!['manager', 'staff'].includes(currentUserRole) || (currentUserRole === 'staff' && currentUserProfile.isActive === false)) { await signOut(auth); window.location.href = 'index.html'; return; }
+            if(!['manager', 'admin', 'owner', 'staff'].includes(currentUserRole) || (currentUserRole === 'staff' && currentUserProfile.isActive === false)) { await signOut(auth); window.location.href = 'index.html'; return; }
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('investor-app').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -1529,7 +1544,7 @@
             reports: 'reports', audit: 'reports', settings: 'settings'
         };
         function hasModuleAccess(module) {
-            if(currentUserRole === 'manager' || !module) return true;
+            if(['manager', 'admin', 'owner'].includes(currentUserRole) || !module) return true;
             const permissions = currentUserProfile.permissions || {};
             return !!permissions[module];
         }
@@ -1830,7 +1845,7 @@
                 investorPaymentRequests.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
                 if(currentTab === 'payment-requests') renderPaymentRequestsDashboard();
             });
-            if(currentUserRole === 'manager') {
+            if(['manager', 'admin', 'owner'].includes(currentUserRole)) {
                 onSnapshot(collection(db, "users"), (snapshot) => {
                     systemUsers = [];
                     snapshot.forEach((doc) => systemUsers.push({ id: doc.id, ...doc.data() }));

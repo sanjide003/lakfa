@@ -63,7 +63,7 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Balance sheet snapshot and reconciliation mismatch alerts.
 - GST summary, HSN/SAC-wise tax report and input/output GST reconciliation.
 - Investor-specific capital statement, profit share history and personal contribution reports.
-- Manager/staff role permissions by module for orders, inventory, production, finance, reports and settings.
+- Manager/staff role permissions by module for orders, inventory, production, finance, reports and settings, including manager profile bootstrap for existing manager Auth accounts and legacy admin/owner role support.
 - Party Master and Party Ledger with opening balance, credit limit, payment terms, due follow-up, statement PDF/CSV and duplicate merge support.
 
 ## ഇനി ബാക്കി ചെയ്യാനുള്ള പ്രധാന ഘട്ടങ്ങൾ

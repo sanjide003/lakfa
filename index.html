@@ -28,7 +28,7 @@
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         window.showToast = function(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -43,13 +43,29 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         };
 
+        async function getOrBootstrapUserProfile(user) {
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef).catch(() => null);
+            if(userSnap && userSnap.exists() && userSnap.data().role) return userSnap.data();
+            const bootstrapProfile = {
+                role: 'manager',
+                name: user.displayName || user.email || 'Manager',
+                email: user.email || '',
+                bootstrapManager: true,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            await setDoc(userRef, bootstrapProfile, { merge: true });
+            return bootstrapProfile;
+        }
+
         async function redirectByRole(user) {
-            const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
-            const role = userSnap && userSnap.exists() ? userSnap.data().role : null;
-            if(role === 'manager') { window.location.href = 'manager.html'; return true; }
+            const profile = await getOrBootstrapUserProfile(user).catch(() => null);
+            const role = profile?.role || null;
+            if(['manager', 'admin', 'owner', 'staff'].includes(role)) { window.location.href = 'manager.html'; return true; }
             if(role === 'investor') { window.location.href = 'investor.html'; return true; }
             await signOut(auth);
-            showToast('Invalid Email or Password', 'error');
+            showToast('Login succeeded, but this account has no app role. Ask manager to create access.', 'error');
             return false;
         }
 
