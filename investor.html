@@ -454,6 +454,10 @@
                     <svg class="mr-3 h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" /></svg>
                     Requests
                 </button>
+                <button onclick="switchInvestorTab('statement')" id="investor-nav-statement" class="investor-nav-btn w-full min-h-12 flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                    <svg class="w-5 h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6h6v6m-8 4h10a2 2 0 002-2V7l-7-4-7 4v12a2 2 0 002 2z" /></svg>
+                    Capital Statement
+                </button>
                 <button onclick="switchInvestorTab('expenditure')" id="investor-nav-expenditure" class="investor-nav-btn w-full min-h-12 flex items-center px-4 py-3 text-sm font-medium rounded-xl text-gray-600 hover:bg-slate-50 hover:text-slate-700 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2 2 4-4M7 4h10a2 2 0 012 2v14l-4-2-4 2-4-2-4 2V6a2 2 0 012-2z" /></svg>
                     Expenditure Tracking
@@ -528,6 +532,18 @@
                         <div class="bg-blue-50 rounded-2xl shadow-sm border border-blue-100 p-4 sm:p-6"><div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between mb-4"><h2 class="font-bold text-blue-950">Order Status Overview</h2><div class="flex flex-row gap-2 text-xs overflow-x-auto"><input id="investor-company-from" type="date" aria-label="From date" title="From date (DD/MM/YYYY)" onchange="renderInvestorPortal()" class="min-h-11 w-40 rounded-lg border border-blue-200 p-2 bg-white text-gray-700"><input id="investor-company-to" type="date" aria-label="To date" title="To date (DD/MM/YYYY)" onchange="renderInvestorPortal()" class="min-h-11 w-40 rounded-lg border border-blue-200 p-2 bg-white text-gray-700"></div></div><div id="investor-company-status" class="grid grid-cols-2 gap-3"></div></div>
                         <div class="bg-emerald-50 rounded-2xl shadow-sm border border-emerald-100 p-4 sm:p-6"><h2 class="font-bold text-emerald-950 mb-4">Current Stock Status</h2><div id="investor-company-stock" class="overflow-x-auto"></div></div>
                         <div class="bg-indigo-50 rounded-2xl shadow-sm border border-indigo-100 p-4 sm:p-6 xl:col-span-2"><h2 class="font-bold text-indigo-950 mb-4">Total Order History</h2><div id="investor-company-order-history" class="space-y-3"></div></div>
+                    </div>
+                </section>
+
+                <section id="investor-tab-statement" class="investor-tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-5"><div class="text-xs font-bold uppercase text-emerald-600">Opening Capital</div><div id="investor-statement-opening" class="mt-2 text-2xl font-bold text-emerald-900">₹0</div></div>
+                        <div class="rounded-xl border border-blue-100 bg-blue-50 p-5"><div class="text-xs font-bold uppercase text-blue-600">Approved Contributions</div><div id="investor-statement-contributions" class="mt-2 text-2xl font-bold text-blue-900">₹0</div></div>
+                        <div class="rounded-xl border border-rose-100 bg-rose-50 p-5"><div class="text-xs font-bold uppercase text-rose-600">Profit Share History</div><div id="investor-statement-profit" class="mt-2 text-2xl font-bold text-rose-900">₹0</div></div>
+                    </div>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"><div class="px-6 py-4 border-b bg-purple-50"><h2 class="font-bold text-purple-950">Capital Statement</h2><p class="text-sm text-purple-700 mt-1">Opening investment, approved contribution, profit share എന്നിവ chronological ആയി കാണാം.</p></div><div id="investor-capital-statement-list" class="divide-y divide-gray-100"></div></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"><div class="px-6 py-4 border-b bg-rose-50"><h2 class="font-bold text-rose-950">Profit Share History</h2><p class="text-sm text-rose-700 mt-1">Manager save ചെയ്ത profit distributions-ൽ നിങ്ങളുടെ share മാത്രം.</p></div><div id="investor-profit-share-list" class="divide-y divide-gray-100"></div></div>
                     </div>
                 </section>
 
@@ -828,6 +844,7 @@
         let investors = [];
         let investorExpenses = [];
         let investorPaymentRequests = [];
+        let profitDistributions = [];
         let authUser = null;
         let currentUserRole = 'manager';
         let selectedOrders = new Set();
@@ -2308,7 +2325,7 @@
                 active.classList.remove('text-gray-600');
                 active.classList.add('bg-emerald-50', 'text-emerald-700');
             }
-            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests', company: 'Product Status', expenditure: 'Investor Expenditure Tracking', profile: 'Profile' };
+            const titles = { dashboard: 'Dashboard', contribution: 'Contribution', requests: 'Requests', company: 'Product Status', statement: 'Capital Statement', expenditure: 'Investor Expenditure Tracking', profile: 'Profile' };
             document.getElementById('investor-page-title').innerText = titles[tabId] || 'Investor Portal';
             renderInvestorPortal();
         }
@@ -2475,6 +2492,12 @@
                 investorPaymentRequests.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
                 renderInvestorPortal();
             });
+            onSnapshot(collection(db, "profitDistributions"), (snapshot) => {
+                profitDistributions = [];
+                snapshot.forEach((doc) => profitDistributions.push({ id: doc.id, ...doc.data() }));
+                profitDistributions.sort((a, b) => new Date(normalizeDateInput(b.toDate || b.createdAt)) - new Date(normalizeDateInput(a.toDate || a.createdAt)));
+                renderInvestorPortal();
+            });
         }
 
         function renderCompanyOverview(companyCapital) {
@@ -2609,6 +2632,35 @@
             }
         }
 
+        function getInvestorProfitShares(uid) {
+            return profitDistributions
+                .filter(distribution => distribution.status !== 'cancelled')
+                .flatMap(distribution => (distribution.shares || [])
+                    .filter(share => share.investorId === uid)
+                    .map(share => ({ ...share, fromDate: distribution.fromDate, toDate: distribution.toDate, distributionId: distribution.id, createdAt: distribution.createdAt || distribution.toDate }))
+                );
+        }
+
+        function renderInvestorCapitalStatement(profile, ownExpenses, profitShares) {
+            const opening = Number(profile.initialInvestment) || 0;
+            const approvedContributions = ownExpenses.filter(expense => expense.status === 'approved' && expense.source !== 'profitDistribution').reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0);
+            const profitTotal = profitShares.reduce((sum, share) => sum + (Number(share.amount) || 0), 0);
+            const openingEl = document.getElementById('investor-statement-opening');
+            const contributionEl = document.getElementById('investor-statement-contributions');
+            const profitEl = document.getElementById('investor-statement-profit');
+            if(openingEl) openingEl.innerText = formatMoney(opening);
+            if(contributionEl) contributionEl.innerText = formatMoney(approvedContributions);
+            if(profitEl) profitEl.innerText = formatMoney(profitTotal);
+            const rows = [
+                ...(opening ? [{ date: profile.createdAt || getTodayString(), label: 'Opening Capital', amount: opening, type: 'Capital' }] : []),
+                ...ownExpenses.filter(expense => expense.status === 'approved').map(expense => ({ date: expense.approvedAt || expense.createdAt, label: expense.purpose || 'Approved contribution', amount: Number(expense.amount) || 0, type: expense.source === 'profitDistribution' ? 'Profit Share' : 'Contribution' }))
+            ].sort((a,b) => new Date(normalizeDateInput(b.date)) - new Date(normalizeDateInput(a.date)));
+            const statementList = document.getElementById('investor-capital-statement-list');
+            if(statementList) statementList.innerHTML = rows.map(row => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(row.label)}</div><div class="text-xs text-gray-500">${formatDisplayDate(row.date)} • ${row.type}</div></div><div class="font-bold text-emerald-700">${formatMoney(row.amount)}</div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No capital statement entries yet.</div>';
+            const profitList = document.getElementById('investor-profit-share-list');
+            if(profitList) profitList.innerHTML = profitShares.map(share => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">Profit share ${formatDisplayDate(share.fromDate)} - ${formatDisplayDate(share.toDate)}</div><div class="text-xs text-gray-500">${Number(share.percent || 0).toFixed(2)}% • Distribution ${escapeHtml(share.distributionId || '')}</div></div><div class="font-bold text-rose-700">${formatMoney(share.amount)}</div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No profit share history yet.</div>';
+        }
+
         function renderInvestorPortal() {
             if(!authUser || !document.getElementById('investor-total-capital')) return;
             const profile = getInvestorByUid(authUser.uid);
@@ -2616,6 +2668,7 @@
             const approvedExpenses = ownExpenses.filter(expense => expense.status === 'approved');
             const pendingExpenses = ownExpenses.filter(expense => expense.status === 'pending');
             const rejectedExpenses = ownExpenses.filter(expense => expense.status === 'rejected');
+            const ownProfitShares = getInvestorProfitShares(authUser.uid);
             renderInvestorNotifications();
             const approved = getApprovedExpenseTotal(authUser.uid);
             const initial = Number(profile.initialInvestment) || 0;
@@ -2637,6 +2690,7 @@
             if(approvedTotalEl) approvedTotalEl.innerText = formatMoney(expenditureApprovedTotal);
             if(pendingTotalEl) pendingTotalEl.innerText = formatMoney(expenditurePendingTotal);
             renderInvestorManagerPaymentRequests();
+            renderInvestorCapitalStatement(profile, ownExpenses, ownProfitShares);
 
             const filteredExpenses = currentInvestorRequestFilter === 'all' ? ownExpenses : ownExpenses.filter(expense => expense.status === currentInvestorRequestFilter);
             document.getElementById('investor-latest-requests').innerHTML = ownExpenses.slice(0, 5).map(renderInvestorRequestCard).join('') || '<div class="text-sm text-gray-500 text-center py-6">No requests yet.</div>';

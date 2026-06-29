@@ -772,6 +772,32 @@
                         <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Investor Login Access List</h3><p class="text-sm text-gray-500 mt-1">All investor usernames and saved passwords.</p></div>
                         <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left font-bold text-gray-600">Investor</th><th class="px-6 py-3 text-left font-bold text-gray-600">Username / Email</th><th class="px-6 py-3 text-left font-bold text-gray-600">Password</th></tr></thead><tbody id="settings-investor-access-list" class="divide-y divide-gray-100 bg-white"></tbody></table></div>
                     </div>
+
+                    <div class="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-indigo-50"><h3 class="font-bold text-indigo-950">Staff Role & Module Permissions</h3><p class="text-sm text-indigo-700 mt-1">Staff login create ചെയ്ത് orders, inventory, production, finance, reports, settings എന്നീ modules permission-wise നൽകാം.</p></div>
+                            <div class="p-6 space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div><label class="block text-sm font-medium text-gray-700">Staff Name</label><input id="staff-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Staff Email</label><input id="staff-email" type="email" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
+                                    <div><label class="block text-sm font-medium text-gray-700">Login Password</label><input id="staff-password" type="password" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Min 6 characters"></div>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+                                    <label class="rounded border p-2"><input id="staff-perm-orders" type="checkbox" class="mr-2">Orders</label>
+                                    <label class="rounded border p-2"><input id="staff-perm-inventory" type="checkbox" class="mr-2">Inventory</label>
+                                    <label class="rounded border p-2"><input id="staff-perm-production" type="checkbox" class="mr-2">Production</label>
+                                    <label class="rounded border p-2"><input id="staff-perm-finance" type="checkbox" class="mr-2">Finance</label>
+                                    <label class="rounded border p-2"><input id="staff-perm-reports" type="checkbox" class="mr-2">Reports</label>
+                                    <label class="rounded border p-2"><input id="staff-perm-settings" type="checkbox" class="mr-2">Settings</label>
+                                </div>
+                                <button type="button" onclick="saveStaffUser()" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">Create Staff Login</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Staff Access List</h3><p class="text-sm text-gray-500 mt-1">Module permission toggle ചെയ്താൽ ഉടൻ staff access update ചെയ്യും.</p></div>
+                            <div id="settings-staff-access-list" class="divide-y divide-gray-100"></div>
+                        </div>
+                    </div>
                 </div>
 
             </main>
@@ -1249,6 +1275,8 @@
         let auditLog = [];
         let authUser = null;
         let currentUserRole = 'manager';
+        let currentUserProfile = {};
+        let systemUsers = [];
         let selectedOrders = new Set();
         let currentTab = 'dashboard';
         let currentOrderStatusFilter = 'Pending';
@@ -1396,9 +1424,10 @@
             authUser = user;
             if (!user) { window.location.href = 'index.html'; return; }
             const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
-            currentUserRole = userSnap && userSnap.exists() ? userSnap.data().role : null;
+            currentUserProfile = userSnap && userSnap.exists() ? userSnap.data() : {};
+            currentUserRole = currentUserProfile.role || null;
             if(currentUserRole === 'investor') { window.location.href = 'investor.html'; return; }
-            if(currentUserRole !== 'manager') { await signOut(auth); window.location.href = 'index.html'; return; }
+            if(!['manager', 'staff'].includes(currentUserRole) || (currentUserRole === 'staff' && currentUserProfile.isActive === false)) { await signOut(auth); window.location.href = 'index.html'; return; }
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('investor-app').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -1462,8 +1491,31 @@
             if(currentTab === 'orders') document.getElementById('header-actions').innerHTML = getOrderHeaderActions();
         }
 
+        const moduleTabs = {
+            orders: 'orders', recycle: 'orders', returns: 'orders', cancelled: 'orders', repeat: 'orders',
+            inventory: 'inventory', 'raw-materials': 'inventory', suppliers: 'inventory',
+            production: 'production',
+            capital: 'finance', 'payment-requests': 'finance', 'manager-loans': 'finance', 'company-finance': 'finance', 'profit-sharing': 'finance', employees: 'finance', assets: 'finance',
+            reports: 'reports', audit: 'reports', settings: 'settings'
+        };
+        function hasModuleAccess(module) {
+            if(currentUserRole === 'manager' || !module) return true;
+            const permissions = currentUserProfile.permissions || {};
+            return !!permissions[module];
+        }
+        function canAccessTab(tabId) { return hasModuleAccess(moduleTabs[tabId]); }
+        function applyModulePermissions() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const tabId = (btn.id || '').replace('nav-', '');
+                if(!tabId) return;
+                btn.classList.toggle('hidden', !canAccessTab(tabId));
+            });
+        }
+
         window.switchTab = function(tabId, orderFilter = null, pushHistory = true) {
             toggleMobileMenu(false);
+            applyModulePermissions();
+            if(!canAccessTab(tabId)) { showToast('This staff login has no permission for this module', 'error'); tabId = 'dashboard'; orderFilter = null; }
             closePreviousTabState(tabId);
             if(tabId === 'orders' && !orderFilter) {
                 currentOrderStatusFilter = 'Pending';
@@ -1742,6 +1794,13 @@
                 investorPaymentRequests.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
                 if(currentTab === 'payment-requests') renderPaymentRequestsDashboard();
             });
+            if(currentUserRole === 'manager') {
+                onSnapshot(collection(db, "users"), (snapshot) => {
+                    systemUsers = [];
+                    snapshot.forEach((doc) => systemUsers.push({ id: doc.id, ...doc.data() }));
+                    renderStaffAccessList();
+                });
+            }
         }
 
         // ================= DASHBOARD RENDER =================
@@ -4777,6 +4836,44 @@
         window.toggleSettingsInvestorPassword = function(uid) {
             const input = document.getElementById(`settings-investor-pass-${uid}`);
             if(input) input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        const staffPermissionLabels = { orders: 'Orders', inventory: 'Inventory', production: 'Production', finance: 'Finance', reports: 'Reports', settings: 'Settings' };
+        function renderStaffAccessList() {
+            const list = document.getElementById('settings-staff-access-list');
+            if(!list) return;
+            const staff = systemUsers.filter(user => user.role === 'staff');
+            list.innerHTML = staff.map(user => {
+                const permissions = user.permissions || {};
+                const checks = Object.entries(staffPermissionLabels).map(([key, label]) => `<label class="inline-flex items-center mr-3 mb-2 text-xs font-semibold text-gray-700"><input type="checkbox" ${permissions[key] ? 'checked' : ''} onchange="toggleStaffPermission('${user.id}', '${key}', this.checked)" class="mr-1">${label}</label>`).join('');
+                return `<div class="p-4 ${user.isActive === false ? 'bg-red-50 opacity-75' : 'bg-white'}"><div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(user.name || 'Staff')}</div><div class="text-xs text-gray-500">${escapeHtml(user.email || user.id)} • ${user.isActive === false ? 'Inactive' : 'Active'}</div><div class="mt-3">${checks}</div></div><button onclick="toggleStaffActive('${user.id}', ${user.isActive === false})" class="rounded border px-3 py-2 text-xs font-bold ${user.isActive === false ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}">${user.isActive === false ? 'Activate' : 'Deactivate'}</button></div></div>`;
+            }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No staff logins created yet.</div>';
+        }
+
+        window.saveStaffUser = async function() {
+            const name = document.getElementById('staff-name')?.value.trim();
+            const email = document.getElementById('staff-email')?.value.trim();
+            const password = document.getElementById('staff-password')?.value || '';
+            if(!name || !email || password.length < 6) { showToast('Staff name, email and 6+ character password are required', 'error'); return; }
+            const permissions = Object.keys(staffPermissionLabels).reduce((acc, key) => { acc[key] = !!document.getElementById(`staff-perm-${key}`)?.checked; return acc; }, {});
+            try {
+                const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+                await setDoc(doc(db, 'users', cred.user.uid), { role: 'staff', name, email, permissions, isActive: true, createdAt: getTodayString(), createdBy: authUser?.uid || '' }, { merge: true });
+                await signOut(secondaryAuth);
+                ['staff-name','staff-email','staff-password'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+                Object.keys(staffPermissionLabels).forEach(key => { const el=document.getElementById(`staff-perm-${key}`); if(el) el.checked=false; });
+                showToast('Staff login created with module permissions');
+            } catch(error) { showToast(error.message, 'error'); }
+        }
+
+        window.toggleStaffPermission = async function(uid, permission, checked) {
+            const user = systemUsers.find(item => item.id === uid) || {};
+            const permissions = { ...(user.permissions || {}), [permission]: checked };
+            try { await updateDoc(doc(db, 'users', uid), { permissions, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' }); showToast('Staff permission updated'); } catch(error) { showToast(error.message, 'error'); }
+        }
+
+        window.toggleStaffActive = async function(uid, makeActive) {
+            try { await updateDoc(doc(db, 'users', uid), { isActive: !!makeActive, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' }); showToast(makeActive ? 'Staff activated' : 'Staff deactivated'); } catch(error) { showToast(error.message, 'error'); }
         }
 
         function renderUploadedImagePreview(hiddenInputId, previewId, label, imageData) {

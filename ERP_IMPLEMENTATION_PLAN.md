@@ -41,6 +41,11 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Purchase GST input and sales GST output reconciliation ചേർത്തു.
 - PDF invoices-ൽ FY/date-based invoice numbering and HSN display മെച്ചപ്പെടുത്തി.
 
+### Step 9 — Role-based Dashboards and Investor Portal Upgrade
+- Investor portal-ൽ capital statement, investor-specific profit share history, personal investment/contribution report ചേർത്തു.
+- Manager console settings-ൽ staff login creation and module-wise permissions ചേർത്തു.
+- Firestore rules-ൽ staff role and permission-based read/write access controls ചേർത്തു.
+
 ## നിലവിലെ ERP കഴിവുകൾ
 - Order entry, payment tracking, customer receivable ledger.
 - Product inventory with stock history, batch, expiry, valuation and low-stock alerts.
@@ -52,12 +57,10 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Audit log for create/edit/cancel/restore/reversal actions.
 - Balance sheet snapshot and reconciliation mismatch alerts.
 - GST summary, HSN/SAC-wise tax report and input/output GST reconciliation.
+- Investor-specific capital statement, profit share history and personal contribution reports.
+- Manager/staff role permissions by module for orders, inventory, production, finance, reports and settings.
 
 ## ഇനി ബാക്കി ചെയ്യാനുള്ള പ്രധാന ഘട്ടങ്ങൾ
-
-### Step 9 — Role-based Dashboards and Investor Portal Upgrade
-- Investor-specific reports, capital statement, profit share history.
-- Manager/staff role permissions by module.
 
 ### Step 10 — Data Quality and Validation
 - Required fields, duplicate invoice/batch checks.
@@ -75,4 +78,4 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Backup/restore guide and deployment checklist.
 
 ## കുറിപ്പ്
-ഈ app ഇപ്പോൾ lightweight ERP foundation ആയി ശക്തമായി മുന്നേറുകയാണ്. Full enterprise-grade ERP ആക്കാൻ ഇനി role permissions, strict validation, BOM costing, automated tests, backup/import workflows എന്നിവയാണ് പ്രധാനമായും ബാക്കി.
+ഈ app ഇപ്പോൾ lightweight ERP foundation ആയി ശക്തമായി മുന്നേറുകയാണ്. Full enterprise-grade ERP ആക്കാൻ ഇനി strict validation, BOM costing, automated tests, backup/import workflows എന്നിവയാണ് പ്രധാനമായും ബാക്കി.
