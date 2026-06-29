@@ -73,6 +73,30 @@ service cloud.firestore {
           && request.resource.data.claimedBy == request.auth.uid);
     }
 
+
+    match /rawMaterials/{itemId} {
+      allow read: if isManager() || isInvestor();
+      allow create, update, delete: if isManager();
+    }
+
+    match /suppliers/{supplierId} {
+      allow read, create, update, delete: if isManager();
+    }
+
+    match /purchases/{purchaseId} {
+      allow read, create, update, delete: if isManager();
+    }
+
+    match /productionBatches/{batchId} {
+      allow read: if isManager() || isInvestor();
+      allow create, update, delete: if isManager();
+    }
+
+    match /profitDistributions/{distributionId} {
+      allow read: if isManager() || isInvestor();
+      allow create, update, delete: if isManager();
+    }
+
     match /investorExpenses/{expenseId} {
       allow read: if isManager() || isInvestor();
       allow create: if isManager()

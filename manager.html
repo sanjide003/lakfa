@@ -121,6 +121,23 @@
                     <svg class="mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                     Inventory & Products
                 </button>
+
+                <button onclick="switchTab('raw-materials')" id="nav-raw-materials" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-lime-700 bg-lime-50 border border-lime-100 hover:bg-lime-100 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    Raw Materials
+                </button>
+                <button onclick="switchTab('suppliers')" id="nav-suppliers" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-slate-700 bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 7v10a2 2 0 002 2h10a2 2 0 002-2V7" /></svg>
+                    Suppliers & Purchases
+                </button>
+                <button onclick="switchTab('production')" id="nav-production" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-100 hover:bg-fuchsia-100 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-fuchsia-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-7.038-7.038l-.477-2.387A2 2 0 006.572 3.57L5 3l-.57 1.572a2 2 0 001.409 2.56l2.387.477a6 6 0 007.038 7.038l.477 2.387a2 2 0 002.56 1.409L20 18l-.572-2.572z" /></svg>
+                    Production
+                </button>
+                <button onclick="switchTab('profit-sharing')" id="nav-profit-sharing" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-rose-700 bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-colors">
+                    <svg class="mr-3 h-5 w-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 10v2" /></svg>
+                    Profit Sharing
+                </button>
                 <button onclick="switchTab('capital')" id="nav-capital" class="nav-btn w-full flex items-center px-3 py-2 text-sm font-bold rounded-md text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 transition-colors">
                     <svg class="mr-3 h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 10v2m8-6a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
                     Investors & Capital
@@ -462,6 +479,97 @@
                                 <div class="flex items-end"><button onclick="clearCompanyFinanceFilters()" class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Show All</button></div>
                             </div>
                             <div id="company-finance-list" class="max-h-[650px] overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="tab-raw-materials" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-lime-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-lime-50"><h3 class="font-bold text-lime-950">Raw Material Master</h3><p class="text-sm text-lime-700 mt-1">Ingredients, packing materials, opening stock and reorder alerts.</p></div>
+                            <div class="p-6 space-y-3">
+                                <input id="raw-id" type="hidden">
+                                <input id="raw-name" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Item name eg. Tuna / Bottle">
+                                <div class="grid grid-cols-2 gap-2"><select id="raw-category" class="rounded-md border border-gray-300 p-2 text-sm bg-white"><option>Ingredient</option><option>Packing</option><option>Consumable</option></select><input id="raw-unit" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Unit eg. kg/ltr/nos"></div>
+                                <div class="grid grid-cols-2 gap-2"><input id="raw-stock" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Current stock"><input id="raw-min-stock" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Min alert"></div>
+                                <div class="grid grid-cols-2 gap-2"><input id="raw-rate" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Rate ₹"><input id="raw-expiry" type="date" class="rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <select id="raw-supplier" class="w-full rounded-md border border-gray-300 p-2 text-sm bg-white"></select>
+                                <button onclick="saveRawMaterial()" class="w-full rounded-md bg-lime-600 px-4 py-2 text-sm font-bold text-white hover:bg-lime-700">Save Raw Material</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Raw Material Stock</h3><p class="text-sm text-gray-500 mt-1">Stock value and low-stock alerts for production planning.</p></div>
+                            <div id="raw-materials-list" class="divide-y divide-gray-100"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-suppliers" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-slate-50"><h3 class="font-bold text-slate-950">Supplier Master</h3></div>
+                            <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input id="supplier-name" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Supplier name">
+                                <input id="supplier-phone" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Phone">
+                                <input id="supplier-gstin" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="GSTIN">
+                                <input id="supplier-opening" type="number" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Opening payable ₹">
+                                <textarea id="supplier-address" class="sm:col-span-2 rounded-md border border-gray-300 p-2 text-sm" placeholder="Address"></textarea>
+                                <button onclick="saveSupplier()" class="sm:col-span-2 rounded-md bg-slate-700 px-4 py-2 text-sm font-bold text-white hover:bg-slate-800">Save Supplier</button>
+                            </div>
+                            <div id="suppliers-list" class="divide-y divide-gray-100"></div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-emerald-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-emerald-50"><h3 class="font-bold text-emerald-950">Purchase Entry</h3><p class="text-sm text-emerald-700 mt-1">Purchases increase raw material stock and supplier payable.</p></div>
+                            <div class="p-6 space-y-3">
+                                <div class="grid grid-cols-2 gap-2"><input id="purchase-date" type="date" class="rounded-md border border-gray-300 p-2 text-sm"><select id="purchase-supplier" class="rounded-md border border-gray-300 p-2 text-sm bg-white"></select></div>
+                                <select id="purchase-raw" class="w-full rounded-md border border-gray-300 p-2 text-sm bg-white"></select>
+                                <div class="grid grid-cols-3 gap-2"><input id="purchase-qty" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Qty"><input id="purchase-rate" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Rate"><input id="purchase-paid" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Paid"></div>
+                                <input id="purchase-invoice" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Invoice / note">
+                                <button onclick="savePurchase()" class="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Save Purchase</button>
+                            </div>
+                            <div id="purchases-list" class="divide-y divide-gray-100 max-h-[420px] overflow-y-auto"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-production" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-fuchsia-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-fuchsia-50"><h3 class="font-bold text-fuchsia-950">Production Batch</h3><p class="text-sm text-fuchsia-700 mt-1">Consumes raw materials and adds finished product stock.</p></div>
+                            <div class="p-6 space-y-3">
+                                <div class="grid grid-cols-2 gap-2"><input id="prod-date" type="date" class="rounded-md border border-gray-300 p-2 text-sm"><input id="prod-batch" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Batch no"></div>
+                                <select id="prod-product" class="w-full rounded-md border border-gray-300 p-2 text-sm bg-white"></select>
+                                <input id="prod-qty" type="number" min="1" step="0.01" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Finished quantity">
+                                <div class="grid grid-cols-2 gap-2"><input id="prod-labour" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Labour ₹"><input id="prod-overhead" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Fuel/other ₹"></div>
+                                <div class="grid grid-cols-[1fr_110px] gap-2"><select id="prod-raw" class="rounded-md border border-gray-300 p-2 text-sm bg-white"></select><input id="prod-raw-qty" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Qty"></div>
+                                <button onclick="addProductionRawLine()" class="w-full rounded-md border border-fuchsia-200 bg-fuchsia-50 px-3 py-2 text-xs font-bold text-fuchsia-700">Add Raw Material Line</button>
+                                <div id="prod-raw-lines" class="space-y-2 text-sm"></div>
+                                <button onclick="saveProductionBatch()" class="w-full rounded-md bg-fuchsia-600 px-4 py-2 text-sm font-bold text-white hover:bg-fuchsia-700">Save Production</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Production History & Costing</h3></div>
+                            <div id="production-list" class="divide-y divide-gray-100"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-profit-sharing" class="tab-content hidden fade-in">
+                    <div class="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-rose-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-rose-50"><h3 class="font-bold text-rose-950">Close Period & Distribute Profit</h3><p class="text-sm text-rose-700 mt-1">Uses sales income, recorded expenses and investor percentages.</p></div>
+                            <div class="p-6 space-y-3">
+                                <div class="grid grid-cols-2 gap-2"><input id="profit-from" type="date" class="rounded-md border border-gray-300 p-2 text-sm"><input id="profit-to" type="date" class="rounded-md border border-gray-300 p-2 text-sm"></div>
+                                <input id="profit-reserve" type="number" min="0" step="0.01" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Company reserve ₹">
+                                <button onclick="calculateProfitSharingPreview()" class="w-full rounded-md border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-bold text-rose-700">Preview Distribution</button>
+                                <div id="profit-preview" class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm"></div>
+                                <button onclick="saveProfitDistribution()" class="w-full rounded-md bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700">Save Distribution</button>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Profit Distribution History</h3></div>
+                            <div id="profit-distribution-list" class="divide-y divide-gray-100"></div>
                         </div>
                     </div>
                 </div>
@@ -982,6 +1090,11 @@
         let companyDailyAccounts = [];
         let companyAccounts = [];
         let financeCategories = [];
+        let rawMaterials = [];
+        let suppliers = [];
+        let purchases = [];
+        let productionBatches = [];
+        let profitDistributions = [];
         let authUser = null;
         let currentUserRole = 'manager';
         let selectedOrders = new Set();
@@ -1250,6 +1363,22 @@
                 document.getElementById('page-title').innerText = "Inventory & Products";
                 headerActions.innerHTML = `<button onclick="openProductModal()" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 shadow-sm flex items-center">${getIconSvg('plus', 'w-4 h-4 mr-1')} Add Product</button>`;
                 renderProducts();
+            } else if (tabId === 'raw-materials') {
+                document.getElementById('page-title').innerText = "Raw Materials";
+                headerActions.innerHTML = '';
+                renderRawMaterialsDashboard();
+            } else if (tabId === 'suppliers') {
+                document.getElementById('page-title').innerText = "Suppliers & Purchases";
+                headerActions.innerHTML = '';
+                renderSuppliersDashboard();
+            } else if (tabId === 'production') {
+                document.getElementById('page-title').innerText = "Production";
+                headerActions.innerHTML = '';
+                renderProductionDashboard();
+            } else if (tabId === 'profit-sharing') {
+                document.getElementById('page-title').innerText = "Profit Sharing";
+                headerActions.innerHTML = '';
+                renderProfitSharingDashboard();
             } else if (tabId === 'capital') {
                 document.getElementById('page-title').innerText = "Investors & Capital";
                 headerActions.innerHTML = '';
@@ -1344,6 +1473,41 @@
                 financeCategories.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
                 refreshFinanceSelectors();
                 if(currentTab === 'company-finance') renderCompanyFinanceDashboard();
+            });
+            onSnapshot(collection(db, "rawMaterials"), (snapshot) => {
+                rawMaterials = [];
+                snapshot.forEach((doc) => rawMaterials.push({ id: doc.id, ...doc.data() }));
+                rawMaterials.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+                refreshErpSelectors();
+                if(currentTab === 'raw-materials') renderRawMaterialsDashboard();
+                if(currentTab === 'production') renderProductionDashboard();
+            });
+            onSnapshot(collection(db, "suppliers"), (snapshot) => {
+                suppliers = [];
+                snapshot.forEach((doc) => suppliers.push({ id: doc.id, ...doc.data() }));
+                suppliers.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+                refreshErpSelectors();
+                if(currentTab === 'suppliers') renderSuppliersDashboard();
+            });
+            onSnapshot(collection(db, "purchases"), (snapshot) => {
+                purchases = [];
+                snapshot.forEach((doc) => purchases.push({ id: doc.id, ...doc.data() }));
+                purchases.sort((a, b) => new Date(normalizeDateInput(b.purchaseDate || b.createdAt)) - new Date(normalizeDateInput(a.purchaseDate || a.createdAt)));
+                if(currentTab === 'suppliers') renderSuppliersDashboard();
+                if(currentTab === 'raw-materials') renderRawMaterialsDashboard();
+            });
+            onSnapshot(collection(db, "productionBatches"), (snapshot) => {
+                productionBatches = [];
+                snapshot.forEach((doc) => productionBatches.push({ id: doc.id, ...doc.data() }));
+                productionBatches.sort((a, b) => new Date(normalizeDateInput(b.productionDate || b.createdAt)) - new Date(normalizeDateInput(a.productionDate || a.createdAt)));
+                if(currentTab === 'production') renderProductionDashboard();
+                if(currentTab === 'raw-materials') renderRawMaterialsDashboard();
+            });
+            onSnapshot(collection(db, "profitDistributions"), (snapshot) => {
+                profitDistributions = [];
+                snapshot.forEach((doc) => profitDistributions.push({ id: doc.id, ...doc.data() }));
+                profitDistributions.sort((a, b) => new Date(normalizeDateInput(b.toDate || b.createdAt)) - new Date(normalizeDateInput(a.toDate || a.createdAt)));
+                if(currentTab === 'profit-sharing') renderProfitSharingDashboard();
             });
             onSnapshot(collection(db, "investorPaymentRequests"), (snapshot) => {
                 investorPaymentRequests = [];
@@ -3734,6 +3898,80 @@
                 showToast('Submitted for manager approval');
             } catch (error) { showToast(error.message, 'error'); }
         }
+
+
+        // ================= ERP EXTENSIONS: RAW MATERIALS, PURCHASES, PRODUCTION, PROFIT SHARING =================
+        let productionRawLines = [];
+        let lastProfitPreview = null;
+
+        function moneyNumber(value) { return Number(value) || 0; }
+        function getProductStockBalance(product) {
+            const added = Array.isArray(product.stockHistory) ? product.stockHistory.reduce((sum, item) => sum + moneyNumber(item.qty), 0) : 0;
+            return moneyNumber(product.initialStock) + added - moneyNumber(product.ordered);
+        }
+        function getRawStockBalance(item) {
+            const purchased = purchases.filter(p => p.rawMaterialId === item.id).reduce((sum, p) => sum + moneyNumber(p.qty), 0);
+            const consumed = productionBatches.reduce((sum, batch) => sum + (Array.isArray(batch.rawMaterials) ? batch.rawMaterials.filter(line => line.rawMaterialId === item.id).reduce((lineSum, line) => lineSum + moneyNumber(line.qty), 0) : 0), 0);
+            return moneyNumber(item.openingStock) + purchased - consumed;
+        }
+        function refreshErpSelectors() {
+            const supplierOptions = '<option value="">No supplier selected</option>' + suppliers.map(s => `<option value="${s.id}">${escapeHtml(s.name || 'Supplier')}</option>`).join('');
+            ['raw-supplier', 'purchase-supplier'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = supplierOptions; });
+            const rawOptions = '<option value="">Select raw material</option>' + rawMaterials.map(item => `<option value="${item.id}">${escapeHtml(item.name || 'Raw Material')} (${escapeHtml(item.unit || '')})</option>`).join('');
+            ['purchase-raw', 'prod-raw'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = rawOptions; });
+            const productOptions = '<option value="">Select finished product</option>' + products.map(product => `<option value="${product.id}">${escapeHtml(product.name || 'Product')}</option>`).join('');
+            const productEl = document.getElementById('prod-product'); if(productEl) productEl.innerHTML = productOptions;
+        }
+        function renderRawMaterialsDashboard() {
+            refreshErpSelectors();
+            const list = document.getElementById('raw-materials-list'); if(!list) return;
+            list.innerHTML = rawMaterials.map(item => {
+                const balance = getRawStockBalance(item);
+                const min = moneyNumber(item.minStock);
+                const value = balance * moneyNumber(item.rate);
+                const low = min > 0 && balance <= min;
+                return `<div class="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div><div class="font-bold text-gray-900">${escapeHtml(item.name || 'Raw Material')}</div><div class="text-xs text-gray-500">${escapeHtml(item.category || '')} • ${escapeHtml(item.unit || '')} • Supplier: ${escapeHtml((suppliers.find(s => s.id === item.supplierId) || {}).name || '-')}</div></div>
+                    <div class="grid grid-cols-3 gap-3 text-right text-sm"><div><div class="text-xs text-gray-500">Stock</div><div class="font-extrabold ${low ? 'text-red-600' : 'text-lime-700'}">${balance.toFixed(2)}</div></div><div><div class="text-xs text-gray-500">Rate</div><div class="font-bold">${formatMoney(item.rate)}</div></div><div><div class="text-xs text-gray-500">Value</div><div class="font-bold">${formatMoney(value)}</div></div></div>
+                </div>`;
+            }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No raw materials added yet.</div>';
+        }
+        window.saveRawMaterial = async function() {
+            const name = document.getElementById('raw-name').value.trim();
+            if(!name) { showToast('Raw material name is required', 'error'); return; }
+            await addDoc(collection(db, 'rawMaterials'), { name, category: document.getElementById('raw-category').value, unit: document.getElementById('raw-unit').value.trim(), openingStock: moneyNumber(document.getElementById('raw-stock').value), minStock: moneyNumber(document.getElementById('raw-min-stock').value), rate: moneyNumber(document.getElementById('raw-rate').value), expiryDate: document.getElementById('raw-expiry').value, supplierId: document.getElementById('raw-supplier').value, createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+            ['raw-name','raw-unit','raw-stock','raw-min-stock','raw-rate','raw-expiry'].forEach(id => document.getElementById(id).value = '');
+            showToast('Raw material saved');
+        }
+        function renderSuppliersDashboard() {
+            refreshErpSelectors();
+            document.getElementById('purchase-date') && (document.getElementById('purchase-date').value ||= getTodayString());
+            const suppliersList = document.getElementById('suppliers-list');
+            if(suppliersList) suppliersList.innerHTML = suppliers.map(s => `<div class="p-4"><div class="font-bold text-gray-900">${escapeHtml(s.name || 'Supplier')}</div><div class="text-xs text-gray-500">${escapeHtml(s.phone || '')} ${s.gstin ? '• GSTIN ' + escapeHtml(s.gstin) : ''}</div><div class="mt-1 text-sm font-bold text-red-700">Opening payable: ${formatMoney(s.openingPayable)}</div></div>`).join('') || '<div class="p-6 text-center text-sm text-gray-500">No suppliers yet.</div>';
+            const purchaseList = document.getElementById('purchases-list');
+            if(purchaseList) purchaseList.innerHTML = purchases.map(p => { const total = moneyNumber(p.qty) * moneyNumber(p.rate); return `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(p.rawMaterialName || 'Purchase')}</div><div class="text-xs text-gray-500">${formatDisplayDate(p.purchaseDate)} • ${escapeHtml(p.supplierName || '')} • ${escapeHtml(p.invoiceNo || '')}</div></div><div class="text-right"><div class="font-bold">${formatMoney(total)}</div><div class="text-xs text-orange-700">Due ${formatMoney(Math.max(0,total-moneyNumber(p.paidAmount)))}</div></div></div></div>`; }).join('') || '<div class="p-6 text-center text-sm text-gray-500">No purchases yet.</div>';
+        }
+        window.saveSupplier = async function() {
+            const name = document.getElementById('supplier-name').value.trim(); if(!name) { showToast('Supplier name is required', 'error'); return; }
+            await addDoc(collection(db, 'suppliers'), { name, phone: document.getElementById('supplier-phone').value.trim(), gstin: document.getElementById('supplier-gstin').value.trim(), address: document.getElementById('supplier-address').value.trim(), openingPayable: moneyNumber(document.getElementById('supplier-opening').value), createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+            ['supplier-name','supplier-phone','supplier-gstin','supplier-address','supplier-opening'].forEach(id => document.getElementById(id).value = ''); showToast('Supplier saved');
+        }
+        window.savePurchase = async function() {
+            const raw = rawMaterials.find(r => r.id === document.getElementById('purchase-raw').value); const supplier = suppliers.find(s => s.id === document.getElementById('purchase-supplier').value);
+            const qty = moneyNumber(document.getElementById('purchase-qty').value); const rate = moneyNumber(document.getElementById('purchase-rate').value);
+            if(!raw || qty <= 0 || rate <= 0) { showToast('Select raw material, quantity and rate', 'error'); return; }
+            await addDoc(collection(db, 'purchases'), { purchaseDate: document.getElementById('purchase-date').value || getTodayString(), supplierId: supplier?.id || '', supplierName: supplier?.name || '', rawMaterialId: raw.id, rawMaterialName: raw.name || '', qty, rate, paidAmount: moneyNumber(document.getElementById('purchase-paid').value), invoiceNo: document.getElementById('purchase-invoice').value.trim(), createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+            ['purchase-qty','purchase-rate','purchase-paid','purchase-invoice'].forEach(id => document.getElementById(id).value = ''); showToast('Purchase saved and raw stock updated');
+        }
+        function renderProductionDashboard() { refreshErpSelectors(); const d=document.getElementById('prod-date'); if(d) d.value ||= getTodayString(); renderProductionRawLines(); const list=document.getElementById('production-list'); if(!list) return; list.innerHTML = productionBatches.map(b => `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(b.productName || 'Production')} • ${escapeHtml(b.batchNo || '')}</div><div class="text-xs text-gray-500">${formatDisplayDate(b.productionDate)} • Qty ${moneyNumber(b.quantity).toFixed(2)} • Cost/unit ${formatMoney(b.costPerUnit)}</div></div><div class="text-right"><div class="font-bold text-fuchsia-700">${formatMoney(b.totalCost)}</div><div class="text-xs text-gray-500">${(b.rawMaterials||[]).length} materials</div></div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No production batches yet.</div>'; }
+        function renderProductionRawLines() { const host=document.getElementById('prod-raw-lines'); if(!host) return; host.innerHTML = productionRawLines.map((line,i) => `<div class="flex items-center justify-between gap-2 rounded border border-fuchsia-100 bg-fuchsia-50 p-2"><span>${escapeHtml(line.name)} • ${line.qty} ${escapeHtml(line.unit || '')} • ${formatMoney(line.cost)}</span><button onclick="removeProductionRawLine(${i})" class="text-xs font-bold text-red-600">Remove</button></div>`).join(''); }
+        window.addProductionRawLine = function() { const raw=rawMaterials.find(r => r.id === document.getElementById('prod-raw').value); const qty=moneyNumber(document.getElementById('prod-raw-qty').value); if(!raw || qty <= 0) { showToast('Select raw material and quantity', 'error'); return; } productionRawLines.push({ rawMaterialId: raw.id, name: raw.name || '', unit: raw.unit || '', qty, rate: moneyNumber(raw.rate), cost: qty * moneyNumber(raw.rate) }); document.getElementById('prod-raw-qty').value=''; renderProductionRawLines(); }
+        window.removeProductionRawLine = function(i) { productionRawLines.splice(i,1); renderProductionRawLines(); }
+        window.saveProductionBatch = async function() { const product=products.find(p => p.id === document.getElementById('prod-product').value); const qty=moneyNumber(document.getElementById('prod-qty').value); if(!product || qty <= 0 || productionRawLines.length === 0) { showToast('Product, finished quantity and raw material lines are required', 'error'); return; } const rawCost=productionRawLines.reduce((s,l)=>s+moneyNumber(l.cost),0); const totalCost=rawCost+moneyNumber(document.getElementById('prod-labour').value)+moneyNumber(document.getElementById('prod-overhead').value); const batchNo=document.getElementById('prod-batch').value.trim() || `BATCH-${Date.now()}`; const productionDate=document.getElementById('prod-date').value || getTodayString(); await addDoc(collection(db,'productionBatches'), { batchNo, productionDate, productId: product.id, productName: product.name || '', quantity: qty, rawMaterials: productionRawLines, rawCost, labourCost: moneyNumber(document.getElementById('prod-labour').value), overheadCost: moneyNumber(document.getElementById('prod-overhead').value), totalCost, costPerUnit: qty ? totalCost / qty : 0, createdAt: getTodayString(), createdBy: authUser?.uid || '' }); await updateDoc(doc(db,'products',product.id), { stockHistory: [...(Array.isArray(product.stockHistory) ? product.stockHistory : []), { qty, date: productionDate, note: `Production ${batchNo}`, source: 'production' }] }); productionRawLines=[]; ['prod-batch','prod-qty','prod-labour','prod-overhead'].forEach(id=>document.getElementById(id).value=''); renderProductionRawLines(); showToast('Production saved and finished stock updated'); }
+        function calculateProfitModel() { const from=document.getElementById('profit-from')?.value || ''; const to=document.getElementById('profit-to')?.value || ''; const inRange = (date) => (!from || normalizeDateInput(date) >= from) && (!to || normalizeDateInput(date) <= to); const sales = orders.filter(o => !o.isDeleted && inRange(o.createdAt)).reduce((sum,o)=>sum+getOrderPaidTotal(o),0); const orderExpenses = orders.filter(o => !o.isDeleted && inRange(o.createdAt)).reduce((sum,o)=>sum+getOrderExpensePaidTotal(o),0); const manualIncome = companyDailyAccounts.filter(a=>inRange(a.accountDate || a.createdAt)).reduce((sum,a)=>sum+moneyNumber(a.income),0); const manualExpense = companyDailyAccounts.filter(a=>inRange(a.accountDate || a.createdAt)).reduce((sum,a)=>sum+moneyNumber(a.expense),0); const productionCost = productionBatches.filter(b=>inRange(b.productionDate || b.createdAt)).reduce((sum,b)=>sum+moneyNumber(b.totalCost),0); const reserve=moneyNumber(document.getElementById('profit-reserve')?.value); const netProfit = sales + manualIncome - orderExpenses - manualExpense - productionCost; const distributable = Math.max(0, netProfit - reserve); const totalPercent = investors.reduce((sum,i)=>sum+moneyNumber(i.profitSharePercent || i.sharePercent || i.ownershipPercent),0) || investors.length || 1; const shares = investors.map(i => { const percent = moneyNumber(i.profitSharePercent || i.sharePercent || i.ownershipPercent) || (100 / (investors.length || 1)); return { investorId: i.id, name: i.name || i.email || 'Investor', percent, amount: distributable * percent / totalPercent }; }); return { from, to, sales, manualIncome, orderExpenses, manualExpense, productionCost, reserve, netProfit, distributable, shares }; }
+        window.calculateProfitSharingPreview = function() { lastProfitPreview = calculateProfitModel(); const host=document.getElementById('profit-preview'); if(!host) return; host.innerHTML = `<div class="space-y-1"><div class="flex justify-between"><span>Net Profit</span><b>${formatMoney(lastProfitPreview.netProfit)}</b></div><div class="flex justify-between"><span>Distributable</span><b>${formatMoney(lastProfitPreview.distributable)}</b></div>${lastProfitPreview.shares.map(s=>`<div class="flex justify-between text-xs"><span>${escapeHtml(s.name)} (${s.percent}%)</span><b>${formatMoney(s.amount)}</b></div>`).join('')}</div>`; }
+        function renderProfitSharingDashboard() { calculateProfitSharingPreview(); const list=document.getElementById('profit-distribution-list'); if(!list) return; list.innerHTML = profitDistributions.map(d => `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${formatDisplayDate(d.fromDate)} - ${formatDisplayDate(d.toDate)}</div><div class="text-xs text-gray-500">${(d.shares || []).length} investors • Reserve ${formatMoney(d.reserve)}</div></div><div class="text-right"><div class="font-bold text-rose-700">${formatMoney(d.distributable)}</div><div class="text-xs text-gray-500">Net ${formatMoney(d.netProfit)}</div></div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No profit distributions saved.</div>'; }
+        window.saveProfitDistribution = async function() { lastProfitPreview = calculateProfitModel(); if(lastProfitPreview.netProfit <= 0) { showToast('No positive profit to distribute', 'error'); return; } await addDoc(collection(db,'profitDistributions'), { fromDate: lastProfitPreview.from || getTodayString(), toDate: lastProfitPreview.to || getTodayString(), ...lastProfitPreview, createdAt: getTodayString(), createdBy: authUser?.uid || '' }); showToast('Profit distribution saved'); }
 
         // ================= SETTINGS =================
         function renderSettingsInvestorAccessList() {
