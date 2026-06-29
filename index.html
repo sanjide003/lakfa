@@ -25,10 +25,16 @@
         </div>
     </div>
 
+    <script>
+        window.togglePassword = window.togglePassword || function() {
+            const input = document.getElementById('login-password');
+            if(input) input.type = input.type === 'password' ? 'text' : 'password';
+        };
+    </script>
     <script type="module">
         import { auth, db } from "./firebase-config.js";
         import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         window.showToast = function(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -40,16 +46,40 @@
 
         window.togglePassword = function() {
             const input = document.getElementById('login-password');
-            input.type = input.type === 'password' ? 'text' : 'password';
+            if(input) input.type = input.type === 'password' ? 'text' : 'password';
         };
 
+        async function isSetupModeEnabled() {
+            const configSnap = await getDoc(doc(db, "settings", "config")).catch(() => null);
+            return !!(configSnap && configSnap.exists() && configSnap.data().setupMode === true);
+        }
+
+        async function getOrBootstrapUserProfile(user) {
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef).catch(() => null);
+            if(userSnap && userSnap.exists() && userSnap.data().role) return userSnap.data();
+            if(!(await isSetupModeEnabled())) return { role: null, accessError: 'no-role' };
+            const bootstrapProfile = {
+                role: 'founder',
+                name: user.displayName || user.email || 'Founder',
+                email: user.email || '',
+                isActive: true,
+                bootstrapFounder: true,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            await setDoc(userRef, bootstrapProfile, { merge: true });
+            return bootstrapProfile;
+        }
+
         async function redirectByRole(user) {
-            const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
-            const role = userSnap && userSnap.exists() ? userSnap.data().role : null;
-            if(role === 'manager') { window.location.href = 'manager.html'; return true; }
+            const profile = await getOrBootstrapUserProfile(user).catch(() => null);
+            const role = profile?.role || null;
+            if(profile?.isActive === false) { await signOut(auth); showToast('This account is disabled. Contact Founder.', 'error'); return false; }
+            if(['founder', 'owner', 'admin', 'manager', 'staff'].includes(role)) { window.location.href = 'manager.html'; return true; }
             if(role === 'investor') { window.location.href = 'investor.html'; return true; }
             await signOut(auth);
-            showToast('Invalid Email or Password', 'error');
+            showToast(profile?.accessError === 'no-role' ? 'Access not created. Ask Founder to create your login.' : 'Login failed. Contact Founder.', 'error');
             return false;
         }
 
