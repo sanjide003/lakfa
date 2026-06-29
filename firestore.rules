@@ -110,6 +110,17 @@ service cloud.firestore {
       allow read, create, update, delete: if isManager();
     }
 
+
+    match /unifiedLedger/{entryId} {
+      allow read: if isManager() || isInvestor();
+      allow create, update, delete: if isManager();
+    }
+
+    match /stockLedger/{entryId} {
+      allow read: if isManager() || isInvestor();
+      allow create, update, delete: if isManager();
+    }
+
     match /investorExpenses/{expenseId} {
       allow read: if isManager() || isInvestor();
       allow create: if isManager()
