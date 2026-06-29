@@ -127,6 +127,16 @@ service cloud.firestore {
       allow create, update, delete: if isManager();
     }
 
+
+    match /supplierLedger/{entryId} {
+      allow read: if isManager() || isInvestor();
+      allow create, update, delete: if isManager();
+    }
+
+    match /purchasePayments/{paymentId} {
+      allow read, create, update, delete: if isManager();
+    }
+
     match /investorExpenses/{expenseId} {
       allow read: if isManager() || isInvestor();
       allow create: if isManager()

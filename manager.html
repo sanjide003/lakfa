@@ -541,6 +541,13 @@
                                 <input id="purchase-invoice" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Invoice / note">
                                 <button onclick="savePurchase()" class="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Save Purchase</button>
                             </div>
+                            <div class="border-t border-emerald-100 bg-emerald-50/50 p-4 space-y-2">
+                                <div class="text-xs font-bold uppercase text-emerald-700">Supplier Payment</div>
+                                <select id="purchase-payment-select" class="w-full rounded-md border border-gray-300 p-2 text-sm bg-white"></select>
+                                <div class="grid grid-cols-2 gap-2"><input id="purchase-payment-date" type="date" class="rounded-md border border-gray-300 p-2 text-sm"><input id="purchase-payment-amount" type="number" min="1" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Payment ₹"></div>
+                                <input id="purchase-payment-note" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Payment note">
+                                <button onclick="recordSupplierPayment()" class="w-full rounded-md bg-teal-600 px-4 py-2 text-sm font-bold text-white hover:bg-teal-700">Record Supplier Payment</button>
+                            </div>
                             <div id="purchases-list" class="divide-y divide-gray-100 max-h-[420px] overflow-y-auto"></div>
                         </div>
                     </div>
@@ -657,9 +664,13 @@
                             <div class="px-6 py-4 border-b bg-lime-50"><h3 class="font-bold text-lime-950">Stock Movement Ledger</h3><p class="text-sm text-lime-700 mt-1">Raw-material in/out and finished-goods in movements from purchases, production, and sales.</p></div>
                             <div id="stock-ledger-list" class="divide-y divide-gray-100 max-h-[420px] overflow-y-auto"></div>
                         </div>
-                        <div class="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden xl:col-span-2">
+                        <div class="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden">
                             <div class="px-6 py-4 border-b bg-indigo-50"><h3 class="font-bold text-indigo-950">Customer Ledger</h3><p class="text-sm text-indigo-700 mt-1">Order invoices, payments, balance adjustments, and customer receivables.</p></div>
                             <div id="customer-ledger-list" class="divide-y divide-gray-100 max-h-[460px] overflow-y-auto"></div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-amber-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-amber-50"><h3 class="font-bold text-amber-950">Supplier Ledger</h3><p class="text-sm text-amber-700 mt-1">Purchase invoices, supplier payments, cancellations, and payable balance.</p></div>
+                            <div id="supplier-ledger-list" class="divide-y divide-gray-100 max-h-[460px] overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>
@@ -1191,6 +1202,8 @@
         let unifiedLedger = [];
         let stockLedger = [];
         let customerLedger = [];
+        let supplierLedger = [];
+        let purchasePayments = [];
         let authUser = null;
         let currentUserRole = 'manager';
         let selectedOrders = new Set();
@@ -1659,6 +1672,20 @@
                 customerLedger.sort((a, b) => new Date(normalizeDateInput(b.entryDate || b.createdAt)) - new Date(normalizeDateInput(a.entryDate || a.createdAt)));
                 if(currentTab === 'reports') renderReportsDashboard();
                 if(currentTab === 'repeat') renderRepeatCustomers('utility-repeat-list');
+            });
+            onSnapshot(collection(db, "supplierLedger"), (snapshot) => {
+                supplierLedger = [];
+                snapshot.forEach((doc) => supplierLedger.push({ id: doc.id, ...doc.data() }));
+                supplierLedger.sort((a, b) => new Date(normalizeDateInput(b.entryDate || b.createdAt)) - new Date(normalizeDateInput(a.entryDate || a.createdAt)));
+                if(currentTab === 'suppliers') renderSuppliersDashboard();
+                if(currentTab === 'reports') renderReportsDashboard();
+            });
+            onSnapshot(collection(db, "purchasePayments"), (snapshot) => {
+                purchasePayments = [];
+                snapshot.forEach((doc) => purchasePayments.push({ id: doc.id, ...doc.data() }));
+                purchasePayments.sort((a, b) => new Date(normalizeDateInput(b.paymentDate || b.createdAt)) - new Date(normalizeDateInput(a.paymentDate || a.createdAt)));
+                refreshErpSelectors();
+                if(currentTab === 'suppliers') renderSuppliersDashboard();
             });
             onSnapshot(collection(db, "investorPaymentRequests"), (snapshot) => {
                 investorPaymentRequests = [];
@@ -4113,6 +4140,8 @@
             ['purchase-raw', 'prod-raw'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = rawOptions; });
             const productOptions = '<option value="">Select finished product</option>' + products.map(product => `<option value="${product.id}">${escapeHtml(product.name || 'Product')}</option>`).join('');
             const productEl = document.getElementById('prod-product'); if(productEl) productEl.innerHTML = productOptions;
+            const payableOptions = '<option value="">Select unpaid purchase</option>' + purchases.filter(p => p.status !== 'cancelled' && getPurchaseBalance(p) > 0).map(p => `<option value="${p.id}">${escapeHtml(p.rawMaterialName || 'Purchase')} • ${escapeHtml(p.supplierName || '')} • Due ${formatMoney(getPurchaseBalance(p))}</option>`).join('');
+            const paymentSelect = document.getElementById('purchase-payment-select'); if(paymentSelect) paymentSelect.innerHTML = payableOptions;
         }
         function renderRawMaterialsDashboard() {
             refreshErpSelectors();
@@ -4135,17 +4164,30 @@
             ['raw-name','raw-unit','raw-stock','raw-min-stock','raw-rate','raw-expiry'].forEach(id => document.getElementById(id).value = '');
             showToast('Raw material saved');
         }
+        function getPurchaseTotalAmount(purchase) { return moneyNumber(purchase.qty) * moneyNumber(purchase.rate); }
+        function getPurchasePaidAmount(purchase) { return moneyNumber(purchase.paidAmount); }
+        function getPurchaseBalance(purchase) { return Math.max(0, getPurchaseTotalAmount(purchase) - getPurchasePaidAmount(purchase)); }
+        function getSupplierLedgerBalance(supplierId = '') { return supplierLedger.filter(entry => !supplierId || entry.supplierId === supplierId).reduce((sum, entry) => sum + moneyNumber(entry.credit) - moneyNumber(entry.debit), 0); }
+        async function postSupplierLedger(entry = {}) {
+            const debit = Math.abs(moneyNumber(entry.debit));
+            const credit = Math.abs(moneyNumber(entry.credit));
+            if(!debit && !credit) return null;
+            return addDoc(collection(db, 'supplierLedger'), { entryDate: normalizeDateInput(entry.entryDate || getTodayString()), supplierId: entry.supplierId || '', supplierName: entry.supplierName || '', type: entry.type || 'purchase_invoice', description: entry.description || '', debit, credit, referenceCollection: entry.referenceCollection || 'purchases', referenceId: entry.referenceId || '', createdAt: getCurrentDateTimeLocal(), createdBy: authUser?.uid || '' });
+        }
         function renderSuppliersDashboard() {
             refreshErpSelectors();
             document.getElementById('purchase-date') && (document.getElementById('purchase-date').value ||= getTodayString());
             const suppliersList = document.getElementById('suppliers-list');
-            if(suppliersList) suppliersList.innerHTML = suppliers.map(s => `<div class="p-4"><div class="font-bold text-gray-900">${escapeHtml(s.name || 'Supplier')}</div><div class="text-xs text-gray-500">${escapeHtml(s.phone || '')} ${s.gstin ? '• GSTIN ' + escapeHtml(s.gstin) : ''}</div><div class="mt-1 text-sm font-bold text-red-700">Opening payable: ${formatMoney(s.openingPayable)}</div></div>`).join('') || '<div class="p-6 text-center text-sm text-gray-500">No suppliers yet.</div>';
+            if(suppliersList) suppliersList.innerHTML = suppliers.map(s => `<div class="p-4"><div class="font-bold text-gray-900">${escapeHtml(s.name || 'Supplier')}</div><div class="text-xs text-gray-500">${escapeHtml(s.phone || '')} ${s.gstin ? '• GSTIN ' + escapeHtml(s.gstin) : ''}</div><div class="mt-1 grid grid-cols-2 gap-2 text-sm"><div class="font-bold text-red-700">Opening: ${formatMoney(s.openingPayable)}</div><div class="font-bold text-orange-700">Payable: ${formatMoney(getSupplierLedgerBalance(s.id))}</div></div></div>`).join('') || '<div class="p-6 text-center text-sm text-gray-500">No suppliers yet.</div>';
+            const payDate = document.getElementById('purchase-payment-date'); if(payDate) payDate.value ||= getTodayString();
             const purchaseList = document.getElementById('purchases-list');
-            if(purchaseList) purchaseList.innerHTML = purchases.map(p => { const total = moneyNumber(p.qty) * moneyNumber(p.rate); return `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(p.rawMaterialName || 'Purchase')}</div><div class="text-xs text-gray-500">${formatDisplayDate(p.purchaseDate)} • ${escapeHtml(p.supplierName || '')} • ${escapeHtml(p.invoiceNo || '')}</div></div><div class="text-right"><div class="font-bold">${formatMoney(total)}</div><div class="text-xs text-orange-700">Due ${formatMoney(Math.max(0,total-moneyNumber(p.paidAmount)))}</div></div></div></div>`; }).join('') || '<div class="p-6 text-center text-sm text-gray-500">No purchases yet.</div>';
+            if(purchaseList) purchaseList.innerHTML = purchases.map(p => { const total = getPurchaseTotalAmount(p); const paid = getPurchasePaidAmount(p); const due = getPurchaseBalance(p); const cancelled = p.status === 'cancelled'; return `<div class="p-4 ${cancelled ? 'bg-red-50 opacity-80' : ''}"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(p.rawMaterialName || 'Purchase')} ${cancelled ? '<span class="text-xs text-red-700">(Cancelled)</span>' : ''}</div><div class="text-xs text-gray-500">${formatDisplayDate(p.purchaseDate)} • ${escapeHtml(p.supplierName || '')} • ${escapeHtml(p.invoiceNo || '')}</div><div class="mt-2 flex flex-wrap gap-2 text-xs"><span class="rounded-full bg-gray-100 px-2 py-1 font-bold text-gray-700">Total ${formatMoney(total)}</span><span class="rounded-full bg-emerald-100 px-2 py-1 font-bold text-emerald-700">Paid ${formatMoney(paid)}</span><span class="rounded-full bg-orange-100 px-2 py-1 font-bold text-orange-700">Due ${formatMoney(due)}</span></div></div><div class="flex flex-col gap-2 text-right"><button onclick="selectPurchaseForPayment('${p.id}')" ${cancelled || due <= 0 ? 'disabled' : ''} class="rounded border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold text-teal-700 disabled:opacity-40">Pay</button><button onclick="voidPurchase('${p.id}')" ${cancelled ? 'disabled' : ''} class="rounded border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700 disabled:opacity-40">Cancel</button></div></div></div>`; }).join('') || '<div class="p-6 text-center text-sm text-gray-500">No purchases yet.</div>';
         }
         window.saveSupplier = async function() {
             const name = document.getElementById('supplier-name').value.trim(); if(!name) { showToast('Supplier name is required', 'error'); return; }
-            await addDoc(collection(db, 'suppliers'), { name, phone: document.getElementById('supplier-phone').value.trim(), gstin: document.getElementById('supplier-gstin').value.trim(), address: document.getElementById('supplier-address').value.trim(), openingPayable: moneyNumber(document.getElementById('supplier-opening').value), createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+            const openingPayable = moneyNumber(document.getElementById('supplier-opening').value);
+            const supplierRef = await addDoc(collection(db, 'suppliers'), { name, phone: document.getElementById('supplier-phone').value.trim(), gstin: document.getElementById('supplier-gstin').value.trim(), address: document.getElementById('supplier-address').value.trim(), openingPayable, createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+            if(openingPayable > 0) await postSupplierLedger({ entryDate: getTodayString(), supplierId: supplierRef.id, supplierName: name, type: 'opening_payable', description: 'Opening payable balance', credit: openingPayable, referenceCollection: 'suppliers', referenceId: supplierRef.id });
             ['supplier-name','supplier-phone','supplier-gstin','supplier-address','supplier-opening'].forEach(id => document.getElementById(id).value = ''); showToast('Supplier saved');
         }
         window.savePurchase = async function() {
@@ -4154,10 +4196,39 @@
             if(!raw || qty <= 0 || rate <= 0) { showToast('Select raw material, quantity and rate', 'error'); return; }
             const purchaseDate = document.getElementById('purchase-date').value || getTodayString();
             const paidAmount = moneyNumber(document.getElementById('purchase-paid').value);
-            const purchaseRef = await addDoc(collection(db, 'purchases'), { purchaseDate, supplierId: supplier?.id || '', supplierName: supplier?.name || '', rawMaterialId: raw.id, rawMaterialName: raw.name || '', qty, rate, paidAmount, invoiceNo: document.getElementById('purchase-invoice').value.trim(), createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+            const purchaseRef = await addDoc(collection(db, 'purchases'), { purchaseDate, supplierId: supplier?.id || '', supplierName: supplier?.name || '', rawMaterialId: raw.id, rawMaterialName: raw.name || '', qty, rate, paidAmount, invoiceNo: document.getElementById('purchase-invoice').value.trim(), status: 'active', createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+            await postSupplierLedger({ entryDate: purchaseDate, supplierId: supplier?.id || '', supplierName: supplier?.name || '', type: 'purchase_invoice', description: `${raw.name || 'Raw material'} invoice`, credit: qty * rate, referenceId: purchaseRef.id });
             await postStockLedger({ entryDate: purchaseDate, itemType: 'raw', itemId: raw.id, itemName: raw.name || '', movement: 'in', qty, unit: raw.unit || '', rate, value: qty * rate, module: 'purchase', referenceCollection: 'purchases', referenceId: purchaseRef.id, note: `Purchase from ${supplier?.name || 'supplier'}` });
-            if(paidAmount > 0) await postUnifiedLedger({ entryDate: purchaseDate, type: 'expense', module: 'purchase', category: 'Raw Material Purchase', description: `${raw.name || 'Raw material'} purchase`, amount: paidAmount, referenceCollection: 'purchases', referenceId: purchaseRef.id });
+            if(paidAmount > 0) {
+                await addDoc(collection(db, 'purchasePayments'), { purchaseId: purchaseRef.id, supplierId: supplier?.id || '', supplierName: supplier?.name || '', amount: paidAmount, paymentDate: purchaseDate, note: 'Initial payment', createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+                await postSupplierLedger({ entryDate: purchaseDate, supplierId: supplier?.id || '', supplierName: supplier?.name || '', type: 'payment', description: 'Initial purchase payment', debit: paidAmount, referenceId: purchaseRef.id });
+                await postUnifiedLedger({ entryDate: purchaseDate, type: 'expense', module: 'purchase', category: 'Raw Material Purchase', description: `${raw.name || 'Raw material'} purchase`, amount: paidAmount, referenceCollection: 'purchases', referenceId: purchaseRef.id });
+            }
             ['purchase-qty','purchase-rate','purchase-paid','purchase-invoice'].forEach(id => document.getElementById(id).value = ''); showToast('Purchase saved and ledgers updated');
+        }
+        window.selectPurchaseForPayment = function(purchaseId) { const el = document.getElementById('purchase-payment-select'); if(el) el.value = purchaseId; document.getElementById('purchase-payment-amount')?.focus(); }
+        window.recordSupplierPayment = async function() {
+            const purchase = purchases.find(p => p.id === document.getElementById('purchase-payment-select').value);
+            const amount = moneyNumber(document.getElementById('purchase-payment-amount').value);
+            const paymentDate = document.getElementById('purchase-payment-date').value || getTodayString();
+            const note = document.getElementById('purchase-payment-note').value.trim() || 'Supplier payment';
+            if(!purchase || amount <= 0) { showToast('Select purchase and payment amount', 'error'); return; }
+            const due = getPurchaseBalance(purchase);
+            if(amount - due > 0.01) { showToast('Payment cannot be greater than purchase due', 'error'); return; }
+            const paymentRef = await addDoc(collection(db, 'purchasePayments'), { purchaseId: purchase.id, supplierId: purchase.supplierId || '', supplierName: purchase.supplierName || '', amount, paymentDate, note, createdAt: getTodayString(), createdBy: authUser?.uid || '' });
+            await updateDoc(doc(db, 'purchases', purchase.id), { paidAmount: moneyNumber(purchase.paidAmount) + amount, paymentStatus: amount >= due ? 'paid' : 'partial', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' });
+            await postSupplierLedger({ entryDate: paymentDate, supplierId: purchase.supplierId || '', supplierName: purchase.supplierName || '', type: 'payment', description: note, debit: amount, referenceCollection: 'purchasePayments', referenceId: paymentRef.id });
+            await postUnifiedLedger({ entryDate: paymentDate, type: 'expense', module: 'purchase', category: 'Supplier Payment', description: `${purchase.supplierName || 'Supplier'} payment`, amount, referenceCollection: 'purchasePayments', referenceId: paymentRef.id });
+            ['purchase-payment-amount','purchase-payment-note'].forEach(id => document.getElementById(id).value = ''); showToast('Supplier payment recorded');
+        }
+        window.voidPurchase = async function(purchaseId) {
+            const purchase = purchases.find(p => p.id === purchaseId); if(!purchase || purchase.status === 'cancelled') return;
+            if(!(await showConfirm({ title: 'Cancel Purchase?', message: 'This will reverse supplier payable and raw stock for this purchase. Payments already made stay in payment history.', confirmText: 'Cancel Purchase' }))) return;
+            const total = getPurchaseTotalAmount(purchase); const paid = getPurchasePaidAmount(purchase); const due = Math.max(0, total - paid); const date = getTodayString();
+            await updateDoc(doc(db, 'purchases', purchase.id), { status: 'cancelled', cancelledAt: date, cancelledBy: authUser?.uid || '' });
+            if(due > 0) await postSupplierLedger({ entryDate: date, supplierId: purchase.supplierId || '', supplierName: purchase.supplierName || '', type: 'purchase_cancelled', description: `Cancelled ${purchase.rawMaterialName || 'purchase'}`, debit: due, referenceId: purchase.id });
+            await postStockLedger({ entryDate: date, itemType: 'raw', itemId: purchase.rawMaterialId, itemName: purchase.rawMaterialName || '', movement: 'out', qty: moneyNumber(purchase.qty), unit: '', rate: moneyNumber(purchase.rate), value: total, module: 'purchase_cancelled', referenceCollection: 'purchases', referenceId: purchase.id, note: 'Purchase cancellation stock reversal' });
+            showToast('Purchase cancelled and reversal ledger posted');
         }
         function renderProductionDashboard() { refreshErpSelectors(); const d=document.getElementById('prod-date'); if(d) d.value ||= getTodayString(); renderProductionRawLines(); const list=document.getElementById('production-list'); if(!list) return; list.innerHTML = productionBatches.map(b => `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(b.productName || 'Production')} • ${escapeHtml(b.batchNo || '')}</div><div class="text-xs text-gray-500">${formatDisplayDate(b.productionDate)} • Qty ${moneyNumber(b.quantity).toFixed(2)} • Cost/unit ${formatMoney(b.costPerUnit)}</div></div><div class="text-right"><div class="font-bold text-fuchsia-700">${formatMoney(b.totalCost)}</div><div class="text-xs text-gray-500">${(b.rawMaterials||[]).length} materials</div></div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No production batches yet.</div>'; }
         function renderProductionRawLines() { const host=document.getElementById('prod-raw-lines'); if(!host) return; host.innerHTML = productionRawLines.map((line,i) => `<div class="flex items-center justify-between gap-2 rounded border border-fuchsia-100 bg-fuchsia-50 p-2"><span>${escapeHtml(line.name)} • ${line.qty} ${escapeHtml(line.unit || '')} • ${formatMoney(line.cost)}</span><button onclick="removeProductionRawLine(${i})" class="text-xs font-bold text-red-600">Remove</button></div>`).join(''); }
@@ -4301,8 +4372,8 @@
             ['asset-name','asset-cost','asset-maintenance','asset-supplier'].forEach(id => document.getElementById(id).value = ''); showToast('Asset saved and ledger updated');
         }
         function getErpReportModel() {
-            const sales = getSalesCollectedTotal(); const receivable = getReceivableTotal(); const purchase = getPurchaseTotal(); const production = getProductionCostTotal(); const salary = getSalaryPaidTotal(); const assets = getAssetTotal(); const rawStock = getRawStockValueTotal(); const finishedStock = getFinishedStockValueTotal(); const investorProfit = profitDistributions.reduce((sum, item) => sum + moneyNumber(item.distributable), 0); const ledgerIncome = getUnifiedLedgerTotal('income'); const ledgerExpense = getUnifiedLedgerTotal('expense'); const stockLedgerValue = getStockLedgerValue(); const customerReceivable = getCustomerLedgerReceivable(); const grossProfit = sales - purchase - production - salary;
-            return { sales, receivable, customerReceivable, purchase, production, salary, assets, rawStock, finishedStock, investorProfit, ledgerIncome, ledgerExpense, stockLedgerValue, grossProfit };
+            const sales = getSalesCollectedTotal(); const receivable = getReceivableTotal(); const purchase = getPurchaseTotal(); const production = getProductionCostTotal(); const salary = getSalaryPaidTotal(); const assets = getAssetTotal(); const rawStock = getRawStockValueTotal(); const finishedStock = getFinishedStockValueTotal(); const investorProfit = profitDistributions.reduce((sum, item) => sum + moneyNumber(item.distributable), 0); const ledgerIncome = getUnifiedLedgerTotal('income'); const ledgerExpense = getUnifiedLedgerTotal('expense'); const stockLedgerValue = getStockLedgerValue(); const customerReceivable = getCustomerLedgerReceivable(); const supplierPayable = getSupplierLedgerBalance(); const grossProfit = sales - purchase - production - salary;
+            return { sales, receivable, customerReceivable, supplierPayable, purchase, production, salary, assets, rawStock, finishedStock, investorProfit, ledgerIncome, ledgerExpense, stockLedgerValue, grossProfit };
         }
         function reportRow(label, value, color = 'text-gray-900') { return `<div class="p-4 flex items-center justify-between"><span class="text-sm font-bold text-gray-600">${label}</span><span class="text-lg font-extrabold ${color}">${formatMoney(value)}</span></div>`; }
         function renderReportsDashboard() {
@@ -4310,7 +4381,7 @@
             const cards = document.getElementById('erp-report-cards');
             if(cards) cards.innerHTML = [`Sales|${model.sales}|text-emerald-700`, `Receivable|${model.receivable}|text-orange-700`, `Raw Stock|${model.rawStock}|text-lime-700`, `Gross Profit|${model.grossProfit}|${model.grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`].map(item => { const [label, value, color] = item.split('|'); return `<div class="rounded-xl border border-teal-100 bg-white p-5 shadow-sm"><div class="text-xs font-bold uppercase text-gray-500">${label}</div><div class="mt-2 text-2xl font-extrabold ${color}">${formatMoney(value)}</div></div>`; }).join('');
             const pl = document.getElementById('pl-report');
-            if(pl) pl.innerHTML = reportRow('Sales Collected', model.sales, 'text-emerald-700') + reportRow('Customer Receivable', model.receivable, 'text-orange-700') + reportRow('Customer Ledger Receivable', model.customerReceivable, 'text-orange-700') + reportRow('Purchase Cost', model.purchase, 'text-red-700') + reportRow('Production Cost', model.production, 'text-red-700') + reportRow('Salary Paid', model.salary, 'text-red-700') + reportRow('Unified Ledger Expense', model.ledgerExpense, 'text-red-700') + reportRow('Asset Value', model.assets, 'text-stone-700') + reportRow('Finished Stock Value', model.finishedStock, 'text-purple-700') + reportRow('Investor Profit Distributed', model.investorProfit, 'text-rose-700') + reportRow('Gross Profit Snapshot', model.grossProfit, model.grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700');
+            if(pl) pl.innerHTML = reportRow('Sales Collected', model.sales, 'text-emerald-700') + reportRow('Customer Receivable', model.receivable, 'text-orange-700') + reportRow('Customer Ledger Receivable', model.customerReceivable, 'text-orange-700') + reportRow('Supplier Payable', model.supplierPayable, 'text-orange-700') + reportRow('Purchase Cost', model.purchase, 'text-red-700') + reportRow('Production Cost', model.production, 'text-red-700') + reportRow('Salary Paid', model.salary, 'text-red-700') + reportRow('Unified Ledger Expense', model.ledgerExpense, 'text-red-700') + reportRow('Asset Value', model.assets, 'text-stone-700') + reportRow('Finished Stock Value', model.finishedStock, 'text-purple-700') + reportRow('Investor Profit Distributed', model.investorProfit, 'text-rose-700') + reportRow('Gross Profit Snapshot', model.grossProfit, model.grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700');
             renderLedgerPreviews();
             const alerts = document.getElementById('erp-alerts');
             if(alerts) { const lowRaw = rawMaterials.filter(item => moneyNumber(item.minStock) > 0 && getRawStockBalance(item) <= moneyNumber(item.minStock)); const dueOrders = orders.filter(order => !order.isDeleted && getOrderBalanceDue(order) > 0); alerts.innerHTML = `<div class="p-4"><div class="font-bold text-red-700">Low raw materials: ${lowRaw.length}</div><div class="text-xs text-gray-500">${lowRaw.map(item => escapeHtml(item.name || '')).join(', ') || 'No low raw material alerts'}</div></div><div class="p-4"><div class="font-bold text-orange-700">Payment due orders: ${dueOrders.length}</div><div class="text-xs text-gray-500">Total receivable ${formatMoney(model.receivable)}</div></div><div class="p-4"><div class="font-bold text-teal-700">Production batches: ${productionBatches.length}</div><div class="text-xs text-gray-500">Total production cost ${formatMoney(model.production)}</div></div>`; }
@@ -4322,10 +4393,12 @@
             if(stockHost) stockHost.innerHTML = stockLedger.slice(0, 25).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.itemName || 'Stock')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.entryDate)} • ${escapeHtml(entry.itemType || '')} • ${escapeHtml(entry.module || '')} • ${escapeHtml(entry.note || '')}</div></div><div class="text-right"><div class="font-bold ${entry.movement === 'out' ? 'text-red-700' : 'text-lime-700'}">${entry.movement === 'out' ? '-' : '+'}${moneyNumber(entry.qty).toFixed(2)}</div><div class="text-xs text-gray-500">${formatMoney(entry.value)}</div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No stock ledger entries yet.</div>';
             const customerHost = document.getElementById('customer-ledger-list');
             if(customerHost) customerHost.innerHTML = customerLedger.slice(0, 40).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.customerName || 'Customer')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.entryDate)} • ${escapeHtml(entry.type || '')} • ${escapeHtml(entry.description || '')} • ${escapeHtml(entry.phone || '')}</div></div><div class="text-right"><div class="font-bold text-orange-700">Balance ${formatMoney(getCustomerLedgerBalance(entry.customerKey))}</div><div class="text-xs text-gray-500">Dr ${formatMoney(entry.debit)} / Cr ${formatMoney(entry.credit)}</div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No customer ledger entries yet.</div>';
+            const supplierHost = document.getElementById('supplier-ledger-list');
+            if(supplierHost) supplierHost.innerHTML = supplierLedger.slice(0, 40).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.supplierName || 'Supplier')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.entryDate)} • ${escapeHtml(entry.type || '')} • ${escapeHtml(entry.description || '')}</div></div><div class="text-right"><div class="font-bold text-orange-700">Payable ${formatMoney(getSupplierLedgerBalance(entry.supplierId))}</div><div class="text-xs text-gray-500">Dr ${formatMoney(entry.debit)} / Cr ${formatMoney(entry.credit)}</div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No supplier ledger entries yet.</div>';
         }
         window.downloadErpReportsCsv = function() {
             const model = getErpReportModel();
-            const rows = [['Metric','Amount'], ['Sales Collected', model.sales], ['Customer Receivable', model.receivable], ['Customer Ledger Receivable', model.customerReceivable], ['Purchase Cost', model.purchase], ['Production Cost', model.production], ['Salary Paid', model.salary], ['Unified Ledger Income', model.ledgerIncome], ['Unified Ledger Expense', model.ledgerExpense], ['Asset Value', model.assets], ['Raw Stock Value', model.rawStock], ['Finished Stock Value', model.finishedStock], ['Stock Ledger Value', model.stockLedgerValue], ['Gross Profit Snapshot', model.grossProfit]];
+            const rows = [['Metric','Amount'], ['Sales Collected', model.sales], ['Customer Receivable', model.receivable], ['Customer Ledger Receivable', model.customerReceivable], ['Supplier Payable', model.supplierPayable], ['Purchase Cost', model.purchase], ['Production Cost', model.production], ['Salary Paid', model.salary], ['Unified Ledger Income', model.ledgerIncome], ['Unified Ledger Expense', model.ledgerExpense], ['Asset Value', model.assets], ['Raw Stock Value', model.rawStock], ['Finished Stock Value', model.finishedStock], ['Stock Ledger Value', model.stockLedgerValue], ['Gross Profit Snapshot', model.grossProfit]];
             const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `Lakfa_ERP_Report_${getTodayString()}.csv`; link.click(); URL.revokeObjectURL(url);
         }
