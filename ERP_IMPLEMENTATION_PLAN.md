@@ -51,6 +51,11 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Party create/edit, duplicate order group merge, opening balance, credit limit, payment terms, follow-up date/note ചേർത്തു.
 - Party-wise search/filter/sort, PDF statement, CSV export, all-parties CSV export ചേർത്തു.
 
+### Step 10B — Strong Role-Based Authentication & Access Control
+- Founder, Manager, Staff, Investor roles മാത്രം login ചെയ്യാവുന്ന രീതിയിൽ login routing harden ചെയ്തു.
+- setupMode-controlled founder bootstrap, active/inactive blocking, founder-only investor/manager/staff user management, user role audit log എന്നിവ ചേർത്തു.
+- Firestore rules founder/manager/staff/investor role helpers ഉപയോഗിച്ച് harden ചെയ്തു; users/settings management founder-only ആയി.
+
 ## നിലവിലെ ERP കഴിവുകൾ
 - Order entry, payment tracking, customer receivable ledger.
 - Product inventory with stock history, batch, expiry, valuation and low-stock alerts.
@@ -63,7 +68,7 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Balance sheet snapshot and reconciliation mismatch alerts.
 - GST summary, HSN/SAC-wise tax report and input/output GST reconciliation.
 - Investor-specific capital statement, profit share history and personal contribution reports.
-- Manager/staff role permissions by module for orders, inventory, production, finance, reports and settings, including manager profile bootstrap for existing manager Auth accounts and legacy admin/owner role support.
+- Founder/manager/staff/investor role-based access with setupMode founder bootstrap, active account blocking, founder-only user management and staff module permissions.
 - Party Master and Party Ledger with opening balance, credit limit, payment terms, due follow-up, statement PDF/CSV and duplicate merge support.
 
 ## ഇനി ബാക്കി ചെയ്യാനുള്ള പ്രധാന ഘട്ടങ്ങൾ

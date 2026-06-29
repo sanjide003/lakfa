@@ -13,11 +13,16 @@ service cloud.firestore {
     function hasUserRole(role) {
       return signedIn()
         && exists(userPath(request.auth.uid))
-        && get(userPath(request.auth.uid)).data.role == role;
+        && get(userPath(request.auth.uid)).data.role == role
+        && get(userPath(request.auth.uid)).data.isActive != false;
+    }
+
+    function isFounder() {
+      return hasUserRole('founder') || hasUserRole('owner') || hasUserRole('admin');
     }
 
     function isManager() {
-      return hasUserRole('manager') || hasUserRole('admin') || hasUserRole('owner');
+      return isFounder() || hasUserRole('manager');
     }
 
     function isInvestor() {
@@ -25,7 +30,7 @@ service cloud.firestore {
     }
 
     function isStaff() {
-      return hasUserRole('staff') && get(userPath(request.auth.uid)).data.isActive != false;
+      return hasUserRole('staff');
     }
 
     function hasPermission(module) {
@@ -40,22 +45,29 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
-    function isSelfManagerBootstrap(userId) {
-      return isSelfUser(userId)
-        && request.resource.data.role == 'manager'
-        && request.resource.data.email == request.auth.token.email;
+    function isSetupMode() {
+      return exists(/databases/$(database)/documents/settings/config)
+        && get(/databases/$(database)/documents/settings/config).data.setupMode == true;
+    }
+
+    function isSelfFounderBootstrap(userId) {
+      return isSetupMode()
+        && isSelfUser(userId)
+        && request.resource.data.role == 'founder'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.isActive != false;
     }
 
     match /users/{userId} {
-      allow read: if isManager() || isSelfUser(userId);
-      allow create: if isManager() || isSelfManagerBootstrap(userId);
-      allow update: if isManager() || (isSelfManagerBootstrap(userId) && !resource.data.keys().hasAny(['role']));
-      allow delete: if isManager();
+      allow read: if isFounder() || isSelfUser(userId);
+      allow create: if isFounder() || isSelfFounderBootstrap(userId);
+      allow update: if isFounder() || (isSelfFounderBootstrap(userId) && !resource.data.keys().hasAny(['role']));
+      allow delete: if isFounder();
     }
 
     match /settings/{docId} {
       allow read: if signedIn();
-      allow write: if isManager();
+      allow write: if isFounder();
     }
 
     match /orders/{orderId} {
