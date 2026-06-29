@@ -672,6 +672,10 @@
                             <div class="px-6 py-4 border-b bg-amber-50"><h3 class="font-bold text-amber-950">Supplier Ledger</h3><p class="text-sm text-amber-700 mt-1">Purchase invoices, supplier payments, cancellations, and payable balance.</p></div>
                             <div id="supplier-ledger-list" class="divide-y divide-gray-100 max-h-[460px] overflow-y-auto"></div>
                         </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden xl:col-span-2">
+                            <div class="px-6 py-4 border-b bg-slate-50"><h3 class="font-bold text-slate-950">Audit Log</h3><p class="text-sm text-slate-700 mt-1">Edit, cancel, restore, reversal, and lifecycle actions posted by managers.</p></div>
+                            <div id="audit-log-list" class="divide-y divide-gray-100 max-h-[460px] overflow-y-auto"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -1204,6 +1208,7 @@
         let customerLedger = [];
         let supplierLedger = [];
         let purchasePayments = [];
+        let auditLog = [];
         let authUser = null;
         let currentUserRole = 'manager';
         let selectedOrders = new Set();
@@ -1686,6 +1691,12 @@
                 purchasePayments.sort((a, b) => new Date(normalizeDateInput(b.paymentDate || b.createdAt)) - new Date(normalizeDateInput(a.paymentDate || a.createdAt)));
                 refreshErpSelectors();
                 if(currentTab === 'suppliers') renderSuppliersDashboard();
+            });
+            onSnapshot(collection(db, "auditLog"), (snapshot) => {
+                auditLog = [];
+                snapshot.forEach((doc) => auditLog.push({ id: doc.id, ...doc.data() }));
+                auditLog.sort((a, b) => new Date(b.createdAt || b.actionDate || 0) - new Date(a.createdAt || a.actionDate || 0));
+                if(currentTab === 'reports') renderReportsDashboard();
             });
             onSnapshot(collection(db, "investorPaymentRequests"), (snapshot) => {
                 investorPaymentRequests = [];
@@ -2633,6 +2644,40 @@
             });
             await Promise.all(entries);
         }
+        async function postAuditLog(entry = {}) {
+            return addDoc(collection(db, 'auditLog'), {
+                actionDate: normalizeDateInput(entry.actionDate || getTodayString()),
+                module: entry.module || 'general',
+                action: entry.action || 'updated',
+                referenceCollection: entry.referenceCollection || '',
+                referenceId: entry.referenceId || '',
+                summary: entry.summary || '',
+                before: entry.before || null,
+                after: entry.after || null,
+                createdAt: getCurrentDateTimeLocal(),
+                createdBy: authUser?.uid || ''
+            });
+        }
+        function summarizeRecord(record = {}, keys = []) {
+            return keys.reduce((out, key) => { out[key] = record?.[key] ?? ''; return out; }, {});
+        }
+        async function reverseLedgersForReference(referenceCollection, referenceId, reason = 'Cancelled') {
+            if(!referenceCollection || !referenceId) return;
+            const actionDate = getTodayString();
+            const reversalMarker = `${referenceCollection}/${referenceId}`;
+            const reversedIds = new Set([...unifiedLedger, ...stockLedger, ...customerLedger, ...supplierLedger].map(e => e.reversalOf).filter(Boolean));
+            const financeEntries = unifiedLedger.filter(e => e.referenceCollection === referenceCollection && e.referenceId === referenceId && !e.reversalOf && !reversedIds.has(e.id));
+            const stockEntries = stockLedger.filter(e => e.referenceCollection === referenceCollection && e.referenceId === referenceId && !e.reversalOf && !reversedIds.has(e.id));
+            const customerEntries = customerLedger.filter(e => (e.referenceCollection || 'orders') === referenceCollection && e.referenceId === referenceId && !e.reversalOf && !reversedIds.has(e.id));
+            const supplierEntries = supplierLedger.filter(e => (e.referenceCollection || 'purchases') === referenceCollection && e.referenceId === referenceId && !e.reversalOf && !reversedIds.has(e.id));
+            await Promise.all([
+                ...financeEntries.map(e => postUnifiedLedger({ entryDate: actionDate, type: e.type === 'income' ? 'expense' : 'income', module: `${e.module || 'ledger'}_reversal`, category: `Reversal - ${e.category || 'General'}`, description: `${reason}: ${e.description || ''}`, amount: e.amount, accountId: e.accountId || '', referenceCollection, referenceId, reversalOf: e.id })),
+                ...stockEntries.map(e => postStockLedger({ entryDate: actionDate, itemType: e.itemType, itemId: e.itemId, itemName: e.itemName, movement: e.movement === 'in' ? 'out' : 'in', qty: e.qty, unit: e.unit, rate: e.rate, value: e.value, module: `${e.module || 'stock'}_reversal`, referenceCollection, referenceId, note: `${reason}: ${e.note || ''}`, reversalOf: e.id })),
+                ...customerEntries.map(e => postCustomerLedger({ entryDate: actionDate, customerKey: e.customerKey, customerName: e.customerName, phone: e.phone, type: `${e.type || 'entry'}_reversal`, description: `${reason}: ${e.description || ''}`, debit: e.credit, credit: e.debit, referenceCollection, referenceId, reversalOf: e.id })),
+                ...supplierEntries.map(e => postSupplierLedger({ entryDate: actionDate, supplierId: e.supplierId, supplierName: e.supplierName, type: `${e.type || 'entry'}_reversal`, description: `${reason}: ${e.description || ''}`, debit: e.credit, credit: e.debit, referenceCollection, referenceId, reversalOf: e.id }))
+            ]);
+            await postAuditLog({ module: 'ledger', action: 'reversal_posted', referenceCollection, referenceId, summary: `${reason} reversal posted for ${reversalMarker}` });
+        }
         async function syncOrderSalesLedgers(orderId, orderData, existingOrder = null, meta = {}) {
             const entryDate = normalizeDateInput(orderData.updatedAt || orderData.createdAt || getTodayString());
             const customerKey = getPartyKey(orderData);
@@ -2756,6 +2801,7 @@
                     const orderIncomeAccountId = await syncOrderCompanyIncome(id, orderData, existingOrder?.orderIncomeAccountId || '');
                     await syncOrderSalesLedgers(id, orderData, existingOrder, { newPaymentAmount, newPaymentDate, newPaymentNote, paymentSource, newExpenseAmount, newExpenseDate, newExpenseNote, expenseSource, expenseCategoryName });
                     await updateDoc(doc(db, "orders", id), { ...orderData, orderIncomeAccountId });
+                    await postAuditLog({ module: 'orders', action: 'edited', referenceCollection: 'orders', referenceId: id, summary: `Order edited for ${orderData.name || 'customer'}`, before: summarizeRecord(existingOrder || {}, ['orderTotal','paidTotal','balanceDue','status']), after: summarizeRecord(orderData, ['orderTotal','paidTotal','balanceDue','status']) });
                     showToast('Order Updated Successfully');
                 } else {
                     orderData.statusHistory = [{ status: orderData.status, date: dateStr, note: 'Order created' }];
@@ -2764,6 +2810,7 @@
                     const orderIncomeAccountId = await syncOrderCompanyIncome(orderRef.id, orderData, '');
                     await syncOrderSalesLedgers(orderRef.id, orderData, null, { newPaymentAmount: paidTotal, newPaymentDate: dateStr, paymentSource, newExpenseAmount: expensePaidTotal, newExpenseDate, newExpenseNote, expenseSource, expenseCategoryName });
                     await updateDoc(orderRef, { orderIncomeAccountId });
+                    await postAuditLog({ module: 'orders', action: 'created', referenceCollection: 'orders', referenceId: orderRef.id, summary: `Order created for ${orderData.name || 'customer'}`, after: summarizeRecord(orderData, ['orderTotal','paidTotal','balanceDue','status']) });
                     await applyOrderStockDelta([], itemsObj);
                     showToast('Order Added Successfully');
                 }
@@ -2775,7 +2822,10 @@
             const order = orders.find(o => o.id === id);
             if(!(await showConfirm({ title: 'Move to Recycle Bin?', message: `Move the order${order?.name ? ' for ' + order.name : ''} to the recycle bin?`, confirmText: 'Move to Bin' }))) return;
             try {
-                await updateDoc(doc(db, "orders", id), { isDeleted: true, deletedAt: getTodayString() });
+                await updateDoc(doc(db, "orders", id), { isDeleted: true, deletedAt: getTodayString(), lifecycleStatus: 'cancelled' });
+                await applyOrderStockDelta(order?.itemsObj || [], []);
+                await reverseLedgersForReference('orders', id, 'Order moved to recycle bin');
+                await postAuditLog({ module: 'orders', action: 'cancelled', referenceCollection: 'orders', referenceId: id, summary: `Order cancelled for ${order?.name || 'customer'}`, before: summarizeRecord(order || {}, ['orderTotal','paidTotal','balanceDue','status']) });
                 selectedOrders.delete(id);
                 showToast('Order moved to recycle bin', 'error');
             } catch (e) { showToast(e.message, 'error'); }
@@ -2784,7 +2834,11 @@
         window.restoreOrder = async function(id) {
             if(!(await showConfirm({ title: 'Restore Order?', message: 'Restore this order from the recycle bin?', confirmText: 'Restore', confirmClass: 'bg-green-600 hover:bg-green-700' }))) return;
             try {
-                await updateDoc(doc(db, "orders", id), { isDeleted: false, deletedAt: '' });
+                const order = orders.find(o => o.id === id);
+                await updateDoc(doc(db, "orders", id), { isDeleted: false, deletedAt: '', lifecycleStatus: 'active' });
+                await applyOrderStockDelta([], order?.itemsObj || []);
+                if(order) await syncOrderSalesLedgers(id, order, null, { newPaymentAmount: getOrderPaidTotal(order), newPaymentDate: normalizeDateInput(order.createdAt), newExpenseAmount: getOrderExpensePaidTotal(order), newExpenseDate: normalizeDateInput(order.createdAt), expenseCategoryName: order.orderExpenseCategoryName });
+                await postAuditLog({ module: 'orders', action: 'restored', referenceCollection: 'orders', referenceId: id, summary: `Order restored for ${order?.name || 'customer'}` });
                 showToast('Order restored successfully');
             } catch (e) { showToast(e.message, 'error'); }
         }
@@ -4129,8 +4183,8 @@
             return moneyNumber(product.initialStock) + added - moneyNumber(product.ordered);
         }
         function getRawStockBalance(item) {
-            const purchased = purchases.filter(p => p.rawMaterialId === item.id).reduce((sum, p) => sum + moneyNumber(p.qty), 0);
-            const consumed = productionBatches.reduce((sum, batch) => sum + (Array.isArray(batch.rawMaterials) ? batch.rawMaterials.filter(line => line.rawMaterialId === item.id).reduce((lineSum, line) => lineSum + moneyNumber(line.qty), 0) : 0), 0);
+            const purchased = purchases.filter(p => p.status !== 'cancelled' && p.rawMaterialId === item.id).reduce((sum, p) => sum + moneyNumber(p.qty), 0);
+            const consumed = productionBatches.filter(batch => batch.status !== 'cancelled').reduce((sum, batch) => sum + (Array.isArray(batch.rawMaterials) ? batch.rawMaterials.filter(line => line.rawMaterialId === item.id).reduce((lineSum, line) => lineSum + moneyNumber(line.qty), 0) : 0), 0);
             return moneyNumber(item.openingStock) + purchased - consumed;
         }
         function refreshErpSelectors() {
@@ -4172,7 +4226,7 @@
             const debit = Math.abs(moneyNumber(entry.debit));
             const credit = Math.abs(moneyNumber(entry.credit));
             if(!debit && !credit) return null;
-            return addDoc(collection(db, 'supplierLedger'), { entryDate: normalizeDateInput(entry.entryDate || getTodayString()), supplierId: entry.supplierId || '', supplierName: entry.supplierName || '', type: entry.type || 'purchase_invoice', description: entry.description || '', debit, credit, referenceCollection: entry.referenceCollection || 'purchases', referenceId: entry.referenceId || '', createdAt: getCurrentDateTimeLocal(), createdBy: authUser?.uid || '' });
+            return addDoc(collection(db, 'supplierLedger'), { entryDate: normalizeDateInput(entry.entryDate || getTodayString()), supplierId: entry.supplierId || '', supplierName: entry.supplierName || '', type: entry.type || 'purchase_invoice', description: entry.description || '', debit, credit, referenceCollection: entry.referenceCollection || 'purchases', referenceId: entry.referenceId || '', reversalOf: entry.reversalOf || '', createdAt: getCurrentDateTimeLocal(), createdBy: authUser?.uid || '' });
         }
         function renderSuppliersDashboard() {
             refreshErpSelectors();
@@ -4204,6 +4258,7 @@
                 await postSupplierLedger({ entryDate: purchaseDate, supplierId: supplier?.id || '', supplierName: supplier?.name || '', type: 'payment', description: 'Initial purchase payment', debit: paidAmount, referenceId: purchaseRef.id });
                 await postUnifiedLedger({ entryDate: purchaseDate, type: 'expense', module: 'purchase', category: 'Raw Material Purchase', description: `${raw.name || 'Raw material'} purchase`, amount: paidAmount, referenceCollection: 'purchases', referenceId: purchaseRef.id });
             }
+            await postAuditLog({ module: 'purchases', action: 'created', referenceCollection: 'purchases', referenceId: purchaseRef.id, summary: `Purchase saved for ${raw.name || 'raw material'}`, after: { qty, rate, total: qty * rate, paidAmount } });
             ['purchase-qty','purchase-rate','purchase-paid','purchase-invoice'].forEach(id => document.getElementById(id).value = ''); showToast('Purchase saved and ledgers updated');
         }
         window.selectPurchaseForPayment = function(purchaseId) { const el = document.getElementById('purchase-payment-select'); if(el) el.value = purchaseId; document.getElementById('purchase-payment-amount')?.focus(); }
@@ -4219,6 +4274,7 @@
             await updateDoc(doc(db, 'purchases', purchase.id), { paidAmount: moneyNumber(purchase.paidAmount) + amount, paymentStatus: amount >= due ? 'paid' : 'partial', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' });
             await postSupplierLedger({ entryDate: paymentDate, supplierId: purchase.supplierId || '', supplierName: purchase.supplierName || '', type: 'payment', description: note, debit: amount, referenceCollection: 'purchasePayments', referenceId: paymentRef.id });
             await postUnifiedLedger({ entryDate: paymentDate, type: 'expense', module: 'purchase', category: 'Supplier Payment', description: `${purchase.supplierName || 'Supplier'} payment`, amount, referenceCollection: 'purchasePayments', referenceId: paymentRef.id });
+            await postAuditLog({ module: 'purchases', action: 'payment_recorded', referenceCollection: 'purchasePayments', referenceId: paymentRef.id, summary: `Supplier payment recorded for ${purchase.supplierName || 'supplier'}`, after: { amount, purchaseId: purchase.id } });
             ['purchase-payment-amount','purchase-payment-note'].forEach(id => document.getElementById(id).value = ''); showToast('Supplier payment recorded');
         }
         window.voidPurchase = async function(purchaseId) {
@@ -4226,11 +4282,12 @@
             if(!(await showConfirm({ title: 'Cancel Purchase?', message: 'This will reverse supplier payable and raw stock for this purchase. Payments already made stay in payment history.', confirmText: 'Cancel Purchase' }))) return;
             const total = getPurchaseTotalAmount(purchase); const paid = getPurchasePaidAmount(purchase); const due = Math.max(0, total - paid); const date = getTodayString();
             await updateDoc(doc(db, 'purchases', purchase.id), { status: 'cancelled', cancelledAt: date, cancelledBy: authUser?.uid || '' });
+            await postAuditLog({ module: 'purchases', action: 'cancelled', referenceCollection: 'purchases', referenceId: purchase.id, summary: `Purchase cancelled: ${purchase.rawMaterialName || 'purchase'}`, before: summarizeRecord(purchase, ['qty','rate','paidAmount','status']) });
             if(due > 0) await postSupplierLedger({ entryDate: date, supplierId: purchase.supplierId || '', supplierName: purchase.supplierName || '', type: 'purchase_cancelled', description: `Cancelled ${purchase.rawMaterialName || 'purchase'}`, debit: due, referenceId: purchase.id });
             await postStockLedger({ entryDate: date, itemType: 'raw', itemId: purchase.rawMaterialId, itemName: purchase.rawMaterialName || '', movement: 'out', qty: moneyNumber(purchase.qty), unit: '', rate: moneyNumber(purchase.rate), value: total, module: 'purchase_cancelled', referenceCollection: 'purchases', referenceId: purchase.id, note: 'Purchase cancellation stock reversal' });
             showToast('Purchase cancelled and reversal ledger posted');
         }
-        function renderProductionDashboard() { refreshErpSelectors(); const d=document.getElementById('prod-date'); if(d) d.value ||= getTodayString(); renderProductionRawLines(); const list=document.getElementById('production-list'); if(!list) return; list.innerHTML = productionBatches.map(b => `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(b.productName || 'Production')} • ${escapeHtml(b.batchNo || '')}</div><div class="text-xs text-gray-500">${formatDisplayDate(b.productionDate)} • Qty ${moneyNumber(b.quantity).toFixed(2)} • Cost/unit ${formatMoney(b.costPerUnit)}</div></div><div class="text-right"><div class="font-bold text-fuchsia-700">${formatMoney(b.totalCost)}</div><div class="text-xs text-gray-500">${(b.rawMaterials||[]).length} materials</div></div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No production batches yet.</div>'; }
+        function renderProductionDashboard() { refreshErpSelectors(); const d=document.getElementById('prod-date'); if(d) d.value ||= getTodayString(); renderProductionRawLines(); const list=document.getElementById('production-list'); if(!list) return; list.innerHTML = productionBatches.map(b => { const cancelled = b.status === 'cancelled'; return `<div class="p-4 ${cancelled ? 'bg-red-50 opacity-80' : ''}"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(b.productName || 'Production')} • ${escapeHtml(b.batchNo || '')} ${cancelled ? '<span class="text-xs text-red-700">(Cancelled)</span>' : ''}</div><div class="text-xs text-gray-500">${formatDisplayDate(b.productionDate)} • Qty ${moneyNumber(b.quantity).toFixed(2)} • Cost/unit ${formatMoney(b.costPerUnit)}</div></div><div class="text-right"><div class="font-bold text-fuchsia-700">${formatMoney(b.totalCost)}</div><div class="text-xs text-gray-500">${(b.rawMaterials||[]).length} materials</div><button onclick="voidProductionBatch('${b.id}')" ${cancelled ? 'disabled' : ''} class="mt-2 rounded border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700 disabled:opacity-40">Cancel</button></div></div></div>`; }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No production batches yet.</div>'; }
         function renderProductionRawLines() { const host=document.getElementById('prod-raw-lines'); if(!host) return; host.innerHTML = productionRawLines.map((line,i) => `<div class="flex items-center justify-between gap-2 rounded border border-fuchsia-100 bg-fuchsia-50 p-2"><span>${escapeHtml(line.name)} • ${line.qty} ${escapeHtml(line.unit || '')} • ${formatMoney(line.cost)}</span><button onclick="removeProductionRawLine(${i})" class="text-xs font-bold text-red-600">Remove</button></div>`).join(''); }
         window.addProductionRawLine = function() { const raw=rawMaterials.find(r => r.id === document.getElementById('prod-raw').value); const qty=moneyNumber(document.getElementById('prod-raw-qty').value); if(!raw || qty <= 0) { showToast('Select raw material and quantity', 'error'); return; } productionRawLines.push({ rawMaterialId: raw.id, name: raw.name || '', unit: raw.unit || '', qty, rate: moneyNumber(raw.rate), cost: qty * moneyNumber(raw.rate) }); document.getElementById('prod-raw-qty').value=''; renderProductionRawLines(); }
         window.removeProductionRawLine = function(i) { productionRawLines.splice(i,1); renderProductionRawLines(); }
@@ -4250,13 +4307,30 @@
             await postStockLedger({ entryDate: productionDate, itemType: 'finished', itemId: product.id, itemName: product.name || '', movement: 'in', qty, unit: 'unit', rate: qty ? totalCost / qty : 0, value: totalCost, module: 'production', referenceCollection: 'productionBatches', referenceId: batchRef.id, note: `Finished goods from ${batchNo}` });
             if(labourCost > 0) await postUnifiedLedger({ entryDate: productionDate, type: 'expense', module: 'production', category: 'Production Labour', description: `Labour for ${batchNo}`, amount: labourCost, referenceCollection: 'productionBatches', referenceId: batchRef.id });
             if(overheadCost > 0) await postUnifiedLedger({ entryDate: productionDate, type: 'expense', module: 'production', category: 'Production Overhead', description: `Overhead for ${batchNo}`, amount: overheadCost, referenceCollection: 'productionBatches', referenceId: batchRef.id });
+            await postAuditLog({ module: 'production', action: 'created', referenceCollection: 'productionBatches', referenceId: batchRef.id, summary: `Production batch saved: ${batchNo}`, after: { quantity: qty, totalCost, productName: product.name || '' } });
             productionRawLines=[]; ['prod-batch','prod-qty','prod-labour','prod-overhead'].forEach(id=>document.getElementById(id).value=''); renderProductionRawLines(); showToast('Production saved and ledgers updated');
         }
-        function calculateProfitModel() { const from=document.getElementById('profit-from')?.value || ''; const to=document.getElementById('profit-to')?.value || ''; const inRange = (date) => (!from || normalizeDateInput(date) >= from) && (!to || normalizeDateInput(date) <= to); const sales = orders.filter(o => !o.isDeleted && inRange(o.createdAt)).reduce((sum,o)=>sum+getOrderPaidTotal(o),0); const orderExpenses = orders.filter(o => !o.isDeleted && inRange(o.createdAt)).reduce((sum,o)=>sum+getOrderExpensePaidTotal(o),0); const manualIncome = companyDailyAccounts.filter(a=>inRange(a.accountDate || a.createdAt)).reduce((sum,a)=>sum+moneyNumber(a.income),0); const manualExpense = companyDailyAccounts.filter(a=>inRange(a.accountDate || a.createdAt)).reduce((sum,a)=>sum+moneyNumber(a.expense),0); const productionCost = productionBatches.filter(b=>inRange(b.productionDate || b.createdAt)).reduce((sum,b)=>sum+moneyNumber(b.totalCost),0); const reserve=moneyNumber(document.getElementById('profit-reserve')?.value); const netProfit = sales + manualIncome - orderExpenses - manualExpense - productionCost; const distributable = Math.max(0, netProfit - reserve); const totalPercent = investors.reduce((sum,i)=>sum+moneyNumber(i.profitSharePercent || i.sharePercent || i.ownershipPercent),0) || investors.length || 1; const shares = investors.map(i => { const percent = moneyNumber(i.profitSharePercent || i.sharePercent || i.ownershipPercent) || (100 / (investors.length || 1)); return { investorId: i.id, name: i.name || i.email || 'Investor', percent, amount: distributable * percent / totalPercent }; }); return { from, to, sales, manualIncome, orderExpenses, manualExpense, productionCost, reserve, netProfit, distributable, shares }; }
+        window.voidProductionBatch = async function(batchId) {
+            const batch = productionBatches.find(b => b.id === batchId); if(!batch || batch.status === 'cancelled') return;
+            if(!(await showConfirm({ title: 'Cancel Production?', message: 'This will reverse raw usage, finished stock, labour and overhead ledger entries.', confirmText: 'Cancel Production' }))) return;
+            await updateDoc(doc(db, 'productionBatches', batch.id), { status: 'cancelled', cancelledAt: getTodayString(), cancelledBy: authUser?.uid || '' });
+            await reverseLedgersForReference('productionBatches', batch.id, 'Production cancelled');
+            const product = products.find(p => p.id === batch.productId);
+            if(product) await updateDoc(doc(db, 'products', product.id), { stockHistory: [...(Array.isArray(product.stockHistory) ? product.stockHistory : []), { qty: -moneyNumber(batch.quantity), date: getTodayString(), note: `Production cancellation ${batch.batchNo || ''}`, source: 'production_cancelled' }] });
+            await postAuditLog({ module: 'production', action: 'cancelled', referenceCollection: 'productionBatches', referenceId: batch.id, summary: `Production cancelled: ${batch.batchNo || ''}`, before: summarizeRecord(batch, ['quantity','totalCost','status']) });
+            showToast('Production cancelled and reversal ledgers posted');
+        }
+        function calculateProfitModel() { const from=document.getElementById('profit-from')?.value || ''; const to=document.getElementById('profit-to')?.value || ''; const inRange = (date) => (!from || normalizeDateInput(date) >= from) && (!to || normalizeDateInput(date) <= to); const sales = orders.filter(o => !o.isDeleted && inRange(o.createdAt)).reduce((sum,o)=>sum+getOrderPaidTotal(o),0); const orderExpenses = orders.filter(o => !o.isDeleted && inRange(o.createdAt)).reduce((sum,o)=>sum+getOrderExpensePaidTotal(o),0); const manualIncome = companyDailyAccounts.filter(a=>inRange(a.accountDate || a.createdAt)).reduce((sum,a)=>sum+moneyNumber(a.income),0); const manualExpense = companyDailyAccounts.filter(a=>inRange(a.accountDate || a.createdAt)).reduce((sum,a)=>sum+moneyNumber(a.expense),0); const productionCost = productionBatches.filter(b=>b.status !== 'cancelled' && inRange(b.productionDate || b.createdAt)).reduce((sum,b)=>sum+moneyNumber(b.totalCost),0); const reserve=moneyNumber(document.getElementById('profit-reserve')?.value); const netProfit = sales + manualIncome - orderExpenses - manualExpense - productionCost; const distributable = Math.max(0, netProfit - reserve); const totalPercent = investors.reduce((sum,i)=>sum+moneyNumber(i.profitSharePercent || i.sharePercent || i.ownershipPercent),0) || investors.length || 1; const shares = investors.map(i => { const percent = moneyNumber(i.profitSharePercent || i.sharePercent || i.ownershipPercent) || (100 / (investors.length || 1)); return { investorId: i.id, name: i.name || i.email || 'Investor', percent, amount: distributable * percent / totalPercent }; }); return { from, to, sales, manualIncome, orderExpenses, manualExpense, productionCost, reserve, netProfit, distributable, shares }; }
         window.calculateProfitSharingPreview = function() { lastProfitPreview = calculateProfitModel(); const host=document.getElementById('profit-preview'); if(!host) return; host.innerHTML = `<div class="space-y-1"><div class="flex justify-between"><span>Net Profit</span><b>${formatMoney(lastProfitPreview.netProfit)}</b></div><div class="flex justify-between"><span>Distributable</span><b>${formatMoney(lastProfitPreview.distributable)}</b></div>${lastProfitPreview.shares.map(s=>`<div class="flex justify-between text-xs"><span>${escapeHtml(s.name)} (${s.percent}%)</span><b>${formatMoney(s.amount)}</b></div>`).join('')}</div>`; }
-        function renderProfitSharingDashboard() { calculateProfitSharingPreview(); const list=document.getElementById('profit-distribution-list'); if(!list) return; list.innerHTML = profitDistributions.map(d => `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${formatDisplayDate(d.fromDate)} - ${formatDisplayDate(d.toDate)}</div><div class="text-xs text-gray-500">${(d.shares || []).length} investors • Reserve ${formatMoney(d.reserve)}</div><div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-gray-600">${(d.shares || []).map(s => `<span>${escapeHtml(s.name)}: <b>${formatMoney(s.amount)}</b></span>`).join('')}</div></div><div class="text-right"><div class="font-bold text-rose-700">${formatMoney(d.distributable)}</div><div class="text-xs text-gray-500">Net ${formatMoney(d.netProfit)}</div></div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No profit distributions saved.</div>'; }
-        window.saveProfitDistribution = async function() { lastProfitPreview = calculateProfitModel(); if(lastProfitPreview.netProfit <= 0) { showToast('No positive profit to distribute', 'error'); return; } const distributionRef = await addDoc(collection(db,'profitDistributions'), { fromDate: lastProfitPreview.from || getTodayString(), toDate: lastProfitPreview.to || getTodayString(), ...lastProfitPreview, createdAt: getTodayString(), createdBy: authUser?.uid || '' }); await Promise.all(lastProfitPreview.shares.filter(s => moneyNumber(s.amount) > 0).map(s => addDoc(collection(db, 'investorExpenses'), { uid: s.investorId, investorName: s.name, investorEmail: (investors.find(i => i.id === s.investorId) || {}).email || '', purpose: `Profit share ${lastProfitPreview.from || ''} - ${lastProfitPreview.to || ''}`, amount: moneyNumber(s.amount), status: 'approved', source: 'profitDistribution', profitDistributionId: distributionRef.id, createdAt: getTodayString(), approvedAt: getTodayString(), approvedBy: authUser?.uid || '' }))); showToast('Profit distribution saved and credited to investors'); }
-
+        function renderProfitSharingDashboard() { calculateProfitSharingPreview(); const list=document.getElementById('profit-distribution-list'); if(!list) return; list.innerHTML = profitDistributions.map(d => { const cancelled = d.status === 'cancelled'; return `<div class="p-4 ${cancelled ? 'bg-red-50 opacity-80' : ''}"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${formatDisplayDate(d.fromDate)} - ${formatDisplayDate(d.toDate)} ${cancelled ? '<span class="text-xs text-red-700">(Cancelled)</span>' : ''}</div><div class="text-xs text-gray-500">${(d.shares || []).length} investors • Reserve ${formatMoney(d.reserve)}</div><div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-gray-600">${(d.shares || []).map(s => `<span>${escapeHtml(s.name)}: <b>${formatMoney(s.amount)}</b></span>`).join('')}</div></div><div class="text-right"><div class="font-bold text-rose-700">${formatMoney(d.distributable)}</div><div class="text-xs text-gray-500">Net ${formatMoney(d.netProfit)}</div><button onclick="voidProfitDistribution('${d.id}')" ${cancelled ? 'disabled' : ''} class="mt-2 text-xs font-bold text-red-600 disabled:opacity-40">Cancel</button></div></div></div>`; }).join('') || '<div class="p-8 text-center text-sm text-gray-500">No profit distributions saved.</div>'; }
+        window.saveProfitDistribution = async function() { lastProfitPreview = calculateProfitModel(); if(lastProfitPreview.netProfit <= 0) { showToast('No positive profit to distribute', 'error'); return; } const distributionRef = await addDoc(collection(db,'profitDistributions'), { fromDate: lastProfitPreview.from || getTodayString(), toDate: lastProfitPreview.to || getTodayString(), ...lastProfitPreview, createdAt: getTodayString(), createdBy: authUser?.uid || '' }); await Promise.all(lastProfitPreview.shares.filter(s => moneyNumber(s.amount) > 0).map(s => addDoc(collection(db, 'investorExpenses'), { uid: s.investorId, investorName: s.name, investorEmail: (investors.find(i => i.id === s.investorId) || {}).email || '', purpose: `Profit share ${lastProfitPreview.from || ''} - ${lastProfitPreview.to || ''}`, amount: moneyNumber(s.amount), status: 'approved', source: 'profitDistribution', profitDistributionId: distributionRef.id, createdAt: getTodayString(), approvedAt: getTodayString(), approvedBy: authUser?.uid || '' }))); await postAuditLog({ module: 'profitDistributions', action: 'created', referenceCollection: 'profitDistributions', referenceId: distributionRef.id, summary: `Profit distribution saved ${lastProfitPreview.from || ''} - ${lastProfitPreview.to || ''}`, after: { distributable: lastProfitPreview.distributable, netProfit: lastProfitPreview.netProfit } }); showToast('Profit distribution saved and credited to investors'); }
+        window.voidProfitDistribution = async function(distributionId) {
+            const distribution = profitDistributions.find(d => d.id === distributionId); if(!distribution || distribution.status === 'cancelled') return;
+            if(!(await showConfirm({ title: 'Cancel Profit Distribution?', message: 'This marks the distribution as cancelled and creates audit history. Investor credits remain as historical records.', confirmText: 'Cancel Distribution' }))) return;
+            await updateDoc(doc(db, 'profitDistributions', distribution.id), { status: 'cancelled', cancelledAt: getTodayString(), cancelledBy: authUser?.uid || '' });
+            await postAuditLog({ module: 'profitDistributions', action: 'cancelled', referenceCollection: 'profitDistributions', referenceId: distribution.id, summary: `Profit distribution cancelled ${distribution.fromDate || ''} - ${distribution.toDate || ''}`, before: { distributable: distribution.distributable, netProfit: distribution.netProfit } });
+            showToast('Profit distribution cancelled and audit log updated');
+        }
 
 
         // ================= ERP COMPLETION: EMPLOYEES, ASSETS, REPORTS, LIFECYCLE =================
@@ -4277,6 +4351,7 @@
                 accountId: entry.accountId || '',
                 referenceCollection: entry.referenceCollection || '',
                 referenceId: entry.referenceId || '',
+                reversalOf: entry.reversalOf || '',
                 createdAt: getCurrentDateTimeLocal(),
                 createdBy: authUser?.uid || ''
             });
@@ -4297,6 +4372,7 @@
                 module: entry.module || 'manual',
                 referenceCollection: entry.referenceCollection || '',
                 referenceId: entry.referenceId || '',
+                reversalOf: entry.reversalOf || '',
                 note: entry.note || '',
                 createdAt: getCurrentDateTimeLocal(),
                 createdBy: authUser?.uid || ''
@@ -4317,6 +4393,7 @@
                 credit,
                 referenceCollection: entry.referenceCollection || 'orders',
                 referenceId: entry.referenceId || '',
+                reversalOf: entry.reversalOf || '',
                 createdAt: getCurrentDateTimeLocal(),
                 createdBy: authUser?.uid || ''
             });
@@ -4325,10 +4402,10 @@
         function getCustomerLedgerReceivable() { return getCustomerLedgerBalance(''); }
         function getUnifiedLedgerTotal(type = '') { return unifiedLedger.filter(entry => !type || entry.type === type).reduce((sum, entry) => sum + moneyNumber(entry.amount), 0); }
         function getStockLedgerValue(itemType = '') { return stockLedger.filter(entry => !itemType || entry.itemType === itemType).reduce((sum, entry) => sum + (entry.movement === 'out' ? -1 : 1) * moneyNumber(entry.value), 0); }
-        function getSalaryPaidTotal(employeeId = '') { return salaryPayments.filter(p => !employeeId || p.employeeId === employeeId).reduce((sum, item) => sum + moneyNumber(item.amount), 0); }
-        function getAssetTotal() { return companyAssets.reduce((sum, asset) => sum + moneyNumber(asset.purchaseCost), 0); }
-        function getPurchaseTotal() { return purchases.reduce((sum, purchase) => sum + (moneyNumber(purchase.qty) * moneyNumber(purchase.rate)), 0); }
-        function getProductionCostTotal() { return productionBatches.reduce((sum, batch) => sum + moneyNumber(batch.totalCost), 0); }
+        function getSalaryPaidTotal(employeeId = '') { return salaryPayments.filter(p => p.status !== 'cancelled' && (!employeeId || p.employeeId === employeeId)).reduce((sum, item) => sum + moneyNumber(item.amount), 0); }
+        function getAssetTotal() { return companyAssets.filter(asset => asset.status !== 'cancelled').reduce((sum, asset) => sum + moneyNumber(asset.purchaseCost), 0); }
+        function getPurchaseTotal() { return purchases.filter(purchase => purchase.status !== 'cancelled').reduce((sum, purchase) => sum + (moneyNumber(purchase.qty) * moneyNumber(purchase.rate)), 0); }
+        function getProductionCostTotal() { return productionBatches.filter(batch => batch.status !== 'cancelled').reduce((sum, batch) => sum + moneyNumber(batch.totalCost), 0); }
         function getSalesCollectedTotal() { return orders.filter(order => !order.isDeleted).reduce((sum, order) => sum + getOrderPaidTotal(order), 0); }
         function getReceivableTotal() { return orders.filter(order => !order.isDeleted).reduce((sum, order) => sum + getOrderBalanceDue(order), 0); }
         function getRawStockValueTotal() { return rawMaterials.reduce((sum, item) => sum + (getRawStockBalance(item) * moneyNumber(item.rate)), 0); }
@@ -4340,7 +4417,7 @@
             const list = document.getElementById('employee-list');
             if(list) list.innerHTML = employees.map(emp => `<div class="p-4 flex items-center justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(emp.name || 'Employee')}</div><div class="text-xs text-gray-500">${escapeHtml(emp.role || '')} • ${escapeHtml(emp.phone || '')} • ${escapeHtml(emp.salaryType || '')}</div><div class="mt-1 text-sm font-bold text-violet-700">Rate ${formatMoney(emp.salaryRate)} • Paid ${formatMoney(getSalaryPaidTotal(emp.id))}</div></div><button onclick="deleteErpDoc('employees','${emp.id}','Delete employee?')" class="rounded border border-red-200 bg-red-50 px-2 py-1 text-xs font-bold text-red-700">Delete</button></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No employees added yet.</div>';
             const salaryList = document.getElementById('salary-list');
-            if(salaryList) salaryList.innerHTML = salaryPayments.map(pay => `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(pay.employeeName || 'Salary')}</div><div class="text-xs text-gray-500">${formatDisplayDate(pay.paymentDate)} • ${escapeHtml(pay.paymentType || '')} • ${escapeHtml(pay.note || '')}</div></div><div class="text-right"><div class="font-bold text-indigo-700">${formatMoney(pay.amount)}</div><button onclick="deleteErpDoc('salaryPayments','${pay.id}','Delete salary payment?')" class="mt-1 text-xs font-bold text-red-600">Delete</button></div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No salary payments yet.</div>';
+            if(salaryList) salaryList.innerHTML = salaryPayments.map(pay => `<div class="p-4"><div class="flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(pay.employeeName || 'Salary')}</div><div class="text-xs text-gray-500">${formatDisplayDate(pay.paymentDate)} • ${escapeHtml(pay.paymentType || '')} • ${escapeHtml(pay.note || '')}</div></div><div class="text-right"><div class="font-bold text-indigo-700">${formatMoney(pay.amount)}</div><button onclick="voidSalaryPayment('${pay.id}')" ${pay.status === 'cancelled' ? 'disabled' : ''} class="mt-1 text-xs font-bold text-red-600 disabled:opacity-40">${pay.status === 'cancelled' ? 'Cancelled' : 'Cancel'}</button></div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No salary payments yet.</div>';
         }
         window.saveEmployee = async function() {
             const name = document.getElementById('employee-name').value.trim(); if(!name) { showToast('Employee name is required', 'error'); return; }
@@ -4354,12 +4431,21 @@
             const paymentType = document.getElementById('salary-type').value;
             const salaryRef = await addDoc(collection(db, 'salaryPayments'), { employeeId: emp.id, employeeName: emp.name || '', paymentDate, paymentType, amount, note: document.getElementById('salary-note').value.trim(), createdAt: getTodayString(), createdBy: authUser?.uid || '' });
             await postUnifiedLedger({ entryDate: paymentDate, type: 'expense', module: 'salary', category: paymentType, description: `${paymentType} paid to ${emp.name || 'employee'}`, amount, referenceCollection: 'salaryPayments', referenceId: salaryRef.id });
+            await postAuditLog({ module: 'salary', action: 'created', referenceCollection: 'salaryPayments', referenceId: salaryRef.id, summary: `Salary paid to ${emp.name || 'employee'}`, after: { amount, paymentType } });
             ['salary-amount','salary-note'].forEach(id => document.getElementById(id).value = ''); showToast('Salary payment saved and ledger updated');
+        }
+        window.voidSalaryPayment = async function(paymentId) {
+            const payment = salaryPayments.find(p => p.id === paymentId); if(!payment || payment.status === 'cancelled') return;
+            if(!(await showConfirm({ title: 'Cancel Salary Payment?', message: 'This will reverse the salary expense ledger entry.', confirmText: 'Cancel Salary' }))) return;
+            await updateDoc(doc(db, 'salaryPayments', payment.id), { status: 'cancelled', cancelledAt: getTodayString(), cancelledBy: authUser?.uid || '' });
+            await reverseLedgersForReference('salaryPayments', payment.id, 'Salary payment cancelled');
+            await postAuditLog({ module: 'salary', action: 'cancelled', referenceCollection: 'salaryPayments', referenceId: payment.id, summary: `Salary payment cancelled for ${payment.employeeName || 'employee'}`, before: { amount: payment.amount, paymentType: payment.paymentType } });
+            showToast('Salary payment cancelled and reversal posted');
         }
         function renderAssetsDashboard() {
             const date = document.getElementById('asset-date'); if(date) date.value ||= getTodayString();
             const list = document.getElementById('asset-list'); if(!list) return;
-            list.innerHTML = companyAssets.map(asset => `<div class="p-4 flex items-center justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(asset.name || 'Asset')}</div><div class="text-xs text-gray-500">${formatDisplayDate(asset.purchaseDate)} • ${escapeHtml(asset.condition || '')} • ${escapeHtml(asset.supplierNote || '')}</div><div class="mt-1 text-sm font-bold text-stone-700">Cost ${formatMoney(asset.purchaseCost)} • Maintenance ${formatMoney(asset.maintenanceCost)}</div></div><button onclick="deleteErpDoc('companyAssets','${asset.id}','Delete asset?')" class="rounded border border-red-200 bg-red-50 px-2 py-1 text-xs font-bold text-red-700">Delete</button></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No assets added yet.</div>';
+            list.innerHTML = companyAssets.map(asset => `<div class="p-4 flex items-center justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(asset.name || 'Asset')}</div><div class="text-xs text-gray-500">${formatDisplayDate(asset.purchaseDate)} • ${escapeHtml(asset.condition || '')} • ${escapeHtml(asset.supplierNote || '')}</div><div class="mt-1 text-sm font-bold text-stone-700">Cost ${formatMoney(asset.purchaseCost)} • Maintenance ${formatMoney(asset.maintenanceCost)}</div></div><button onclick="voidAsset('${asset.id}')" ${asset.status === 'cancelled' ? 'disabled' : ''} class="rounded border border-red-200 bg-red-50 px-2 py-1 text-xs font-bold text-red-700 disabled:opacity-40">${asset.status === 'cancelled' ? 'Cancelled' : 'Cancel'}</button></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No assets added yet.</div>';
         }
         window.saveAsset = async function() {
             const name = document.getElementById('asset-name').value.trim(); if(!name) { showToast('Asset name is required', 'error'); return; }
@@ -4369,10 +4455,19 @@
             const assetRef = await addDoc(collection(db, 'companyAssets'), { name, purchaseDate, purchaseCost, maintenanceCost, condition: document.getElementById('asset-condition').value, supplierNote: document.getElementById('asset-supplier').value.trim(), createdAt: getTodayString(), createdBy: authUser?.uid || '' });
             if(purchaseCost > 0) await postUnifiedLedger({ entryDate: purchaseDate, type: 'expense', module: 'asset', category: 'Asset Purchase', description: name, amount: purchaseCost, referenceCollection: 'companyAssets', referenceId: assetRef.id });
             if(maintenanceCost > 0) await postUnifiedLedger({ entryDate: purchaseDate, type: 'expense', module: 'asset', category: 'Asset Maintenance', description: name, amount: maintenanceCost, referenceCollection: 'companyAssets', referenceId: assetRef.id });
+            await postAuditLog({ module: 'assets', action: 'created', referenceCollection: 'companyAssets', referenceId: assetRef.id, summary: `Asset saved: ${name}`, after: { purchaseCost, maintenanceCost } });
             ['asset-name','asset-cost','asset-maintenance','asset-supplier'].forEach(id => document.getElementById(id).value = ''); showToast('Asset saved and ledger updated');
         }
+        window.voidAsset = async function(assetId) {
+            const asset = companyAssets.find(a => a.id === assetId); if(!asset || asset.status === 'cancelled') return;
+            if(!(await showConfirm({ title: 'Cancel Asset?', message: 'This will reverse asset purchase and maintenance expense ledgers.', confirmText: 'Cancel Asset' }))) return;
+            await updateDoc(doc(db, 'companyAssets', asset.id), { status: 'cancelled', cancelledAt: getTodayString(), cancelledBy: authUser?.uid || '' });
+            await reverseLedgersForReference('companyAssets', asset.id, 'Asset cancelled');
+            await postAuditLog({ module: 'assets', action: 'cancelled', referenceCollection: 'companyAssets', referenceId: asset.id, summary: `Asset cancelled: ${asset.name || 'asset'}`, before: { purchaseCost: asset.purchaseCost, maintenanceCost: asset.maintenanceCost } });
+            showToast('Asset cancelled and reversal posted');
+        }
         function getErpReportModel() {
-            const sales = getSalesCollectedTotal(); const receivable = getReceivableTotal(); const purchase = getPurchaseTotal(); const production = getProductionCostTotal(); const salary = getSalaryPaidTotal(); const assets = getAssetTotal(); const rawStock = getRawStockValueTotal(); const finishedStock = getFinishedStockValueTotal(); const investorProfit = profitDistributions.reduce((sum, item) => sum + moneyNumber(item.distributable), 0); const ledgerIncome = getUnifiedLedgerTotal('income'); const ledgerExpense = getUnifiedLedgerTotal('expense'); const stockLedgerValue = getStockLedgerValue(); const customerReceivable = getCustomerLedgerReceivable(); const supplierPayable = getSupplierLedgerBalance(); const grossProfit = sales - purchase - production - salary;
+            const sales = getSalesCollectedTotal(); const receivable = getReceivableTotal(); const purchase = getPurchaseTotal(); const production = getProductionCostTotal(); const salary = getSalaryPaidTotal(); const assets = getAssetTotal(); const rawStock = getRawStockValueTotal(); const finishedStock = getFinishedStockValueTotal(); const investorProfit = profitDistributions.filter(item => item.status !== 'cancelled').reduce((sum, item) => sum + moneyNumber(item.distributable), 0); const ledgerIncome = getUnifiedLedgerTotal('income'); const ledgerExpense = getUnifiedLedgerTotal('expense'); const stockLedgerValue = getStockLedgerValue(); const customerReceivable = getCustomerLedgerReceivable(); const supplierPayable = getSupplierLedgerBalance(); const grossProfit = sales - purchase - production - salary;
             return { sales, receivable, customerReceivable, supplierPayable, purchase, production, salary, assets, rawStock, finishedStock, investorProfit, ledgerIncome, ledgerExpense, stockLedgerValue, grossProfit };
         }
         function reportRow(label, value, color = 'text-gray-900') { return `<div class="p-4 flex items-center justify-between"><span class="text-sm font-bold text-gray-600">${label}</span><span class="text-lg font-extrabold ${color}">${formatMoney(value)}</span></div>`; }
@@ -4395,6 +4490,8 @@
             if(customerHost) customerHost.innerHTML = customerLedger.slice(0, 40).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.customerName || 'Customer')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.entryDate)} • ${escapeHtml(entry.type || '')} • ${escapeHtml(entry.description || '')} • ${escapeHtml(entry.phone || '')}</div></div><div class="text-right"><div class="font-bold text-orange-700">Balance ${formatMoney(getCustomerLedgerBalance(entry.customerKey))}</div><div class="text-xs text-gray-500">Dr ${formatMoney(entry.debit)} / Cr ${formatMoney(entry.credit)}</div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No customer ledger entries yet.</div>';
             const supplierHost = document.getElementById('supplier-ledger-list');
             if(supplierHost) supplierHost.innerHTML = supplierLedger.slice(0, 40).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.supplierName || 'Supplier')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.entryDate)} • ${escapeHtml(entry.type || '')} • ${escapeHtml(entry.description || '')}</div></div><div class="text-right"><div class="font-bold text-orange-700">Payable ${formatMoney(getSupplierLedgerBalance(entry.supplierId))}</div><div class="text-xs text-gray-500">Dr ${formatMoney(entry.debit)} / Cr ${formatMoney(entry.credit)}</div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No supplier ledger entries yet.</div>';
+            const auditHost = document.getElementById('audit-log-list');
+            if(auditHost) auditHost.innerHTML = auditLog.slice(0, 80).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.module || 'Audit')} • ${escapeHtml(entry.action || '')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.actionDate || entry.createdAt)} • ${escapeHtml(entry.referenceCollection || '')}/${escapeHtml(entry.referenceId || '')}</div><div class="mt-1 text-sm text-gray-700">${escapeHtml(entry.summary || '')}</div></div><div class="text-xs text-gray-400">${escapeHtml(entry.createdBy || '')}</div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No audit entries yet.</div>';
         }
         window.downloadErpReportsCsv = function() {
             const model = getErpReportModel();
