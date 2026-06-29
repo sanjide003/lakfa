@@ -46,6 +46,11 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Manager console settings-ൽ staff login creation and module-wise permissions ചേർത്തു.
 - Firestore rules-ൽ staff role and permission-based read/write access controls ചേർത്തു.
 
+### Step 10A — Party Master and Party Ledger
+- Parties tab full Party Master + Party Ledger ആയി മെച്ചപ്പെടുത്തി.
+- Party create/edit, duplicate order group merge, opening balance, credit limit, payment terms, follow-up date/note ചേർത്തു.
+- Party-wise search/filter/sort, PDF statement, CSV export, all-parties CSV export ചേർത്തു.
+
 ## നിലവിലെ ERP കഴിവുകൾ
 - Order entry, payment tracking, customer receivable ledger.
 - Product inventory with stock history, batch, expiry, valuation and low-stock alerts.
@@ -59,6 +64,7 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - GST summary, HSN/SAC-wise tax report and input/output GST reconciliation.
 - Investor-specific capital statement, profit share history and personal contribution reports.
 - Manager/staff role permissions by module for orders, inventory, production, finance, reports and settings.
+- Party Master and Party Ledger with opening balance, credit limit, payment terms, due follow-up, statement PDF/CSV and duplicate merge support.
 
 ## ഇനി ബാക്കി ചെയ്യാനുള്ള പ്രധാന ഘട്ടങ്ങൾ
 

@@ -61,6 +61,11 @@ service cloud.firestore {
       allow create, update, delete: if isManager();
     }
 
+    match /parties/{partyId} {
+      allow read: if isManager() || isStaff();
+      allow create, update, delete: if canOperate('orders') || canOperate('finance');
+    }
+
     match /investorPaymentRequestAudit/{auditId} {
       allow read, create: if isManager() || hasPermission('finance');
       allow update, delete: if false;
