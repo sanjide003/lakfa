@@ -654,8 +654,12 @@
                             <div id="unified-ledger-list" class="divide-y divide-gray-100 max-h-[420px] overflow-y-auto"></div>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm border border-lime-100 overflow-hidden">
-                            <div class="px-6 py-4 border-b bg-lime-50"><h3 class="font-bold text-lime-950">Stock Movement Ledger</h3><p class="text-sm text-lime-700 mt-1">Raw-material in/out and finished-goods in movements from purchases and production.</p></div>
+                            <div class="px-6 py-4 border-b bg-lime-50"><h3 class="font-bold text-lime-950">Stock Movement Ledger</h3><p class="text-sm text-lime-700 mt-1">Raw-material in/out and finished-goods in movements from purchases, production, and sales.</p></div>
                             <div id="stock-ledger-list" class="divide-y divide-gray-100 max-h-[420px] overflow-y-auto"></div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden xl:col-span-2">
+                            <div class="px-6 py-4 border-b bg-indigo-50"><h3 class="font-bold text-indigo-950">Customer Ledger</h3><p class="text-sm text-indigo-700 mt-1">Order invoices, payments, balance adjustments, and customer receivables.</p></div>
+                            <div id="customer-ledger-list" class="divide-y divide-gray-100 max-h-[460px] overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>
@@ -1186,6 +1190,7 @@
         let companyAssets = [];
         let unifiedLedger = [];
         let stockLedger = [];
+        let customerLedger = [];
         let authUser = null;
         let currentUserRole = 'manager';
         let selectedOrders = new Set();
@@ -1647,6 +1652,13 @@
                 if(currentTab === 'reports') renderReportsDashboard();
                 if(currentTab === 'raw-materials') renderRawMaterialsDashboard();
                 if(currentTab === 'inventory') renderProducts();
+            });
+            onSnapshot(collection(db, "customerLedger"), (snapshot) => {
+                customerLedger = [];
+                snapshot.forEach((doc) => customerLedger.push({ id: doc.id, ...doc.data() }));
+                customerLedger.sort((a, b) => new Date(normalizeDateInput(b.entryDate || b.createdAt)) - new Date(normalizeDateInput(a.entryDate || a.createdAt)));
+                if(currentTab === 'reports') renderReportsDashboard();
+                if(currentTab === 'repeat') renderRepeatCustomers('utility-repeat-list');
             });
             onSnapshot(collection(db, "investorPaymentRequests"), (snapshot) => {
                 investorPaymentRequests = [];
@@ -2578,6 +2590,45 @@
             return accountRef.id;
         }
 
+        function getOrderItemDelta(previousItems = [], nextItems = []) {
+            const totals = new Map();
+            previousItems.forEach(item => totals.set(item.productId, (totals.get(item.productId) || 0) - (Number(item.qty) || 0)));
+            nextItems.forEach(item => totals.set(item.productId, (totals.get(item.productId) || 0) + (Number(item.qty) || 0)));
+            return totals;
+        }
+        async function postOrderStockMovements(orderId, previousItems = [], nextItems = [], entryDate = getTodayString()) {
+            const totals = getOrderItemDelta(previousItems, nextItems);
+            const entries = [];
+            totals.forEach((delta, productId) => {
+                if(!productId || !delta) return;
+                const product = products.find(p => p.id === productId) || {};
+                entries.push(postStockLedger({ entryDate, itemType: 'finished', itemId: productId, itemName: product.name || 'Product', movement: delta > 0 ? 'out' : 'in', qty: Math.abs(delta), unit: 'unit', rate: moneyNumber(product.withoutGstPrice || product.price), value: Math.abs(delta) * moneyNumber(product.withoutGstPrice || product.price), module: 'sales', referenceCollection: 'orders', referenceId: orderId, note: delta > 0 ? 'Sold to customer' : 'Sales adjustment / return' }));
+            });
+            await Promise.all(entries);
+        }
+        async function syncOrderSalesLedgers(orderId, orderData, existingOrder = null, meta = {}) {
+            const entryDate = normalizeDateInput(orderData.updatedAt || orderData.createdAt || getTodayString());
+            const customerKey = getPartyKey(orderData);
+            const customerName = orderData.name || orderData.shopName || 'Customer';
+            const previousTotal = moneyNumber(existingOrder?.orderTotal);
+            const currentTotal = moneyNumber(orderData.orderTotal);
+            const invoiceDelta = existingOrder ? currentTotal - previousTotal : currentTotal;
+            if(Math.abs(invoiceDelta) > 0.01) {
+                await postCustomerLedger({ entryDate, customerKey, customerName, phone: orderData.phone || '', type: invoiceDelta >= 0 ? 'invoice' : 'invoice_adjustment', description: `${invoiceDelta >= 0 ? 'Invoice' : 'Invoice reduction'} for order`, debit: invoiceDelta > 0 ? invoiceDelta : 0, credit: invoiceDelta < 0 ? Math.abs(invoiceDelta) : 0, referenceId: orderId });
+            }
+            const paymentDelta = existingOrder ? moneyNumber(meta.newPaymentAmount) : getOrderPaidTotal(orderData);
+            if(paymentDelta > 0) {
+                const paymentDate = normalizeDateInput(meta.newPaymentDate || orderData.createdAt || getTodayString());
+                await postCustomerLedger({ entryDate: paymentDate, customerKey, customerName, phone: orderData.phone || '', type: 'payment', description: meta.newPaymentNote || 'Customer payment', credit: paymentDelta, referenceId: orderId });
+                await postUnifiedLedger({ entryDate: paymentDate, type: 'income', module: 'sales', category: 'Sales Collection', description: `${customerName} (${orderData.phone || ''})`, amount: paymentDelta, accountId: meta.paymentSource || orderData.paymentSource || 'cash', referenceCollection: 'orders', referenceId: orderId });
+            }
+            const expenseDelta = existingOrder ? moneyNumber(meta.newExpenseAmount) : getOrderExpensePaidTotal(orderData);
+            if(expenseDelta > 0) {
+                await postUnifiedLedger({ entryDate: normalizeDateInput(meta.newExpenseDate || orderData.createdAt || getTodayString()), type: 'expense', module: 'sales', category: meta.expenseCategoryName || orderData.orderExpenseCategoryName || 'Order Expense', description: meta.newExpenseNote || 'Order expense', amount: expenseDelta, accountId: meta.expenseSource || orderData.orderExpenseSource || 'cash', referenceCollection: 'orders', referenceId: orderId });
+            }
+            await postOrderStockMovements(orderId, existingOrder?.itemsObj || [], orderData.itemsObj || [], entryDate);
+        }
+
         window.saveOrder = async function() {
             const id = document.getElementById('order-id').value;
             const dateStr = document.getElementById('order-date').value;
@@ -2676,6 +2727,7 @@
                     }
                     await applyOrderStockDelta(existingOrder?.itemsObj || [], itemsObj);
                     const orderIncomeAccountId = await syncOrderCompanyIncome(id, orderData, existingOrder?.orderIncomeAccountId || '');
+                    await syncOrderSalesLedgers(id, orderData, existingOrder, { newPaymentAmount, newPaymentDate, newPaymentNote, paymentSource, newExpenseAmount, newExpenseDate, newExpenseNote, expenseSource, expenseCategoryName });
                     await updateDoc(doc(db, "orders", id), { ...orderData, orderIncomeAccountId });
                     showToast('Order Updated Successfully');
                 } else {
@@ -2683,6 +2735,7 @@
                     orderData.isDeleted = false;
                     const orderRef = await addDoc(collection(db, "orders"), orderData);
                     const orderIncomeAccountId = await syncOrderCompanyIncome(orderRef.id, orderData, '');
+                    await syncOrderSalesLedgers(orderRef.id, orderData, null, { newPaymentAmount: paidTotal, newPaymentDate: dateStr, paymentSource, newExpenseAmount: expensePaidTotal, newExpenseDate, newExpenseNote, expenseSource, expenseCategoryName });
                     await updateDoc(orderRef, { orderIncomeAccountId });
                     await applyOrderStockDelta([], itemsObj);
                     showToast('Order Added Successfully');
@@ -4178,6 +4231,27 @@
                 createdBy: authUser?.uid || ''
             });
         }
+        async function postCustomerLedger(entry = {}) {
+            const debit = Math.abs(moneyNumber(entry.debit));
+            const credit = Math.abs(moneyNumber(entry.credit));
+            if(!debit && !credit) return null;
+            return addDoc(collection(db, 'customerLedger'), {
+                entryDate: normalizeDateInput(entry.entryDate || getTodayString()),
+                customerKey: entry.customerKey || '',
+                customerName: entry.customerName || '',
+                phone: entry.phone || '',
+                type: entry.type || 'invoice',
+                description: entry.description || '',
+                debit,
+                credit,
+                referenceCollection: entry.referenceCollection || 'orders',
+                referenceId: entry.referenceId || '',
+                createdAt: getCurrentDateTimeLocal(),
+                createdBy: authUser?.uid || ''
+            });
+        }
+        function getCustomerLedgerBalance(customerKey = '') { return customerLedger.filter(entry => !customerKey || entry.customerKey === customerKey).reduce((sum, entry) => sum + moneyNumber(entry.debit) - moneyNumber(entry.credit), 0); }
+        function getCustomerLedgerReceivable() { return getCustomerLedgerBalance(''); }
         function getUnifiedLedgerTotal(type = '') { return unifiedLedger.filter(entry => !type || entry.type === type).reduce((sum, entry) => sum + moneyNumber(entry.amount), 0); }
         function getStockLedgerValue(itemType = '') { return stockLedger.filter(entry => !itemType || entry.itemType === itemType).reduce((sum, entry) => sum + (entry.movement === 'out' ? -1 : 1) * moneyNumber(entry.value), 0); }
         function getSalaryPaidTotal(employeeId = '') { return salaryPayments.filter(p => !employeeId || p.employeeId === employeeId).reduce((sum, item) => sum + moneyNumber(item.amount), 0); }
@@ -4227,8 +4301,8 @@
             ['asset-name','asset-cost','asset-maintenance','asset-supplier'].forEach(id => document.getElementById(id).value = ''); showToast('Asset saved and ledger updated');
         }
         function getErpReportModel() {
-            const sales = getSalesCollectedTotal(); const receivable = getReceivableTotal(); const purchase = getPurchaseTotal(); const production = getProductionCostTotal(); const salary = getSalaryPaidTotal(); const assets = getAssetTotal(); const rawStock = getRawStockValueTotal(); const finishedStock = getFinishedStockValueTotal(); const investorProfit = profitDistributions.reduce((sum, item) => sum + moneyNumber(item.distributable), 0); const ledgerIncome = getUnifiedLedgerTotal('income'); const ledgerExpense = getUnifiedLedgerTotal('expense'); const stockLedgerValue = getStockLedgerValue(); const grossProfit = sales + ledgerIncome - purchase - production - salary;
-            return { sales, receivable, purchase, production, salary, assets, rawStock, finishedStock, investorProfit, ledgerIncome, ledgerExpense, stockLedgerValue, grossProfit };
+            const sales = getSalesCollectedTotal(); const receivable = getReceivableTotal(); const purchase = getPurchaseTotal(); const production = getProductionCostTotal(); const salary = getSalaryPaidTotal(); const assets = getAssetTotal(); const rawStock = getRawStockValueTotal(); const finishedStock = getFinishedStockValueTotal(); const investorProfit = profitDistributions.reduce((sum, item) => sum + moneyNumber(item.distributable), 0); const ledgerIncome = getUnifiedLedgerTotal('income'); const ledgerExpense = getUnifiedLedgerTotal('expense'); const stockLedgerValue = getStockLedgerValue(); const customerReceivable = getCustomerLedgerReceivable(); const grossProfit = sales - purchase - production - salary;
+            return { sales, receivable, customerReceivable, purchase, production, salary, assets, rawStock, finishedStock, investorProfit, ledgerIncome, ledgerExpense, stockLedgerValue, grossProfit };
         }
         function reportRow(label, value, color = 'text-gray-900') { return `<div class="p-4 flex items-center justify-between"><span class="text-sm font-bold text-gray-600">${label}</span><span class="text-lg font-extrabold ${color}">${formatMoney(value)}</span></div>`; }
         function renderReportsDashboard() {
@@ -4236,7 +4310,7 @@
             const cards = document.getElementById('erp-report-cards');
             if(cards) cards.innerHTML = [`Sales|${model.sales}|text-emerald-700`, `Receivable|${model.receivable}|text-orange-700`, `Raw Stock|${model.rawStock}|text-lime-700`, `Gross Profit|${model.grossProfit}|${model.grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`].map(item => { const [label, value, color] = item.split('|'); return `<div class="rounded-xl border border-teal-100 bg-white p-5 shadow-sm"><div class="text-xs font-bold uppercase text-gray-500">${label}</div><div class="mt-2 text-2xl font-extrabold ${color}">${formatMoney(value)}</div></div>`; }).join('');
             const pl = document.getElementById('pl-report');
-            if(pl) pl.innerHTML = reportRow('Sales Collected', model.sales, 'text-emerald-700') + reportRow('Customer Receivable', model.receivable, 'text-orange-700') + reportRow('Purchase Cost', model.purchase, 'text-red-700') + reportRow('Production Cost', model.production, 'text-red-700') + reportRow('Salary Paid', model.salary, 'text-red-700') + reportRow('Unified Ledger Expense', model.ledgerExpense, 'text-red-700') + reportRow('Asset Value', model.assets, 'text-stone-700') + reportRow('Finished Stock Value', model.finishedStock, 'text-purple-700') + reportRow('Investor Profit Distributed', model.investorProfit, 'text-rose-700') + reportRow('Gross Profit Snapshot', model.grossProfit, model.grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700');
+            if(pl) pl.innerHTML = reportRow('Sales Collected', model.sales, 'text-emerald-700') + reportRow('Customer Receivable', model.receivable, 'text-orange-700') + reportRow('Customer Ledger Receivable', model.customerReceivable, 'text-orange-700') + reportRow('Purchase Cost', model.purchase, 'text-red-700') + reportRow('Production Cost', model.production, 'text-red-700') + reportRow('Salary Paid', model.salary, 'text-red-700') + reportRow('Unified Ledger Expense', model.ledgerExpense, 'text-red-700') + reportRow('Asset Value', model.assets, 'text-stone-700') + reportRow('Finished Stock Value', model.finishedStock, 'text-purple-700') + reportRow('Investor Profit Distributed', model.investorProfit, 'text-rose-700') + reportRow('Gross Profit Snapshot', model.grossProfit, model.grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700');
             renderLedgerPreviews();
             const alerts = document.getElementById('erp-alerts');
             if(alerts) { const lowRaw = rawMaterials.filter(item => moneyNumber(item.minStock) > 0 && getRawStockBalance(item) <= moneyNumber(item.minStock)); const dueOrders = orders.filter(order => !order.isDeleted && getOrderBalanceDue(order) > 0); alerts.innerHTML = `<div class="p-4"><div class="font-bold text-red-700">Low raw materials: ${lowRaw.length}</div><div class="text-xs text-gray-500">${lowRaw.map(item => escapeHtml(item.name || '')).join(', ') || 'No low raw material alerts'}</div></div><div class="p-4"><div class="font-bold text-orange-700">Payment due orders: ${dueOrders.length}</div><div class="text-xs text-gray-500">Total receivable ${formatMoney(model.receivable)}</div></div><div class="p-4"><div class="font-bold text-teal-700">Production batches: ${productionBatches.length}</div><div class="text-xs text-gray-500">Total production cost ${formatMoney(model.production)}</div></div>`; }
@@ -4246,10 +4320,12 @@
             if(financeHost) financeHost.innerHTML = unifiedLedger.slice(0, 25).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.category || entry.module || 'Ledger')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.entryDate)} • ${escapeHtml(entry.module || '')} • ${escapeHtml(entry.description || '')}</div></div><div class="font-bold ${entry.type === 'income' ? 'text-emerald-700' : 'text-red-700'}">${entry.type === 'income' ? '+' : '-'}${formatMoney(entry.amount)}</div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No unified ledger entries yet.</div>';
             const stockHost = document.getElementById('stock-ledger-list');
             if(stockHost) stockHost.innerHTML = stockLedger.slice(0, 25).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.itemName || 'Stock')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.entryDate)} • ${escapeHtml(entry.itemType || '')} • ${escapeHtml(entry.module || '')} • ${escapeHtml(entry.note || '')}</div></div><div class="text-right"><div class="font-bold ${entry.movement === 'out' ? 'text-red-700' : 'text-lime-700'}">${entry.movement === 'out' ? '-' : '+'}${moneyNumber(entry.qty).toFixed(2)}</div><div class="text-xs text-gray-500">${formatMoney(entry.value)}</div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No stock ledger entries yet.</div>';
+            const customerHost = document.getElementById('customer-ledger-list');
+            if(customerHost) customerHost.innerHTML = customerLedger.slice(0, 40).map(entry => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">${escapeHtml(entry.customerName || 'Customer')}</div><div class="text-xs text-gray-500">${formatDisplayDate(entry.entryDate)} • ${escapeHtml(entry.type || '')} • ${escapeHtml(entry.description || '')} • ${escapeHtml(entry.phone || '')}</div></div><div class="text-right"><div class="font-bold text-orange-700">Balance ${formatMoney(getCustomerLedgerBalance(entry.customerKey))}</div><div class="text-xs text-gray-500">Dr ${formatMoney(entry.debit)} / Cr ${formatMoney(entry.credit)}</div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No customer ledger entries yet.</div>';
         }
         window.downloadErpReportsCsv = function() {
             const model = getErpReportModel();
-            const rows = [['Metric','Amount'], ['Sales Collected', model.sales], ['Customer Receivable', model.receivable], ['Purchase Cost', model.purchase], ['Production Cost', model.production], ['Salary Paid', model.salary], ['Unified Ledger Income', model.ledgerIncome], ['Unified Ledger Expense', model.ledgerExpense], ['Asset Value', model.assets], ['Raw Stock Value', model.rawStock], ['Finished Stock Value', model.finishedStock], ['Stock Ledger Value', model.stockLedgerValue], ['Gross Profit Snapshot', model.grossProfit]];
+            const rows = [['Metric','Amount'], ['Sales Collected', model.sales], ['Customer Receivable', model.receivable], ['Customer Ledger Receivable', model.customerReceivable], ['Purchase Cost', model.purchase], ['Production Cost', model.production], ['Salary Paid', model.salary], ['Unified Ledger Income', model.ledgerIncome], ['Unified Ledger Expense', model.ledgerExpense], ['Asset Value', model.assets], ['Raw Stock Value', model.rawStock], ['Finished Stock Value', model.finishedStock], ['Stock Ledger Value', model.stockLedgerValue], ['Gross Profit Snapshot', model.grossProfit]];
             const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `Lakfa_ERP_Report_${getTodayString()}.csv`; link.click(); URL.revokeObjectURL(url);
         }
