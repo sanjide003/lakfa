@@ -538,7 +538,7 @@
                             <div class="p-6 space-y-3">
                                 <div class="grid grid-cols-2 gap-2"><input id="purchase-date" type="date" class="rounded-md border border-gray-300 p-2 text-sm"><select id="purchase-supplier" class="rounded-md border border-gray-300 p-2 text-sm bg-white"></select></div>
                                 <select id="purchase-raw" class="w-full rounded-md border border-gray-300 p-2 text-sm bg-white"></select>
-                                <div class="grid grid-cols-3 gap-2"><input id="purchase-qty" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Qty"><input id="purchase-rate" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Rate"><input id="purchase-paid" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Paid"></div>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2"><input id="purchase-qty" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Qty"><input id="purchase-rate" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Rate"><input id="purchase-gst" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="GST %"><input id="purchase-paid" type="number" min="0" step="0.01" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Paid"></div>
                                 <div class="grid grid-cols-2 gap-2"><input id="purchase-batch" class="rounded-md border border-gray-300 p-2 text-sm" placeholder="Batch / lot no"><input id="purchase-expiry" type="date" class="rounded-md border border-gray-300 p-2 text-sm" title="Expiry date"></div>
                                 <input id="purchase-invoice" class="w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Invoice / note">
                                 <button onclick="savePurchase()" class="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700">Save Purchase</button>
@@ -663,6 +663,14 @@
                         <div class="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden">
                             <div class="px-6 py-4 border-b bg-red-50"><h3 class="font-bold text-red-950">Reconciliation Alerts</h3><p class="text-sm text-red-700 mt-1">Ledger mismatch checks for receivable, payable, stock and accounts.</p></div>
                             <div id="reconciliation-alerts" class="divide-y divide-gray-100"></div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-sky-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-sky-50"><h3 class="font-bold text-sky-950">GST Summary</h3><p class="text-sm text-sky-700 mt-1">Sales output GST, purchase input GST and net payable.</p></div>
+                            <div id="gst-summary-report" class="divide-y divide-gray-100"></div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-indigo-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-indigo-50"><h3 class="font-bold text-indigo-950">HSN/SAC-wise Tax Report</h3><p class="text-sm text-indigo-700 mt-1">Taxable value and GST grouped by HSN/SAC and rate.</p></div>
+                            <div id="hsn-tax-report" class="divide-y divide-gray-100"></div>
                         </div>
                     </div>
                     <div class="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -4307,7 +4315,8 @@
             if(!raw || qty <= 0 || rate <= 0) { showToast('Select raw material, quantity and rate', 'error'); return; }
             const purchaseDate = document.getElementById('purchase-date').value || getTodayString();
             const paidAmount = moneyNumber(document.getElementById('purchase-paid').value);
-            const payload = { purchaseDate, supplierId: supplier?.id || '', supplierName: supplier?.name || '', rawMaterialId: raw.id, rawMaterialName: raw.name || '', qty, rate, paidAmount, invoiceNo: document.getElementById('purchase-invoice').value.trim(), batchNo: document.getElementById('purchase-batch').value.trim(), expiryDate: document.getElementById('purchase-expiry').value, status: 'active', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
+            const gstPercent = moneyNumber(document.getElementById('purchase-gst').value);
+            const payload = { purchaseDate, supplierId: supplier?.id || '', supplierName: supplier?.name || '', rawMaterialId: raw.id, rawMaterialName: raw.name || '', qty, rate, gstPercent, paidAmount, invoiceNo: document.getElementById('purchase-invoice').value.trim(), batchNo: document.getElementById('purchase-batch').value.trim(), expiryDate: document.getElementById('purchase-expiry').value, status: 'active', updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' };
             const editId = erpEditState.purchaseId;
             const existing = editId ? purchases.find(p => p.id === editId) : null;
             if(editId && !existing) { showToast('Purchase not found for editing', 'error'); return; }
@@ -4325,9 +4334,9 @@
                 await postSupplierLedger({ entryDate: purchaseDate, supplierId: supplier?.id || '', supplierName: supplier?.name || '', type: editId ? 'payment_edited' : 'payment', description: editId ? 'Edited purchase paid amount' : 'Initial purchase payment', debit: paidAmount, referenceId: purchaseId });
                 await postUnifiedLedger({ entryDate: purchaseDate, type: 'expense', module: editId ? 'purchase_edited' : 'purchase', category: 'Raw Material Purchase', description: `${raw.name || 'Raw material'} purchase`, amount: paidAmount, referenceCollection: 'purchases', referenceId: purchaseId });
             }
-            await postAuditLog({ module: 'purchases', action: editId ? 'edited' : 'created', referenceCollection: 'purchases', referenceId: purchaseId, summary: `${editId ? 'Purchase edited' : 'Purchase saved'} for ${raw.name || 'raw material'}`, before: editId ? summarizeRecord(existing || {}, ['qty','rate','paidAmount','status']) : null, after: { qty, rate, total: qty * rate, paidAmount } });
+            await postAuditLog({ module: 'purchases', action: editId ? 'edited' : 'created', referenceCollection: 'purchases', referenceId: purchaseId, summary: `${editId ? 'Purchase edited' : 'Purchase saved'} for ${raw.name || 'raw material'}`, before: editId ? summarizeRecord(existing || {}, ['qty','rate','paidAmount','status']) : null, after: { qty, rate, total: qty * rate, gstPercent, paidAmount } });
             erpEditState.purchaseId = '';
-            ['purchase-qty','purchase-rate','purchase-paid','purchase-invoice','purchase-batch','purchase-expiry'].forEach(id => document.getElementById(id).value = ''); showToast(editId ? 'Purchase updated and delta/reversal ledgers posted' : 'Purchase saved and ledgers updated');
+            ['purchase-qty','purchase-rate','purchase-gst','purchase-paid','purchase-invoice','purchase-batch','purchase-expiry'].forEach(id => document.getElementById(id).value = ''); showToast(editId ? 'Purchase updated and delta/reversal ledgers posted' : 'Purchase saved and ledgers updated');
         }
         window.editPurchase = function(purchaseId) {
             const p = purchases.find(item => item.id === purchaseId); if(!p) return;
@@ -4337,6 +4346,7 @@
             document.getElementById('purchase-raw').value = p.rawMaterialId || '';
             document.getElementById('purchase-qty').value = moneyNumber(p.qty);
             document.getElementById('purchase-rate').value = moneyNumber(p.rate);
+            document.getElementById('purchase-gst').value = moneyNumber(p.gstPercent);
             document.getElementById('purchase-paid').value = moneyNumber(p.paidAmount);
             document.getElementById('purchase-batch').value = p.batchNo || '';
             document.getElementById('purchase-expiry').value = p.expiryDate || '';
@@ -4671,6 +4681,46 @@
             await postAuditLog({ module: 'assets', action: 'cancelled', referenceCollection: 'companyAssets', referenceId: asset.id, summary: `Asset cancelled: ${asset.name || 'asset'}`, before: { purchaseCost: asset.purchaseCost, maintenanceCost: asset.maintenanceCost } });
             showToast('Asset cancelled and reversal posted');
         }
+        function getSalesTaxSummary() {
+            const rows = [];
+            orders.filter(order => !order.isDeleted).forEach(order => getOrderInvoiceRows(order).forEach(row => rows.push(row)));
+            return rows.reduce((summary, row) => {
+                summary.taxable += moneyNumber(row.taxable);
+                summary.cgst += moneyNumber(row.cgst);
+                summary.sgst += moneyNumber(row.sgst);
+                summary.totalTax += moneyNumber(row.cgst) + moneyNumber(row.sgst);
+                summary.gross += moneyNumber(row.amount);
+                const key = `${row.hsnSac || 'NA'}|${row.gstPercent || 0}`;
+                if(!summary.hsn[key]) summary.hsn[key] = { hsnSac: row.hsnSac || 'NA', gstPercent: row.gstPercent || 0, taxable: 0, cgst: 0, sgst: 0, gross: 0 };
+                summary.hsn[key].taxable += moneyNumber(row.taxable); summary.hsn[key].cgst += moneyNumber(row.cgst); summary.hsn[key].sgst += moneyNumber(row.sgst); summary.hsn[key].gross += moneyNumber(row.amount);
+                return summary;
+            }, { taxable: 0, cgst: 0, sgst: 0, totalTax: 0, gross: 0, hsn: {} });
+        }
+        function getPurchaseTaxSummary() {
+            return purchases.filter(p => p.status !== 'cancelled').reduce((summary, p) => {
+                const gross = getPurchaseTotalAmount(p);
+                const gstPercent = moneyNumber(p.gstPercent);
+                const taxable = gstPercent > 0 ? gross / (1 + gstPercent / 100) : gross;
+                const tax = Math.max(0, gross - taxable);
+                summary.taxable += taxable; summary.cgst += tax / 2; summary.sgst += tax / 2; summary.totalTax += tax; summary.gross += gross;
+                return summary;
+            }, { taxable: 0, cgst: 0, sgst: 0, totalTax: 0, gross: 0 });
+        }
+        function getGstReconciliationModel() {
+            const salesTax = getSalesTaxSummary();
+            const purchaseTax = getPurchaseTaxSummary();
+            return { salesTax, purchaseTax, netPayable: salesTax.totalTax - purchaseTax.totalTax };
+        }
+        function renderGstSummaryReport() {
+            const host = document.getElementById('gst-summary-report'); if(!host) return;
+            const model = getGstReconciliationModel();
+            host.innerHTML = reportRow('Sales Taxable Value', model.salesTax.taxable, 'text-sky-700') + reportRow('Output CGST', model.salesTax.cgst, 'text-sky-700') + reportRow('Output SGST', model.salesTax.sgst, 'text-sky-700') + reportRow('Purchase Input GST', model.purchaseTax.totalTax, 'text-emerald-700') + reportRow('Net GST Payable', model.netPayable, model.netPayable >= 0 ? 'text-red-700' : 'text-emerald-700');
+        }
+        function renderHsnTaxReport() {
+            const host = document.getElementById('hsn-tax-report'); if(!host) return;
+            const rows = Object.values(getSalesTaxSummary().hsn).sort((a,b) => String(a.hsnSac).localeCompare(String(b.hsnSac)) || moneyNumber(a.gstPercent) - moneyNumber(b.gstPercent));
+            host.innerHTML = rows.map(row => `<div class="p-4 flex justify-between gap-3"><div><div class="font-bold text-gray-900">HSN/SAC ${escapeHtml(row.hsnSac || 'NA')} • GST ${row.gstPercent}%</div><div class="text-xs text-gray-500">Taxable ${formatMoney(row.taxable)} • Gross ${formatMoney(row.gross)}</div></div><div class="text-right"><div class="font-bold text-indigo-700">GST ${formatMoney(row.cgst + row.sgst)}</div><div class="text-xs text-gray-500">CGST ${formatMoney(row.cgst)} / SGST ${formatMoney(row.sgst)}</div></div></div>`).join('') || '<div class="p-8 text-center text-sm text-gray-500">No HSN/SAC tax data yet.</div>';
+        }
         function getErpReportModel() {
             const sales = getSalesCollectedTotal(); const receivable = getReceivableTotal(); const purchase = getPurchaseTotal(); const production = getProductionCostTotal(); const salary = getSalaryPaidTotal(); const assets = getAssetTotal(); const rawStock = getRawStockValueTotal(); const finishedStock = getFinishedStockValueTotal(); const investorProfit = profitDistributions.filter(item => item.status !== 'cancelled').reduce((sum, item) => sum + moneyNumber(item.distributable), 0); const ledgerIncome = getUnifiedLedgerTotal('income'); const ledgerExpense = getUnifiedLedgerTotal('expense'); const stockLedgerValue = getStockLedgerValue(); const customerReceivable = getCustomerLedgerReceivable(); const supplierPayable = getSupplierLedgerBalance(); const grossProfit = sales - purchase - production - salary;
             return { sales, receivable, customerReceivable, supplierPayable, purchase, production, salary, assets, rawStock, finishedStock, investorProfit, ledgerIncome, ledgerExpense, stockLedgerValue, grossProfit };
@@ -4685,6 +4735,8 @@
             renderLedgerPreviews();
             renderBalanceSheetReport();
             renderReconciliationAlerts();
+            renderGstSummaryReport();
+            renderHsnTaxReport();
             const alerts = document.getElementById('erp-alerts');
             if(alerts) { const lowRaw = rawMaterials.filter(item => moneyNumber(item.minStock) > 0 && getRawStockBalance(item) <= moneyNumber(item.minStock)); const expiringRaw = rawMaterials.filter(item => { const d = daysUntil(item.expiryDate); return d !== null && d <= 30; }); const expiringFinished = products.filter(product => { const batch = getLatestStockBatch(product); const d = daysUntil(batch.expiryDate || product.expiryDate); return d !== null && d <= 30; }); const dueOrders = orders.filter(order => !order.isDeleted && getOrderBalanceDue(order) > 0); alerts.innerHTML = `<div class="p-4"><div class="font-bold text-red-700">Low raw materials: ${lowRaw.length}</div><div class="text-xs text-gray-500">${lowRaw.map(item => escapeHtml(item.name || '')).join(', ') || 'No low raw material alerts'}</div></div><div class="p-4"><div class="font-bold text-amber-700">Expiry alerts: ${expiringRaw.length + expiringFinished.length}</div><div class="text-xs text-gray-500">Raw: ${expiringRaw.map(item => escapeHtml(item.name || '')).join(', ') || '-'} • Finished: ${expiringFinished.map(item => escapeHtml(item.name || '')).join(', ') || '-'}</div></div><div class="p-4"><div class="font-bold text-orange-700">Payment due orders: ${dueOrders.length}</div><div class="text-xs text-gray-500">Total receivable ${formatMoney(model.receivable)}</div></div><div class="p-4"><div class="font-bold text-teal-700">Production batches: ${productionBatches.length}</div><div class="text-xs text-gray-500">Total production cost ${formatMoney(model.production)}</div></div>`; }
         }
@@ -4702,7 +4754,7 @@
         }
         window.downloadErpReportsCsv = function() {
             const model = getErpReportModel();
-            const rows = [['Metric','Amount'], ['Sales Collected', model.sales], ['Customer Receivable', model.receivable], ['Customer Ledger Receivable', model.customerReceivable], ['Supplier Payable', model.supplierPayable], ['Purchase Cost', model.purchase], ['Production Cost', model.production], ['Salary Paid', model.salary], ['Unified Ledger Income', model.ledgerIncome], ['Unified Ledger Expense', model.ledgerExpense], ['Asset Value', model.assets], ['Raw Stock Value', model.rawStock], ['Finished Stock Value', model.finishedStock], ['Stock Ledger Value', model.stockLedgerValue], ['Gross Profit Snapshot', model.grossProfit], ['Balance Sheet Net Worth', getBalanceSheetModel().netWorth], ['Reconciliation Mismatches', getReconciliationModel().filter(row => !row.ok).length]];
+            const rows = [['Metric','Amount'], ['Sales Collected', model.sales], ['Customer Receivable', model.receivable], ['Customer Ledger Receivable', model.customerReceivable], ['Supplier Payable', model.supplierPayable], ['Purchase Cost', model.purchase], ['Production Cost', model.production], ['Salary Paid', model.salary], ['Unified Ledger Income', model.ledgerIncome], ['Unified Ledger Expense', model.ledgerExpense], ['Asset Value', model.assets], ['Raw Stock Value', model.rawStock], ['Finished Stock Value', model.finishedStock], ['Stock Ledger Value', model.stockLedgerValue], ['Gross Profit Snapshot', model.grossProfit], ['Balance Sheet Net Worth', getBalanceSheetModel().netWorth], ['Reconciliation Mismatches', getReconciliationModel().filter(row => !row.ok).length], ['Output GST', getGstReconciliationModel().salesTax.totalTax], ['Input GST', getGstReconciliationModel().purchaseTax.totalTax], ['Net GST Payable', getGstReconciliationModel().netPayable]];
             const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `Lakfa_ERP_Report_${getTodayString()}.csv`; link.click(); URL.revokeObjectURL(url);
         }
@@ -5139,7 +5191,11 @@
         }
 
         function getInvoiceNumber(order) {
-            return `INV-LF-${String(order.id || Date.now()).slice(0, 6).toUpperCase()}`;
+            if(order?.invoiceNo) return order.invoiceNo;
+            const d = normalizeDateInput(order?.createdAt || getTodayString()).replace(/-/g, '');
+            const fyStart = Number(d.slice(4, 6)) >= 4 ? d.slice(0, 4) : String(Number(d.slice(0, 4)) - 1);
+            const fy = `${fyStart.slice(2)}/${String(Number(fyStart.slice(2)) + 1).padStart(2, '0')}`;
+            return `LF/${fy}/${d}/${String(order?.id || Date.now()).slice(0, 6).toUpperCase()}`;
         }
 
         function getLogoDimensions(fixedHeight = 24, maxWidth = 70) {
@@ -5281,7 +5337,7 @@
             y = drawInvoiceTableHeader(doc, y, showGst);
             orderRows.forEach((row, index) => {
                 if(y > 246) { doc.addPage(); drawInvoicePageFrame(doc); y = drawInvoiceTableHeader(doc, 24, showGst); }
-                const itemLines = doc.splitTextToSize(row.name, 60);
+                const itemLines = doc.splitTextToSize(`${row.name}${row.hsnSac ? ' | HSN ' + row.hsnSac : ''}`, 60);
                 doc.text(String(index + 1), 24, y);
                 doc.text(itemLines, 34, y);
                 doc.text(formatQuantity(row.qty), 104, y, { align: 'right' });
@@ -5426,7 +5482,7 @@
             doc.setTextColor(0); doc.setFont('helvetica', 'normal');
             y += 12;
             rows.slice(0, 15).forEach((row, index) => {
-                const itemName = doc.splitTextToSize(row.name, 40).slice(0, 2);
+                const itemName = doc.splitTextToSize(`${row.name}${row.hsnSac ? ' | HSN ' + row.hsnSac : ''}`, 40).slice(0, 2);
                 doc.text(String(index + 1), marginX + 2, y);
                 doc.text(itemName, marginX + 8, y, { lineHeightFactor: 1.05 });
                 doc.text(formatQuantity(row.qty), marginX + 54, y, { align: 'right' });

@@ -36,6 +36,11 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Reconciliation Alerts ചേർത്തു: customer receivable, supplier payable, stock valuation, cash/bank/UPI funds mismatch checks.
 - Unified ledger entries account-wise movement-ലേക്ക് map ചെയ്യാൻ default cash account handling ചേർത്തു.
 
+### Step 8 — Invoice, GST and Compliance
+- GST invoice numbering, tax summary, HSN/SAC-wise report പൂർത്തിയായി.
+- Purchase GST input and sales GST output reconciliation ചേർത്തു.
+- PDF invoices-ൽ FY/date-based invoice numbering and HSN display മെച്ചപ്പെടുത്തി.
+
 ## നിലവിലെ ERP കഴിവുകൾ
 - Order entry, payment tracking, customer receivable ledger.
 - Product inventory with stock history, batch, expiry, valuation and low-stock alerts.
@@ -46,13 +51,9 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Unified finance, stock, customer and supplier ledger previews.
 - Audit log for create/edit/cancel/restore/reversal actions.
 - Balance sheet snapshot and reconciliation mismatch alerts.
+- GST summary, HSN/SAC-wise tax report and input/output GST reconciliation.
 
 ## ഇനി ബാക്കി ചെയ്യാനുള്ള പ്രധാന ഘട്ടങ്ങൾ
-
-### Step 8 — Invoice, GST and Compliance
-- GST invoice numbering, tax summary, HSN/SAC-wise report.
-- Purchase GST input and sales GST output reconciliation.
-- PDF invoice improvements and export/download history.
 
 ### Step 9 — Role-based Dashboards and Investor Portal Upgrade
 - Investor-specific reports, capital statement, profit share history.
@@ -74,4 +75,4 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Backup/restore guide and deployment checklist.
 
 ## കുറിപ്പ്
-ഈ app ഇപ്പോൾ lightweight ERP foundation ആയി ശക്തമായി മുന്നേറുകയാണ്. Full enterprise-grade ERP ആക്കാൻ ഇനി GST/compliance, strict validation, BOM costing, automated tests, backup/import workflows എന്നിവയാണ് പ്രധാനമായും ബാക്കി.
+ഈ app ഇപ്പോൾ lightweight ERP foundation ആയി ശക്തമായി മുന്നേറുകയാണ്. Full enterprise-grade ERP ആക്കാൻ ഇനി role permissions, strict validation, BOM costing, automated tests, backup/import workflows എന്നിവയാണ് പ്രധാനമായും ബാക്കി.
