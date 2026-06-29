@@ -656,6 +656,14 @@
                             <div class="px-6 py-4 border-b bg-gray-50 flex items-center justify-between"><h3 class="font-bold text-gray-900">Operational Alerts</h3><button onclick="downloadErpReportsCsv()" class="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-bold text-teal-700 hover:bg-teal-100">Export CSV</button></div>
                             <div id="erp-alerts" class="divide-y divide-gray-100"></div>
                         </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-purple-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-purple-50"><h3 class="font-bold text-purple-950">Balance Sheet Snapshot</h3><p class="text-sm text-purple-700 mt-1">Cash/bank/UPI, stock, receivable, payable and net worth.</p></div>
+                            <div id="balance-sheet-report" class="divide-y divide-gray-100"></div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-red-50"><h3 class="font-bold text-red-950">Reconciliation Alerts</h3><p class="text-sm text-red-700 mt-1">Ledger mismatch checks for receivable, payable, stock and accounts.</p></div>
+                            <div id="reconciliation-alerts" class="divide-y divide-gray-100"></div>
+                        </div>
                     </div>
                     <div class="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-cyan-100 overflow-hidden">
@@ -4455,7 +4463,7 @@
                 category: entry.category || 'General',
                 description: entry.description || '',
                 amount,
-                accountId: entry.accountId || '',
+                accountId: entry.accountId || 'cash',
                 referenceCollection: entry.referenceCollection || '',
                 referenceId: entry.referenceId || '',
                 reversalOf: entry.reversalOf || '',
@@ -4519,6 +4527,56 @@
         function getReceivableTotal() { return orders.filter(order => !order.isDeleted).reduce((sum, order) => sum + getOrderBalanceDue(order), 0); }
         function getRawStockValueTotal() { return rawMaterials.reduce((sum, item) => sum + (getRawStockBalance(item) * moneyNumber(item.rate)), 0); }
         function getFinishedStockValueTotal() { return products.reduce((sum, product) => sum + (getProductStockBalance(product) * moneyNumber(product.withoutGstPrice || product.price)), 0); }
+        function getUnifiedAccountMovement(accountId = '') {
+            return unifiedLedger.filter(entry => !accountId || (entry.accountId || 'cash') === accountId).reduce((sum, entry) => sum + (entry.type === 'income' ? 1 : -1) * moneyNumber(entry.amount), 0);
+        }
+        function getCompanyFundsTotal() {
+            return getActiveFinanceAccounts().reduce((sum, account) => sum + getAccountLedgerBalance(account.id), 0);
+        }
+        function getPurchaseDueTotal() {
+            return purchases.filter(p => p.status !== 'cancelled').reduce((sum, purchase) => sum + getPurchaseBalance(purchase), 0);
+        }
+        function getBalanceSheetModel() {
+            const cashBank = getCompanyFundsTotal();
+            const receivable = getCustomerLedgerReceivable();
+            const supplierPayable = getSupplierLedgerBalance();
+            const rawStock = getRawStockValueTotal();
+            const finishedStock = getFinishedStockValueTotal();
+            const assets = getAssetTotal();
+            const liabilities = supplierPayable;
+            const assetsTotal = cashBank + receivable + rawStock + finishedStock + assets;
+            return { cashBank, receivable, supplierPayable, rawStock, finishedStock, assets, assetsTotal, liabilities, netWorth: assetsTotal - liabilities };
+        }
+        function getReconciliationModel() {
+            const customerUi = getReceivableTotal();
+            const customerLedgerTotal = getCustomerLedgerReceivable();
+            const supplierUi = getPurchaseDueTotal();
+            const supplierLedgerTotal = getSupplierLedgerBalance();
+            const stockValuation = getRawStockValueTotal() + getFinishedStockValueTotal();
+            const stockLedgerValuation = getStockLedgerValue();
+            const companyFunds = getCompanyFundsTotal();
+            const accountMovement = getActiveFinanceAccounts().reduce((sum, account) => sum + moneyNumber(account.openingBalance) + getUnifiedAccountMovement(account.id), 0);
+            const rows = [
+                { label: 'Customer receivable', expected: customerUi, ledger: customerLedgerTotal, tolerance: 1 },
+                { label: 'Supplier payable', expected: supplierUi, ledger: supplierLedgerTotal, tolerance: 1 },
+                { label: 'Stock valuation', expected: stockValuation, ledger: stockLedgerValuation, tolerance: 5 },
+                { label: 'Cash/Bank/UPI funds', expected: companyFunds, ledger: accountMovement, tolerance: 5 }
+            ];
+            return rows.map(row => ({ ...row, difference: row.ledger - row.expected, ok: Math.abs(row.ledger - row.expected) <= row.tolerance }));
+        }
+        function renderBalanceSheetReport() {
+            const host = document.getElementById('balance-sheet-report');
+            if(!host) return;
+            const model = getBalanceSheetModel();
+            host.innerHTML = reportRow('Cash / Bank / UPI Funds', model.cashBank, 'text-purple-700') + reportRow('Customer Receivable', model.receivable, 'text-orange-700') + reportRow('Raw Stock Value', model.rawStock, 'text-lime-700') + reportRow('Finished Stock Value', model.finishedStock, 'text-indigo-700') + reportRow('Company Assets', model.assets, 'text-stone-700') + reportRow('Total Assets', model.assetsTotal, 'text-emerald-700') + reportRow('Supplier Payable', model.supplierPayable, 'text-red-700') + reportRow('Net Worth Snapshot', model.netWorth, model.netWorth >= 0 ? 'text-emerald-700' : 'text-red-700');
+        }
+        function renderReconciliationAlerts() {
+            const host = document.getElementById('reconciliation-alerts');
+            if(!host) return;
+            const rows = getReconciliationModel();
+            host.innerHTML = rows.map(row => `<div class="p-4"><div class="flex items-center justify-between gap-3"><div><div class="font-bold ${row.ok ? 'text-emerald-700' : 'text-red-700'}">${escapeHtml(row.label)} ${row.ok ? '✓' : 'Mismatch'}</div><div class="text-xs text-gray-500">Expected ${formatMoney(row.expected)} • Ledger ${formatMoney(row.ledger)}</div></div><div class="text-right font-extrabold ${row.ok ? 'text-emerald-700' : 'text-red-700'}">${formatMoney(row.difference)}</div></div></div>`).join('');
+        }
+
         function renderEmployeesDashboard() {
             refreshPeopleSelectors();
             const joinDate = document.getElementById('employee-join-date'); if(joinDate) joinDate.value ||= getTodayString();
@@ -4625,6 +4683,8 @@
             const pl = document.getElementById('pl-report');
             if(pl) pl.innerHTML = reportRow('Sales Collected', model.sales, 'text-emerald-700') + reportRow('Customer Receivable', model.receivable, 'text-orange-700') + reportRow('Customer Ledger Receivable', model.customerReceivable, 'text-orange-700') + reportRow('Supplier Payable', model.supplierPayable, 'text-orange-700') + reportRow('Purchase Cost', model.purchase, 'text-red-700') + reportRow('Production Cost', model.production, 'text-red-700') + reportRow('Salary Paid', model.salary, 'text-red-700') + reportRow('Unified Ledger Expense', model.ledgerExpense, 'text-red-700') + reportRow('Asset Value', model.assets, 'text-stone-700') + reportRow('Finished Stock Value', model.finishedStock, 'text-purple-700') + reportRow('Investor Profit Distributed', model.investorProfit, 'text-rose-700') + reportRow('Gross Profit Snapshot', model.grossProfit, model.grossProfit >= 0 ? 'text-emerald-700' : 'text-red-700');
             renderLedgerPreviews();
+            renderBalanceSheetReport();
+            renderReconciliationAlerts();
             const alerts = document.getElementById('erp-alerts');
             if(alerts) { const lowRaw = rawMaterials.filter(item => moneyNumber(item.minStock) > 0 && getRawStockBalance(item) <= moneyNumber(item.minStock)); const expiringRaw = rawMaterials.filter(item => { const d = daysUntil(item.expiryDate); return d !== null && d <= 30; }); const expiringFinished = products.filter(product => { const batch = getLatestStockBatch(product); const d = daysUntil(batch.expiryDate || product.expiryDate); return d !== null && d <= 30; }); const dueOrders = orders.filter(order => !order.isDeleted && getOrderBalanceDue(order) > 0); alerts.innerHTML = `<div class="p-4"><div class="font-bold text-red-700">Low raw materials: ${lowRaw.length}</div><div class="text-xs text-gray-500">${lowRaw.map(item => escapeHtml(item.name || '')).join(', ') || 'No low raw material alerts'}</div></div><div class="p-4"><div class="font-bold text-amber-700">Expiry alerts: ${expiringRaw.length + expiringFinished.length}</div><div class="text-xs text-gray-500">Raw: ${expiringRaw.map(item => escapeHtml(item.name || '')).join(', ') || '-'} • Finished: ${expiringFinished.map(item => escapeHtml(item.name || '')).join(', ') || '-'}</div></div><div class="p-4"><div class="font-bold text-orange-700">Payment due orders: ${dueOrders.length}</div><div class="text-xs text-gray-500">Total receivable ${formatMoney(model.receivable)}</div></div><div class="p-4"><div class="font-bold text-teal-700">Production batches: ${productionBatches.length}</div><div class="text-xs text-gray-500">Total production cost ${formatMoney(model.production)}</div></div>`; }
         }
@@ -4642,7 +4702,7 @@
         }
         window.downloadErpReportsCsv = function() {
             const model = getErpReportModel();
-            const rows = [['Metric','Amount'], ['Sales Collected', model.sales], ['Customer Receivable', model.receivable], ['Customer Ledger Receivable', model.customerReceivable], ['Supplier Payable', model.supplierPayable], ['Purchase Cost', model.purchase], ['Production Cost', model.production], ['Salary Paid', model.salary], ['Unified Ledger Income', model.ledgerIncome], ['Unified Ledger Expense', model.ledgerExpense], ['Asset Value', model.assets], ['Raw Stock Value', model.rawStock], ['Finished Stock Value', model.finishedStock], ['Stock Ledger Value', model.stockLedgerValue], ['Gross Profit Snapshot', model.grossProfit]];
+            const rows = [['Metric','Amount'], ['Sales Collected', model.sales], ['Customer Receivable', model.receivable], ['Customer Ledger Receivable', model.customerReceivable], ['Supplier Payable', model.supplierPayable], ['Purchase Cost', model.purchase], ['Production Cost', model.production], ['Salary Paid', model.salary], ['Unified Ledger Income', model.ledgerIncome], ['Unified Ledger Expense', model.ledgerExpense], ['Asset Value', model.assets], ['Raw Stock Value', model.rawStock], ['Finished Stock Value', model.finishedStock], ['Stock Ledger Value', model.stockLedgerValue], ['Gross Profit Snapshot', model.grossProfit], ['Balance Sheet Net Worth', getBalanceSheetModel().netWorth], ['Reconciliation Mismatches', getReconciliationModel().filter(row => !row.ok).length]];
             const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `Lakfa_ERP_Report_${getTodayString()}.csv`; link.click(); URL.revokeObjectURL(url);
         }
