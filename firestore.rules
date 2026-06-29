@@ -97,6 +97,19 @@ service cloud.firestore {
       allow create, update, delete: if isManager();
     }
 
+
+    match /employees/{employeeId} {
+      allow read, create, update, delete: if isManager();
+    }
+
+    match /salaryPayments/{paymentId} {
+      allow read, create, update, delete: if isManager();
+    }
+
+    match /companyAssets/{assetId} {
+      allow read, create, update, delete: if isManager();
+    }
+
     match /investorExpenses/{expenseId} {
       allow read: if isManager() || isInvestor();
       allow create: if isManager()
