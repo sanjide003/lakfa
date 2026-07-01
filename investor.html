@@ -969,10 +969,13 @@
         onAuthStateChanged(auth, async (user) => {
             authUser = user;
             if (!user) { window.location.href = 'index.html'; return; }
-            const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
-            currentUserRole = userSnap && userSnap.exists() ? userSnap.data().role : null;
+            const loginSnap = await getDoc(doc(db, "settings", "login")).catch(() => null);
+            const loginData = loginSnap && loginSnap.exists() ? loginSnap.data() : {};
+            const manager = loginData.manager || {};
+            const investor = (loginData.investors || {})[user.uid] || null;
+            currentUserRole = manager.uid === user.uid ? 'manager' : investor ? 'investor' : null;
             if(currentUserRole === 'manager') { window.location.href = 'manager.html'; return; }
-            if(userSnap && userSnap.exists() && userSnap.data().isActive === false) { await signOut(auth); window.location.href = 'index.html'; return; }
+            if(investor && investor.isActive === false) { await signOut(auth); window.location.href = 'index.html'; return; }
             if(currentUserRole !== 'investor') { await signOut(auth); window.location.href = 'index.html'; return; }
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.add('hidden');

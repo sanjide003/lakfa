@@ -6,23 +6,34 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function loginPath() {
+      return /databases/$(database)/documents/settings/login;
+    }
+
     function userPath(uid) {
       return /databases/$(database)/documents/users/$(uid);
     }
 
-    function hasUserRole(role) {
-      return signedIn()
-        && exists(userPath(request.auth.uid))
-        && get(userPath(request.auth.uid)).data.role == role
-        && get(userPath(request.auth.uid)).data.isActive != false;
+    function loginData() {
+      return get(loginPath()).data;
+    }
+
+    function hasLoginDoc() {
+      return exists(loginPath());
     }
 
     function isManager() {
-      return hasUserRole('manager');
+      return signedIn()
+        && hasLoginDoc()
+        && loginData().manager.uid == request.auth.uid
+        && loginData().manager.isActive != false;
     }
 
     function isInvestor() {
-      return hasUserRole('investor');
+      return signedIn()
+        && hasLoginDoc()
+        && request.auth.uid in loginData().investors.keys()
+        && loginData().investors[request.auth.uid].isActive != false;
     }
 
     function canOperate(module) {
@@ -38,24 +49,35 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/settings/config).data.setupMode == true;
     }
 
-    function isSelfManagerBootstrap(userId) {
+    function isSelfManagerLoginBootstrap() {
       return isSetupMode()
-        && isSelfUser(userId)
-        && request.resource.data.role == 'manager'
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.isActive != false;
+        && signedIn()
+        && request.resource.data.manager.uid == request.auth.uid
+        && request.resource.data.manager.role == 'manager'
+        && request.resource.data.manager.email == request.auth.token.email
+        && request.resource.data.manager.isActive != false;
+    }
+
+    function isSelfLegacyManagerLoginMigration() {
+      return signedIn()
+        && exists(userPath(request.auth.uid))
+        && get(userPath(request.auth.uid)).data.role == 'manager'
+        && get(userPath(request.auth.uid)).data.isActive != false
+        && request.resource.data.manager.uid == request.auth.uid
+        && request.resource.data.manager.role == 'manager'
+        && request.resource.data.manager.email == request.auth.token.email
+        && request.resource.data.manager.isActive != false;
     }
 
     match /users/{userId} {
       allow read: if isManager() || isSelfUser(userId);
-      allow create: if isManager() || isSelfManagerBootstrap(userId);
-      allow update: if isManager() || (isSelfManagerBootstrap(userId) && !resource.data.keys().hasAny(['role']));
-      allow delete: if isManager();
+      allow create, update, delete: if isManager();
     }
 
     match /settings/{docId} {
       allow read: if signedIn();
-      allow write: if isManager();
+      allow create, update: if isManager() || (docId == 'login' && (isSelfManagerLoginBootstrap() || isSelfLegacyManagerLoginMigration()));
+      allow delete: if isManager();
     }
 
     match /orders/{orderId} {

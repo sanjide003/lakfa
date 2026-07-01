@@ -52,9 +52,9 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Party-wise search/filter/sort, PDF statement, CSV export, all-parties CSV export ചേർത്തു.
 
 ### Step 10B — Strong Role-Based Authentication & Access Control
-- Manager, Investor എന്നീ രണ്ട് login types മാത്രം ഉപയോഗിക്കുന്ന രീതിയിൽ login routing harden ചെയ്തു.
-- setupMode-controlled manager bootstrap, active/inactive blocking, manager-only investor user management, user role audit log എന്നിവ ചേർത്തു.
-- Firestore rules manager/investor role helpers ഉപയോഗിച്ച് harden ചെയ്തു; users/settings management manager-only ആയി.
+- settings/login document അടിസ്ഥാനമാക്കി Manager, Investor എന്നീ രണ്ട് login types മാത്രം ഉപയോഗിക്കുന്ന രീതിയിൽ login routing harden ചെയ്തു.
+- setupMode-controlled settings/login manager bootstrap, users collection-ൽ നിന്ന് one-time migration, active/inactive blocking, manager-only investor user management, user role audit log എന്നിവ ചേർത്തു.
+- Firestore rules settings/login manager/investor helpers ഉപയോഗിച്ച് harden ചെയ്തു; settings/login management manager-only ആയി.
 
 ## നിലവിലെ ERP കഴിവുകൾ
 - Order entry, payment tracking, customer receivable ledger.
@@ -68,7 +68,7 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Balance sheet snapshot and reconciliation mismatch alerts.
 - GST summary, HSN/SAC-wise tax report and input/output GST reconciliation.
 - Investor-specific capital statement, profit share history and personal contribution reports.
-- Manager/investor role-based access with setupMode manager bootstrap, active account blocking, and manager-only investor user management.
+- settings/login based Manager/investor role access with setupMode manager bootstrap, legacy users migration, active account blocking, and manager-only investor user management.
 - Party Master and Party Ledger with opening balance, credit limit, payment terms, due follow-up, statement PDF/CSV and duplicate merge support.
 
 ## ഇനി ബാക്കി ചെയ്യാനുള്ള പ്രധാന ഘട്ടങ്ങൾ
