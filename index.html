@@ -58,7 +58,7 @@
             const loginRef = doc(db, "settings", "login");
             const loginSnap = await getDoc(loginRef).catch(() => null);
             const loginData = loginSnap && loginSnap.exists() ? loginSnap.data() : {};
-            const manager = loginData.manager || {};
+            const manager = loginData.manager || (loginData.role === 'manager' ? loginData : {});
             const investor = (loginData.investors || {})[user.uid] || null;
             if(manager.uid === user.uid) return { ...manager, role: 'manager', isActive: manager.isActive !== false };
             if(investor) return { ...investor, role: 'investor', isActive: investor.isActive !== false };
@@ -66,7 +66,7 @@
             const legacyUser = legacyUserSnap && legacyUserSnap.exists() ? legacyUserSnap.data() : null;
             if(legacyUser?.role === 'manager' && legacyUser.isActive !== false) {
                 const migratedProfile = { uid: user.uid, role: 'manager', name: legacyUser.name || user.displayName || user.email || 'Manager', email: legacyUser.email || user.email || '', isActive: true, migratedFromUsers: true, updatedAt: new Date().toISOString() };
-                await setDoc(loginRef, { manager: migratedProfile }, { merge: true });
+                await setDoc(loginRef, { ...migratedProfile, manager: migratedProfile }, { merge: true });
                 return migratedProfile;
             }
             if(!(await isSetupModeEnabled())) return { role: null, accessError: 'no-role' };
@@ -80,7 +80,7 @@
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
-            await setDoc(loginRef, { manager: bootstrapProfile }, { merge: true });
+            await setDoc(loginRef, { ...bootstrapProfile, manager: bootstrapProfile }, { merge: true });
             return bootstrapProfile;
         }
 

@@ -25,8 +25,13 @@ service cloud.firestore {
     function isManager() {
       return signedIn()
         && hasLoginDoc()
-        && loginData().manager.uid == request.auth.uid
-        && loginData().manager.isActive != false;
+        && (
+          (loginData().uid == request.auth.uid
+            && loginData().role == 'manager'
+            && loginData().isActive != false)
+          || (loginData().manager.uid == request.auth.uid
+            && loginData().manager.isActive != false)
+        );
     }
 
     function isInvestor() {
@@ -52,10 +57,10 @@ service cloud.firestore {
     function isSelfManagerLoginBootstrap() {
       return isSetupMode()
         && signedIn()
-        && request.resource.data.manager.uid == request.auth.uid
-        && request.resource.data.manager.role == 'manager'
-        && request.resource.data.manager.email == request.auth.token.email
-        && request.resource.data.manager.isActive != false;
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == 'manager'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.isActive != false;
     }
 
     function isSelfLegacyManagerLoginMigration() {
@@ -63,10 +68,10 @@ service cloud.firestore {
         && exists(userPath(request.auth.uid))
         && get(userPath(request.auth.uid)).data.role == 'manager'
         && get(userPath(request.auth.uid)).data.isActive != false
-        && request.resource.data.manager.uid == request.auth.uid
-        && request.resource.data.manager.role == 'manager'
-        && request.resource.data.manager.email == request.auth.token.email
-        && request.resource.data.manager.isActive != false;
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == 'manager'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.isActive != false;
     }
 
     match /users/{userId} {

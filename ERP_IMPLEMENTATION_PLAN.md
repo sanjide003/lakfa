@@ -52,7 +52,7 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Party-wise search/filter/sort, PDF statement, CSV export, all-parties CSV export ചേർത്തു.
 
 ### Step 10B — Strong Role-Based Authentication & Access Control
-- settings/login document അടിസ്ഥാനമാക്കി Manager, Investor എന്നീ രണ്ട് login types മാത്രം ഉപയോഗിക്കുന്ന രീതിയിൽ login routing harden ചെയ്തു.
+- settings/login document-ലെ flat manager fields അല്ലെങ്കിൽ nested manager map അടിസ്ഥാനമാക്കി Manager, Investor എന്നീ രണ്ട് login types മാത്രം ഉപയോഗിക്കുന്ന രീതിയിൽ login routing harden ചെയ്തു.
 - setupMode-controlled settings/login manager bootstrap, users collection-ൽ നിന്ന് one-time migration, active/inactive blocking, manager-only investor user management, user role audit log എന്നിവ ചേർത്തു.
 - Firestore rules settings/login manager/investor helpers ഉപയോഗിച്ച് harden ചെയ്തു; settings/login management manager-only ആയി.
 

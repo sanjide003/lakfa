@@ -971,7 +971,7 @@
             if (!user) { window.location.href = 'index.html'; return; }
             const loginSnap = await getDoc(doc(db, "settings", "login")).catch(() => null);
             const loginData = loginSnap && loginSnap.exists() ? loginSnap.data() : {};
-            const manager = loginData.manager || {};
+            const manager = loginData.manager || (loginData.role === 'manager' ? loginData : {});
             const investor = (loginData.investors || {})[user.uid] || null;
             currentUserRole = manager.uid === user.uid ? 'manager' : investor ? 'investor' : null;
             if(currentUserRole === 'manager') { window.location.href = 'manager.html'; return; }
