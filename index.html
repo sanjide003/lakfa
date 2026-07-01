@@ -60,11 +60,11 @@
             if(userSnap && userSnap.exists() && userSnap.data().role) return userSnap.data();
             if(!(await isSetupModeEnabled())) return { role: null, accessError: 'no-role' };
             const bootstrapProfile = {
-                role: 'founder',
-                name: user.displayName || user.email || 'Founder',
+                role: 'manager',
+                name: user.displayName || user.email || 'Manager',
                 email: user.email || '',
                 isActive: true,
-                bootstrapFounder: true,
+                bootstrapManager: true,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
@@ -75,11 +75,11 @@
         async function redirectByRole(user) {
             const profile = await getOrBootstrapUserProfile(user).catch(() => null);
             const role = profile?.role || null;
-            if(profile?.isActive === false) { await signOut(auth); showToast('This account is disabled. Contact Founder.', 'error'); return false; }
-            if(['founder', 'owner', 'admin', 'manager', 'staff'].includes(role)) { window.location.href = 'manager.html'; return true; }
+            if(profile?.isActive === false) { await signOut(auth); showToast('This account is disabled. Contact Manager.', 'error'); return false; }
+            if(role === 'manager') { window.location.href = 'manager.html'; return true; }
             if(role === 'investor') { window.location.href = 'investor.html'; return true; }
             await signOut(auth);
-            showToast(profile?.accessError === 'no-role' ? 'Access not created. Ask Founder to create your login.' : 'Login failed. Contact Founder.', 'error');
+            showToast(profile?.accessError === 'no-role' ? 'Access not created. Ask Manager to create your login.' : 'Login failed. Contact Manager.', 'error');
             return false;
         }
 

@@ -727,7 +727,7 @@
                         </div>
                     </div>
 
-                    <div id="founder-access-note" class="hidden mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Only Founder can create or update investor/staff logins. Existing business data is still available according to your role.</div>
+                    <div id="founder-access-note" class="hidden mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Only the Manager account can create or update investor logins. Existing business data is still available according to your role.</div>
 
                     <div class="founder-only mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -775,32 +775,7 @@
                         <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left font-bold text-gray-600">Investor</th><th class="px-6 py-3 text-left font-bold text-gray-600">Username / Email</th><th class="px-6 py-3 text-left font-bold text-gray-600">Password</th></tr></thead><tbody id="settings-investor-access-list" class="divide-y divide-gray-100 bg-white"></tbody></table></div>
                     </div>
 
-                    <div class="founder-only mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="px-6 py-4 border-b bg-indigo-50"><h3 class="font-bold text-indigo-950">Staff Role & Module Permissions</h3><p class="text-sm text-indigo-700 mt-1">Staff login create ചെയ്ത് orders, inventory, production, finance, reports, settings എന്നീ modules permission-wise നൽകാം.</p></div>
-                            <div class="p-6 space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div><label class="block text-sm font-medium text-gray-700">Staff Name</label><input id="staff-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
-                                    <div><label class="block text-sm font-medium text-gray-700">Staff Email</label><input id="staff-email" type="email" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
-                                    <div><label class="block text-sm font-medium text-gray-700">Login Password</label><input id="staff-password" type="password" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Min 6 characters"></div>
-                                    <div><label class="block text-sm font-medium text-gray-700">Role</label><select id="staff-role" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"><option value="staff">Staff (module permissions)</option><option value="manager">Manager (full operations)</option></select></div>
-                                </div>
-                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-                                    <label class="rounded border p-2"><input id="staff-perm-orders" type="checkbox" class="mr-2">Orders</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-inventory" type="checkbox" class="mr-2">Inventory</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-production" type="checkbox" class="mr-2">Production</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-finance" type="checkbox" class="mr-2">Finance</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-reports" type="checkbox" class="mr-2">Reports</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-settings" type="checkbox" class="mr-2">Settings</label>
-                                </div>
-                                <button type="button" onclick="saveStaffUser()" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">Create Team Login</button>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Manager / Staff Access List</h3><p class="text-sm text-gray-500 mt-1">Founder can activate/deactivate managers and update staff module permissions.</p></div>
-                            <div id="settings-staff-access-list" class="divide-y divide-gray-100"></div>
-                        </div>
-                    </div>
+                    <div class="founder-only mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm font-semibold text-indigo-900">Manager dashboard access is intentionally limited to one Manager account. Use the Investor Access form above to create separate investor logins.</div>
                 </div>
 
             </main>
@@ -1471,11 +1446,11 @@
             if(userSnap && userSnap.exists() && userSnap.data().role) return userSnap.data();
             if(!(await isSetupModeEnabled())) return { role: null, accessError: 'no-role' };
             const bootstrapProfile = {
-                role: 'founder',
-                name: user.displayName || user.email || 'Founder',
+                role: 'manager',
+                name: user.displayName || user.email || 'Manager',
                 email: user.email || '',
                 isActive: true,
-                bootstrapFounder: true,
+                bootstrapManager: true,
                 createdAt: getCurrentDateTimeLocal(),
                 updatedAt: getCurrentDateTimeLocal()
             };
@@ -1489,7 +1464,7 @@
             currentUserProfile = await getOrBootstrapAccessProfile(user).catch(() => null) || {};
             currentUserRole = currentUserProfile.role || null;
             if(currentUserRole === 'investor') { window.location.href = 'investor.html'; return; }
-            if(currentUserProfile.isActive === false || !['founder', 'owner', 'admin', 'manager', 'staff'].includes(currentUserRole)) { await signOut(auth); window.location.href = 'index.html'; return; }
+            if(currentUserProfile.isActive === false || currentUserRole !== 'manager') { await signOut(auth); window.location.href = 'index.html'; return; }
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('investor-app').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -1554,13 +1529,13 @@
             if(currentTab === 'orders') document.getElementById('header-actions').innerHTML = getOrderHeaderActions();
         }
 
-        function isFounderRole(role = currentUserRole) { return ['founder', 'owner', 'admin'].includes(role); }
-        function requireFounderAccess() { if(isFounderRole()) return true; showToast('Only Founder can manage users and roles', 'error'); return false; }
+        function isManagerRole(role = currentUserRole) { return role === 'manager'; }
+        function requireManagerAccess() { if(isManagerRole()) return true; showToast('Only Manager can manage users and roles', 'error'); return false; }
         function applyRoleAccessUI() {
-            const founder = isFounderRole();
-            document.querySelectorAll('.founder-only').forEach(el => el.classList.toggle('hidden', !founder));
+            const manager = isManagerRole();
+            document.querySelectorAll('.founder-only').forEach(el => el.classList.toggle('hidden', !manager));
             const note = document.getElementById('founder-access-note');
-            if(note) note.classList.toggle('hidden', founder);
+            if(note) note.classList.toggle('hidden', manager);
         }
         async function postUserRoleAudit(action, targetId, after = {}, before = null) {
             try {
@@ -1576,7 +1551,7 @@
             reports: 'reports', audit: 'reports', settings: 'settings'
         };
         function hasModuleAccess(module) {
-            if(isFounderRole() || currentUserRole === 'manager' || !module) return true;
+            if(isManagerRole() || currentUserRole === 'manager' || !module) return true;
             const permissions = currentUserProfile.permissions || {};
             return !!permissions[module];
         }
@@ -1878,7 +1853,7 @@
                 investorPaymentRequests.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
                 if(currentTab === 'payment-requests') renderPaymentRequestsDashboard();
             });
-            if(isFounderRole()) {
+            if(isManagerRole()) {
                 onSnapshot(collection(db, "users"), (snapshot) => {
                     systemUsers = [];
                     snapshot.forEach((doc) => systemUsers.push({ id: doc.id, ...doc.data() }));
@@ -4454,7 +4429,7 @@
 
 
         window.saveInvestorProfile = async function() {
-            if(!requireFounderAccess()) return;
+            if(!requireManagerAccess()) return;
             let uid = document.getElementById('investor-uid').value.trim();
             const name = document.getElementById('investor-name').value.trim();
             const email = document.getElementById('investor-email').value.trim();
@@ -5151,7 +5126,7 @@
         }
 
         window.saveStaffUser = async function() {
-            if(!requireFounderAccess()) return;
+            if(!requireManagerAccess()) return;
             const name = document.getElementById('staff-name')?.value.trim();
             const email = document.getElementById('staff-email')?.value.trim();
             const password = document.getElementById('staff-password')?.value || '';
@@ -5172,14 +5147,14 @@
         }
 
         window.toggleStaffPermission = async function(uid, permission, checked) {
-            if(!requireFounderAccess()) return;
+            if(!requireManagerAccess()) return;
             const user = systemUsers.find(item => item.id === uid) || {};
             const permissions = { ...(user.permissions || {}), [permission]: checked };
             try { await updateDoc(doc(db, 'users', uid), { permissions, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' }); await postUserRoleAudit('staff_permission_updated', uid, { permissions }, { permissions: user.permissions || {} }); showToast('Staff permission updated'); } catch(error) { showToast(error.message, 'error'); }
         }
 
         window.toggleStaffActive = async function(uid, makeActive) {
-            if(!requireFounderAccess()) return;
+            if(!requireManagerAccess()) return;
             try { await updateDoc(doc(db, 'users', uid), { isActive: !!makeActive, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' }); await postUserRoleAudit(makeActive ? 'staff_activated' : 'staff_deactivated', uid, { isActive: !!makeActive }); showToast(makeActive ? 'Staff activated' : 'Staff deactivated'); } catch(error) { showToast(error.message, 'error'); }
         }
 

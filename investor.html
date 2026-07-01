@@ -971,7 +971,7 @@
             if (!user) { window.location.href = 'index.html'; return; }
             const userSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
             currentUserRole = userSnap && userSnap.exists() ? userSnap.data().role : null;
-            if(['founder', 'owner', 'admin', 'manager', 'staff'].includes(currentUserRole)) { window.location.href = 'manager.html'; return; }
+            if(currentUserRole === 'manager') { window.location.href = 'manager.html'; return; }
             if(userSnap && userSnap.exists() && userSnap.data().isActive === false) { await signOut(auth); window.location.href = 'index.html'; return; }
             if(currentUserRole !== 'investor') { await signOut(auth); window.location.href = 'index.html'; return; }
             document.getElementById('login-screen').classList.add('hidden');
