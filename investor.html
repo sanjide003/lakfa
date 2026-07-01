@@ -952,6 +952,17 @@
             }
         }
 
+        function getLoginErrorMessage(error) {
+            console.error('Login error:', error);
+            const code = error?.code || '';
+            if(code === 'auth/unauthorized-domain') return `This website domain (${window.location.hostname}) is not authorized in Firebase Authentication. Add it in Firebase Console > Authentication > Settings > Authorized domains.`;
+            if(code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return 'Invalid email or password. Check the Firebase Authentication user and password.';
+            if(code === 'auth/too-many-requests') return 'Too many failed login attempts. Wait a few minutes or reset the password in Firebase Authentication.';
+            if(code === 'permission-denied') return 'Firestore permission denied. Publish the latest firestore.rules and verify settings/login.';
+            if(code) return `${code}: ${error.message || 'Login failed'}`;
+            return error?.message || 'Login failed. Check Firebase Authentication and Firestore settings/login.';
+        }
+
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -960,7 +971,7 @@
                 await signInWithEmailAndPassword(auth, email, pass);
                 showToast("Login Successful!");
             } catch (error) {
-                showToast("Invalid Email or Password", "error");
+                showToast(getLoginErrorMessage(error), "error");
             }
         });
 
@@ -969,7 +980,7 @@
         onAuthStateChanged(auth, async (user) => {
             authUser = user;
             if (!user) { window.location.href = 'index.html'; return; }
-            const loginSnap = await getDoc(doc(db, "settings", "login")).catch(() => null);
+            const loginSnap = await getDoc(doc(db, "settings", "login")).catch((error) => { showToast(getLoginErrorMessage(error), "error"); return null; });
             const loginData = loginSnap && loginSnap.exists() ? loginSnap.data() : {};
             const manager = loginData.manager || (loginData.role === 'manager' ? loginData : {});
             const investor = (loginData.investors || {})[user.uid] || null;

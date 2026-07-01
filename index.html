@@ -49,6 +49,17 @@
             if(input) input.type = input.type === 'password' ? 'text' : 'password';
         };
 
+        function getLoginErrorMessage(error) {
+            console.error('Login error:', error);
+            const code = error?.code || '';
+            if(code === 'auth/unauthorized-domain') return `This website domain (${window.location.hostname}) is not authorized in Firebase Authentication. Add it in Firebase Console > Authentication > Settings > Authorized domains.`;
+            if(code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return 'Invalid email or password. Check the Firebase Authentication user and password.';
+            if(code === 'auth/too-many-requests') return 'Too many failed login attempts. Wait a few minutes or reset the password in Firebase Authentication.';
+            if(code === 'permission-denied') return 'Firestore permission denied. Publish the latest firestore.rules and verify settings/login.';
+            if(code) return `${code}: ${error.message || 'Login failed'}`;
+            return error?.message || 'Login failed. Check Firebase Authentication and Firestore settings/login.';
+        }
+
         async function isSetupModeEnabled() {
             const configSnap = await getDoc(doc(db, "settings", "config")).catch(() => null);
             return !!(configSnap && configSnap.exists() && configSnap.data().setupMode === true);
@@ -85,13 +96,13 @@
         }
 
         async function redirectByRole(user) {
-            const profile = await getOrBootstrapUserProfile(user).catch(() => null);
+            const profile = await getOrBootstrapUserProfile(user).catch((error) => ({ role: null, accessError: getLoginErrorMessage(error) }));
             const role = profile?.role || null;
             if(profile?.isActive === false) { await signOut(auth); showToast('This account is disabled. Contact Manager.', 'error'); return false; }
             if(role === 'manager') { window.location.href = 'manager.html'; return true; }
             if(role === 'investor') { window.location.href = 'investor.html'; return true; }
             await signOut(auth);
-            showToast(profile?.accessError === 'no-role' ? 'Access not created. Ask Manager to create your login.' : 'Login failed. Contact Manager.', 'error');
+            showToast(profile?.accessError === 'no-role' ? 'Access not created. Ask Manager to create your login.' : (profile?.accessError || 'Login failed. Contact Manager.'), 'error');
             return false;
         }
 
@@ -110,7 +121,7 @@
             } catch (error) {
                 btn.disabled = false;
                 btn.innerText = 'Login';
-                showToast('Invalid Email or Password', 'error');
+                showToast(getLoginErrorMessage(error), 'error');
             }
         });
 

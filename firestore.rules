@@ -37,6 +37,7 @@ service cloud.firestore {
     function isInvestor() {
       return signedIn()
         && hasLoginDoc()
+        && loginData().investors is map
         && request.auth.uid in loginData().investors.keys()
         && loginData().investors[request.auth.uid].isActive != false;
     }

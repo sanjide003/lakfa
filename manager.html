@@ -1420,6 +1420,17 @@
                 if(icon) icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
             }
         }
+        function getLoginErrorMessage(error) {
+            console.error('Login error:', error);
+            const code = error?.code || '';
+            if(code === 'auth/unauthorized-domain') return `This website domain (${window.location.hostname}) is not authorized in Firebase Authentication. Add it in Firebase Console > Authentication > Settings > Authorized domains.`;
+            if(code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return 'Invalid email or password. Check the Firebase Authentication user and password.';
+            if(code === 'auth/too-many-requests') return 'Too many failed login attempts. Wait a few minutes or reset the password in Firebase Authentication.';
+            if(code === 'permission-denied') return 'Firestore permission denied. Publish the latest firestore.rules and verify settings/login.';
+            if(code) return `${code}: ${error.message || 'Login failed'}`;
+            return error?.message || 'Login failed. Check Firebase Authentication and Firestore settings/login.';
+        }
+
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1429,7 +1440,7 @@
                 await signInWithEmailAndPassword(auth, email, pass);
                 showToast("Login Successful!");
             } catch (error) {
-                showToast("Invalid Email or Password", "error");
+                showToast(getLoginErrorMessage(error), "error");
             }
         });
 
@@ -1473,10 +1484,10 @@
         onAuthStateChanged(auth, async (user) => {
             authUser = user;
             if (!user) { window.location.href = 'index.html'; return; }
-            currentUserProfile = await getOrBootstrapAccessProfile(user).catch(() => null) || {};
+            currentUserProfile = await getOrBootstrapAccessProfile(user).catch((error) => ({ role: null, accessError: getLoginErrorMessage(error) })) || {};
             currentUserRole = currentUserProfile.role || null;
             if(currentUserRole === 'investor') { window.location.href = 'investor.html'; return; }
-            if(currentUserProfile.isActive === false || currentUserRole !== 'manager') { await signOut(auth); window.location.href = 'index.html'; return; }
+            if(currentUserProfile.isActive === false || currentUserRole !== 'manager') { if(currentUserProfile.accessError) showToast(currentUserProfile.accessError, 'error'); await signOut(auth); window.location.href = 'index.html'; return; }
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('investor-app').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
