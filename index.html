@@ -49,37 +49,60 @@
             if(input) input.type = input.type === 'password' ? 'text' : 'password';
         };
 
+        function getLoginErrorMessage(error) {
+            console.error('Login error:', error);
+            const code = error?.code || '';
+            if(code === 'auth/unauthorized-domain') return `This website domain (${window.location.hostname}) is not authorized in Firebase Authentication. Add it in Firebase Console > Authentication > Settings > Authorized domains.`;
+            if(code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return 'Invalid email or password. Check the Firebase Authentication user and password.';
+            if(code === 'auth/too-many-requests') return 'Too many failed login attempts. Wait a few minutes or reset the password in Firebase Authentication.';
+            if(code === 'permission-denied') return 'Firestore permission denied. Publish the latest firestore.rules and verify settings/login.';
+            if(code) return `${code}: ${error.message || 'Login failed'}`;
+            return error?.message || 'Login failed. Check Firebase Authentication and Firestore settings/login.';
+        }
+
         async function isSetupModeEnabled() {
             const configSnap = await getDoc(doc(db, "settings", "config")).catch(() => null);
             return !!(configSnap && configSnap.exists() && configSnap.data().setupMode === true);
         }
 
         async function getOrBootstrapUserProfile(user) {
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef).catch(() => null);
-            if(userSnap && userSnap.exists() && userSnap.data().role) return userSnap.data();
+            const loginRef = doc(db, "settings", "login");
+            const loginSnap = await getDoc(loginRef).catch(() => null);
+            const loginData = loginSnap && loginSnap.exists() ? loginSnap.data() : {};
+            const manager = loginData.manager || (loginData.role === 'manager' ? loginData : {});
+            const investor = (loginData.investors || {})[user.uid] || null;
+            if(manager.uid === user.uid) return { ...manager, role: 'manager', isActive: manager.isActive !== false };
+            if(investor) return { ...investor, role: 'investor', isActive: investor.isActive !== false };
+            const legacyUserSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
+            const legacyUser = legacyUserSnap && legacyUserSnap.exists() ? legacyUserSnap.data() : null;
+            if(legacyUser?.role === 'manager' && legacyUser.isActive !== false) {
+                const migratedProfile = { uid: user.uid, role: 'manager', name: legacyUser.name || user.displayName || user.email || 'Manager', email: legacyUser.email || user.email || '', isActive: true, migratedFromUsers: true, updatedAt: new Date().toISOString() };
+                await setDoc(loginRef, { ...migratedProfile, manager: migratedProfile }, { merge: true });
+                return migratedProfile;
+            }
             if(!(await isSetupModeEnabled())) return { role: null, accessError: 'no-role' };
             const bootstrapProfile = {
-                role: 'founder',
-                name: user.displayName || user.email || 'Founder',
+                uid: user.uid,
+                role: 'manager',
+                name: user.displayName || user.email || 'Manager',
                 email: user.email || '',
                 isActive: true,
-                bootstrapFounder: true,
+                bootstrapManager: true,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
-            await setDoc(userRef, bootstrapProfile, { merge: true });
+            await setDoc(loginRef, { ...bootstrapProfile, manager: bootstrapProfile }, { merge: true });
             return bootstrapProfile;
         }
 
         async function redirectByRole(user) {
-            const profile = await getOrBootstrapUserProfile(user).catch(() => null);
+            const profile = await getOrBootstrapUserProfile(user).catch((error) => ({ role: null, accessError: getLoginErrorMessage(error) }));
             const role = profile?.role || null;
-            if(profile?.isActive === false) { await signOut(auth); showToast('This account is disabled. Contact Founder.', 'error'); return false; }
-            if(['founder', 'owner', 'admin', 'manager', 'staff'].includes(role)) { window.location.href = 'manager.html'; return true; }
+            if(profile?.isActive === false) { await signOut(auth); showToast('This account is disabled. Contact Manager.', 'error'); return false; }
+            if(role === 'manager') { window.location.href = 'manager.html'; return true; }
             if(role === 'investor') { window.location.href = 'investor.html'; return true; }
             await signOut(auth);
-            showToast(profile?.accessError === 'no-role' ? 'Access not created. Ask Founder to create your login.' : 'Login failed. Contact Founder.', 'error');
+            showToast(profile?.accessError === 'no-role' ? 'Access not created. Ask Manager to create your login.' : (profile?.accessError || 'Login failed. Contact Manager.'), 'error');
             return false;
         }
 
@@ -98,7 +121,7 @@
             } catch (error) {
                 btn.disabled = false;
                 btn.innerText = 'Login';
-                showToast('Invalid Email or Password', 'error');
+                showToast(getLoginErrorMessage(error), 'error');
             }
         });
 

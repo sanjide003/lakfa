@@ -727,7 +727,7 @@
                         </div>
                     </div>
 
-                    <div id="founder-access-note" class="hidden mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Only Founder can create or update investor/staff logins. Existing business data is still available according to your role.</div>
+                    <div id="founder-access-note" class="hidden mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-800">Only the Manager account can create or update investor logins. Existing business data is still available according to your role.</div>
 
                     <div class="founder-only mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -775,32 +775,7 @@
                         <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left font-bold text-gray-600">Investor</th><th class="px-6 py-3 text-left font-bold text-gray-600">Username / Email</th><th class="px-6 py-3 text-left font-bold text-gray-600">Password</th></tr></thead><tbody id="settings-investor-access-list" class="divide-y divide-gray-100 bg-white"></tbody></table></div>
                     </div>
 
-                    <div class="founder-only mt-6 grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="px-6 py-4 border-b bg-indigo-50"><h3 class="font-bold text-indigo-950">Staff Role & Module Permissions</h3><p class="text-sm text-indigo-700 mt-1">Staff login create ചെയ്ത് orders, inventory, production, finance, reports, settings എന്നീ modules permission-wise നൽകാം.</p></div>
-                            <div class="p-6 space-y-4">
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div><label class="block text-sm font-medium text-gray-700">Staff Name</label><input id="staff-name" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
-                                    <div><label class="block text-sm font-medium text-gray-700">Staff Email</label><input id="staff-email" type="email" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"></div>
-                                    <div><label class="block text-sm font-medium text-gray-700">Login Password</label><input id="staff-password" type="password" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm" placeholder="Min 6 characters"></div>
-                                    <div><label class="block text-sm font-medium text-gray-700">Role</label><select id="staff-role" class="mt-1 w-full rounded-md border border-gray-300 p-2 text-sm"><option value="staff">Staff (module permissions)</option><option value="manager">Manager (full operations)</option></select></div>
-                                </div>
-                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-                                    <label class="rounded border p-2"><input id="staff-perm-orders" type="checkbox" class="mr-2">Orders</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-inventory" type="checkbox" class="mr-2">Inventory</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-production" type="checkbox" class="mr-2">Production</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-finance" type="checkbox" class="mr-2">Finance</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-reports" type="checkbox" class="mr-2">Reports</label>
-                                    <label class="rounded border p-2"><input id="staff-perm-settings" type="checkbox" class="mr-2">Settings</label>
-                                </div>
-                                <button type="button" onclick="saveStaffUser()" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700">Create Team Login</button>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="px-6 py-4 border-b bg-gray-50"><h3 class="font-bold text-gray-900">Manager / Staff Access List</h3><p class="text-sm text-gray-500 mt-1">Founder can activate/deactivate managers and update staff module permissions.</p></div>
-                            <div id="settings-staff-access-list" class="divide-y divide-gray-100"></div>
-                        </div>
-                    </div>
+                    <div class="founder-only mt-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm font-semibold text-indigo-900">Manager dashboard access is intentionally limited to one Manager account. Use the Investor Access form above to create separate investor logins.</div>
                 </div>
 
             </main>
@@ -1445,6 +1420,17 @@
                 if(icon) icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
             }
         }
+        function getLoginErrorMessage(error) {
+            console.error('Login error:', error);
+            const code = error?.code || '';
+            if(code === 'auth/unauthorized-domain') return `This website domain (${window.location.hostname}) is not authorized in Firebase Authentication. Add it in Firebase Console > Authentication > Settings > Authorized domains.`;
+            if(code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return 'Invalid email or password. Check the Firebase Authentication user and password.';
+            if(code === 'auth/too-many-requests') return 'Too many failed login attempts. Wait a few minutes or reset the password in Firebase Authentication.';
+            if(code === 'permission-denied') return 'Firestore permission denied. Publish the latest firestore.rules and verify settings/login.';
+            if(code) return `${code}: ${error.message || 'Login failed'}`;
+            return error?.message || 'Login failed. Check Firebase Authentication and Firestore settings/login.';
+        }
+
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1454,7 +1440,7 @@
                 await signInWithEmailAndPassword(auth, email, pass);
                 showToast("Login Successful!");
             } catch (error) {
-                showToast("Invalid Email or Password", "error");
+                showToast(getLoginErrorMessage(error), "error");
             }
         });
 
@@ -1466,30 +1452,42 @@
         }
 
         async function getOrBootstrapAccessProfile(user) {
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef).catch(() => null);
-            if(userSnap && userSnap.exists() && userSnap.data().role) return userSnap.data();
+            const loginRef = doc(db, "settings", "login");
+            const loginSnap = await getDoc(loginRef).catch(() => null);
+            const loginData = loginSnap && loginSnap.exists() ? loginSnap.data() : {};
+            const manager = loginData.manager || (loginData.role === 'manager' ? loginData : {});
+            const investor = (loginData.investors || {})[user.uid] || null;
+            if(manager.uid === user.uid) return { ...manager, role: 'manager', isActive: manager.isActive !== false };
+            if(investor) return { ...investor, role: 'investor', isActive: investor.isActive !== false };
+            const legacyUserSnap = await getDoc(doc(db, "users", user.uid)).catch(() => null);
+            const legacyUser = legacyUserSnap && legacyUserSnap.exists() ? legacyUserSnap.data() : null;
+            if(legacyUser?.role === 'manager' && legacyUser.isActive !== false) {
+                const migratedProfile = { uid: user.uid, role: 'manager', name: legacyUser.name || user.displayName || user.email || 'Manager', email: legacyUser.email || user.email || '', isActive: true, migratedFromUsers: true, updatedAt: getCurrentDateTimeLocal() };
+                await setDoc(loginRef, { ...migratedProfile, manager: migratedProfile }, { merge: true });
+                return migratedProfile;
+            }
             if(!(await isSetupModeEnabled())) return { role: null, accessError: 'no-role' };
             const bootstrapProfile = {
-                role: 'founder',
-                name: user.displayName || user.email || 'Founder',
+                uid: user.uid,
+                role: 'manager',
+                name: user.displayName || user.email || 'Manager',
                 email: user.email || '',
                 isActive: true,
-                bootstrapFounder: true,
+                bootstrapManager: true,
                 createdAt: getCurrentDateTimeLocal(),
                 updatedAt: getCurrentDateTimeLocal()
             };
-            await setDoc(userRef, bootstrapProfile, { merge: true });
+            await setDoc(loginRef, { ...bootstrapProfile, manager: bootstrapProfile }, { merge: true });
             return bootstrapProfile;
         }
 
         onAuthStateChanged(auth, async (user) => {
             authUser = user;
             if (!user) { window.location.href = 'index.html'; return; }
-            currentUserProfile = await getOrBootstrapAccessProfile(user).catch(() => null) || {};
+            currentUserProfile = await getOrBootstrapAccessProfile(user).catch((error) => ({ role: null, accessError: getLoginErrorMessage(error) })) || {};
             currentUserRole = currentUserProfile.role || null;
             if(currentUserRole === 'investor') { window.location.href = 'investor.html'; return; }
-            if(currentUserProfile.isActive === false || !['founder', 'owner', 'admin', 'manager', 'staff'].includes(currentUserRole)) { await signOut(auth); window.location.href = 'index.html'; return; }
+            if(currentUserProfile.isActive === false || currentUserRole !== 'manager') { if(currentUserProfile.accessError) showToast(currentUserProfile.accessError, 'error'); await signOut(auth); window.location.href = 'index.html'; return; }
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('investor-app').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
@@ -1554,13 +1552,13 @@
             if(currentTab === 'orders') document.getElementById('header-actions').innerHTML = getOrderHeaderActions();
         }
 
-        function isFounderRole(role = currentUserRole) { return ['founder', 'owner', 'admin'].includes(role); }
-        function requireFounderAccess() { if(isFounderRole()) return true; showToast('Only Founder can manage users and roles', 'error'); return false; }
+        function isManagerRole(role = currentUserRole) { return role === 'manager'; }
+        function requireManagerAccess() { if(isManagerRole()) return true; showToast('Only Manager can manage users and roles', 'error'); return false; }
         function applyRoleAccessUI() {
-            const founder = isFounderRole();
-            document.querySelectorAll('.founder-only').forEach(el => el.classList.toggle('hidden', !founder));
+            const manager = isManagerRole();
+            document.querySelectorAll('.founder-only').forEach(el => el.classList.toggle('hidden', !manager));
             const note = document.getElementById('founder-access-note');
-            if(note) note.classList.toggle('hidden', founder);
+            if(note) note.classList.toggle('hidden', manager);
         }
         async function postUserRoleAudit(action, targetId, after = {}, before = null) {
             try {
@@ -1576,7 +1574,7 @@
             reports: 'reports', audit: 'reports', settings: 'settings'
         };
         function hasModuleAccess(module) {
-            if(isFounderRole() || currentUserRole === 'manager' || !module) return true;
+            if(isManagerRole() || currentUserRole === 'manager' || !module) return true;
             const permissions = currentUserProfile.permissions || {};
             return !!permissions[module];
         }
@@ -1878,7 +1876,7 @@
                 investorPaymentRequests.sort((a, b) => new Date(normalizeDateInput(b.createdAt)) - new Date(normalizeDateInput(a.createdAt)));
                 if(currentTab === 'payment-requests') renderPaymentRequestsDashboard();
             });
-            if(isFounderRole()) {
+            if(isManagerRole()) {
                 onSnapshot(collection(db, "users"), (snapshot) => {
                     systemUsers = [];
                     snapshot.forEach((doc) => systemUsers.push({ id: doc.id, ...doc.data() }));
@@ -4454,7 +4452,7 @@
 
 
         window.saveInvestorProfile = async function() {
-            if(!requireFounderAccess()) return;
+            if(!requireManagerAccess()) return;
             let uid = document.getElementById('investor-uid').value.trim();
             const name = document.getElementById('investor-name').value.trim();
             const email = document.getElementById('investor-email').value.trim();
@@ -4496,6 +4494,7 @@
                     updatedAt: getCurrentDateTimeLocal(),
                     createdBy: authUser?.uid || ''
                 };
+                await setDoc(doc(db, 'settings', 'login'), { investors: { [uid]: { uid, role: 'investor', name, email, isActive: true, updatedAt: getCurrentDateTimeLocal(), createdBy: authUser?.uid || '' } } }, { merge: true });
                 await setDoc(doc(db, 'users', uid), investorUserData, { merge: true });
                 await setDoc(doc(db, 'investors', uid), investorCompanyData, { merge: true });
                 await postUserRoleAudit('investor_access_saved', uid, investorUserData, existingInvestor.id ? { role: 'investor', email: existingInvestor.email || '' } : null);
@@ -5151,7 +5150,7 @@
         }
 
         window.saveStaffUser = async function() {
-            if(!requireFounderAccess()) return;
+            if(!requireManagerAccess()) return;
             const name = document.getElementById('staff-name')?.value.trim();
             const email = document.getElementById('staff-email')?.value.trim();
             const password = document.getElementById('staff-password')?.value || '';
@@ -5172,14 +5171,14 @@
         }
 
         window.toggleStaffPermission = async function(uid, permission, checked) {
-            if(!requireFounderAccess()) return;
+            if(!requireManagerAccess()) return;
             const user = systemUsers.find(item => item.id === uid) || {};
             const permissions = { ...(user.permissions || {}), [permission]: checked };
             try { await updateDoc(doc(db, 'users', uid), { permissions, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' }); await postUserRoleAudit('staff_permission_updated', uid, { permissions }, { permissions: user.permissions || {} }); showToast('Staff permission updated'); } catch(error) { showToast(error.message, 'error'); }
         }
 
         window.toggleStaffActive = async function(uid, makeActive) {
-            if(!requireFounderAccess()) return;
+            if(!requireManagerAccess()) return;
             try { await updateDoc(doc(db, 'users', uid), { isActive: !!makeActive, updatedAt: getCurrentDateTimeLocal(), updatedBy: authUser?.uid || '' }); await postUserRoleAudit(makeActive ? 'staff_activated' : 'staff_deactivated', uid, { isActive: !!makeActive }); showToast(makeActive ? 'Staff activated' : 'Staff deactivated'); } catch(error) { showToast(error.message, 'error'); }
         }
 

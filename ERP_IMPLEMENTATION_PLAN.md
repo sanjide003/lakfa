@@ -43,8 +43,8 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 
 ### Step 9 — Role-based Dashboards and Investor Portal Upgrade
 - Investor portal-ൽ capital statement, investor-specific profit share history, personal investment/contribution report ചേർത്തു.
-- Manager console settings-ൽ staff login creation and module-wise permissions ചേർത്തു.
-- Firestore rules-ൽ staff role and permission-based read/write access controls ചേർത്തു.
+- Manager console settings-ൽ investor login creation workflow ചേർത്തു.
+- Firestore rules-ൽ manager/investor role-based access controls ചേർത്തു.
 
 ### Step 10A — Party Master and Party Ledger
 - Parties tab full Party Master + Party Ledger ആയി മെച്ചപ്പെടുത്തി.
@@ -52,9 +52,9 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Party-wise search/filter/sort, PDF statement, CSV export, all-parties CSV export ചേർത്തു.
 
 ### Step 10B — Strong Role-Based Authentication & Access Control
-- Founder, Manager, Staff, Investor roles മാത്രം login ചെയ്യാവുന്ന രീതിയിൽ login routing harden ചെയ്തു.
-- setupMode-controlled founder bootstrap, active/inactive blocking, founder-only investor/manager/staff user management, user role audit log എന്നിവ ചേർത്തു.
-- Firestore rules founder/manager/staff/investor role helpers ഉപയോഗിച്ച് harden ചെയ്തു; users/settings management founder-only ആയി.
+- settings/login document-ലെ flat manager fields അല്ലെങ്കിൽ nested manager map അടിസ്ഥാനമാക്കി Manager, Investor എന്നീ രണ്ട് login types മാത്രം ഉപയോഗിക്കുന്ന രീതിയിൽ login routing harden ചെയ്തു.
+- setupMode-controlled settings/login manager bootstrap, users collection-ൽ നിന്ന് one-time migration, active/inactive blocking, manager-only investor user management, user role audit log എന്നിവ ചേർത്തു.
+- Firestore rules settings/login manager/investor helpers ഉപയോഗിച്ച് harden ചെയ്തു; settings/login management manager-only ആയി.
 
 ## നിലവിലെ ERP കഴിവുകൾ
 - Order entry, payment tracking, customer receivable ledger.
@@ -68,7 +68,7 @@ LAKFA Foods-ന്റെ order, inventory, purchase, production, accounts, payro
 - Balance sheet snapshot and reconciliation mismatch alerts.
 - GST summary, HSN/SAC-wise tax report and input/output GST reconciliation.
 - Investor-specific capital statement, profit share history and personal contribution reports.
-- Founder/manager/staff/investor role-based access with setupMode founder bootstrap, active account blocking, founder-only user management and staff module permissions.
+- settings/login based Manager/investor role access with setupMode manager bootstrap, legacy users migration, active account blocking, and manager-only investor user management.
 - Party Master and Party Ledger with opening balance, credit limit, payment terms, due follow-up, statement PDF/CSV and duplicate merge support.
 
 ## ഇനി ബാക്കി ചെയ്യാനുള്ള പ്രധാന ഘട്ടങ്ങൾ

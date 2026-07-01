@@ -6,39 +6,44 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function loginPath() {
+      return /databases/$(database)/documents/settings/login;
+    }
+
     function userPath(uid) {
       return /databases/$(database)/documents/users/$(uid);
     }
 
-    function hasUserRole(role) {
-      return signedIn()
-        && exists(userPath(request.auth.uid))
-        && get(userPath(request.auth.uid)).data.role == role
-        && get(userPath(request.auth.uid)).data.isActive != false;
+    function loginData() {
+      return get(loginPath()).data;
     }
 
-    function isFounder() {
-      return hasUserRole('founder') || hasUserRole('owner') || hasUserRole('admin');
+    function hasLoginDoc() {
+      return exists(loginPath());
     }
 
     function isManager() {
-      return isFounder() || hasUserRole('manager');
+      return signedIn()
+        && hasLoginDoc()
+        && (
+          (loginData().uid == request.auth.uid
+            && loginData().role == 'manager'
+            && loginData().isActive != false)
+          || (loginData().manager.uid == request.auth.uid
+            && loginData().manager.isActive != false)
+        );
     }
 
     function isInvestor() {
-      return hasUserRole('investor');
-    }
-
-    function isStaff() {
-      return hasUserRole('staff');
-    }
-
-    function hasPermission(module) {
-      return isStaff() && get(userPath(request.auth.uid)).data.permissions[module] == true;
+      return signedIn()
+        && hasLoginDoc()
+        && loginData().investors is map
+        && request.auth.uid in loginData().investors.keys()
+        && loginData().investors[request.auth.uid].isActive != false;
     }
 
     function canOperate(module) {
-      return isManager() || hasPermission(module);
+      return isManager();
     }
 
     function isSelfUser(userId) {
@@ -50,75 +55,86 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/settings/config).data.setupMode == true;
     }
 
-    function isSelfFounderBootstrap(userId) {
+    function isSelfManagerLoginBootstrap() {
       return isSetupMode()
-        && isSelfUser(userId)
-        && request.resource.data.role == 'founder'
+        && signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == 'manager'
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.isActive != false;
+    }
+
+    function isSelfLegacyManagerLoginMigration() {
+      return signedIn()
+        && exists(userPath(request.auth.uid))
+        && get(userPath(request.auth.uid)).data.role == 'manager'
+        && get(userPath(request.auth.uid)).data.isActive != false
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == 'manager'
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.isActive != false;
     }
 
     match /users/{userId} {
-      allow read: if isFounder() || isSelfUser(userId);
-      allow create: if isFounder() || isSelfFounderBootstrap(userId);
-      allow update: if isFounder() || (isSelfFounderBootstrap(userId) && !resource.data.keys().hasAny(['role']));
-      allow delete: if isFounder();
+      allow read: if isManager() || isSelfUser(userId);
+      allow create, update, delete: if isManager();
     }
 
     match /settings/{docId} {
       allow read: if signedIn();
-      allow write: if isFounder();
+      allow create, update: if isManager() || (docId == 'login' && (isSelfManagerLoginBootstrap() || isSelfLegacyManagerLoginMigration()));
+      allow delete: if isManager();
     }
 
     match /orders/{orderId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('orders');
     }
 
     match /products/{productId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('inventory');
     }
 
     match /investors/{investorId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if isManager();
     }
 
     match /parties/{partyId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('orders') || canOperate('finance');
     }
 
     match /investorPaymentRequestAudit/{auditId} {
-      allow read, create: if isManager() || hasPermission('finance');
+      allow read, create: if isManager();
       allow update, delete: if false;
     }
 
     match /managerLoans/{loanId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('finance');
     }
 
     match /companyDailyAccounts/{accountId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('finance');
     }
 
     match /companyAccounts/{accountId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('finance');
     }
 
     match /financeCategories/{categoryId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('finance');
     }
 
     match /investorPaymentRequests/{requestId} {
-      allow read: if isManager() || isInvestor() || isStaff();
-      allow create, delete: if isManager() || hasPermission('finance');
-      allow update: if isManager() || hasPermission('finance')
+      allow read: if isManager() || isInvestor();
+      allow create, delete: if isManager();
+      allow update: if isManager()
         || (isInvestor()
           && resource.data.status == 'active'
           && (resource.data.targetType == 'all' || resource.data.targetUid == request.auth.uid)
@@ -128,82 +144,82 @@ service cloud.firestore {
 
 
     match /rawMaterials/{itemId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('inventory');
     }
 
     match /suppliers/{supplierId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('inventory') || canOperate('finance');
     }
 
     match /purchases/{purchaseId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('inventory') || canOperate('finance');
     }
 
     match /productionBatches/{batchId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('production');
     }
 
     match /profitDistributions/{distributionId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('finance');
     }
 
 
     match /employees/{employeeId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('finance');
     }
 
     match /salaryPayments/{paymentId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('finance');
     }
 
     match /companyAssets/{assetId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('finance');
     }
 
 
     match /unifiedLedger/{entryId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('finance') || canOperate('orders') || canOperate('production') || canOperate('inventory');
     }
 
     match /stockLedger/{entryId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('inventory') || canOperate('production') || canOperate('orders');
     }
 
 
     match /customerLedger/{entryId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('orders') || canOperate('finance');
     }
 
 
     match /supplierLedger/{entryId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create, update, delete: if canOperate('inventory') || canOperate('finance');
     }
 
     match /purchasePayments/{paymentId} {
-      allow read: if isManager() || isStaff();
+      allow read: if isManager();
       allow create, update, delete: if canOperate('inventory') || canOperate('finance');
     }
 
     match /auditLog/{auditId} {
-      allow read: if isManager() || isInvestor() || isStaff();
-      allow create: if isManager() || hasPermission('reports');
+      allow read: if isManager() || isInvestor();
+      allow create: if isManager();
       allow update, delete: if false;
     }
 
     match /investorExpenses/{expenseId} {
-      allow read: if isManager() || isInvestor() || isStaff();
+      allow read: if isManager() || isInvestor();
       allow create: if isManager()
         || (isInvestor()
         && request.resource.data.uid == request.auth.uid
@@ -212,8 +228,8 @@ service cloud.firestore {
         && request.resource.data.amount > 0
         && request.resource.data.purpose is string
         && request.resource.data.purpose.size() > 0);
-      allow update: if isManager() || hasPermission('finance');
-      allow delete: if isManager() || hasPermission('finance') || (isInvestor() && resource.data.uid == request.auth.uid && resource.data.status == 'rejected');
+      allow update: if isManager();
+      allow delete: if isManager() || (isInvestor() && resource.data.uid == request.auth.uid && resource.data.status == 'rejected');
     }
   }
 }
